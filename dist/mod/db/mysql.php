@@ -1,5 +1,5 @@
 <?php
-/* <default skin>/front.html.php
+/* mod/db/mysql.php
  * @author: Carlos Thompson
  * 
  */

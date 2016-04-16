@@ -1,5 +1,5 @@
 <?php
-/* <default skin>/front.html.php
+/* lib/api.php
  * @author: Carlos Thompson
  * 
  */
