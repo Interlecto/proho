@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang=en>
+  <head>
+    <meta charset=utf-8>
+    <meta http-equiv=X-UA-Compatible content="IE=edge">
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <title>ProHo - Sistema individual</title>
+    <link href="/bs/css/bootstrap.min.css" rel=stylesheet>
+    <link href="comun.css" rel=stylesheet>
+
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="container container-narrow">
+      <h1>ProHo</h1>
+
+      <form class=form-signin action=login.html>
+        <h2 class=form-signin-heading>Entrada</h2>
+        <label for=inputUser class=sr-only>Nombre de usuario</label>
+        <input type=text id=inputEmail class=form-control placeholder="Nombre de usuario" required autofocus>
+        <label for=inputPassword class=sr-only>Contraseña</label>
+        <input type=password id=inputPassword class=form-control placeholder=Contraseña required>
+        <div class=checkbox>
+          <label>
+            <input type=checkbox value=remember-me> Recordarme
+          </label>
+        </div>
+        <button class="btn btn-lg btn-primary btn-block" type=submit>Entrar</button>
+        <p>
+          <a class="btn btn-default btn-sm" href="registro.html">Registrarme</a>
+          <a class="btn btn-default btn-sm" href="recuperar.html">Olvidé mi contraseña</a>
+        </p>
+      </form>
+      
+      <p>Hay 2 unidades disponibles para arriendo y 1 para venta.<br><a class="btn btn-success" href="visitantes.html">Ver contenido público</a></p>
+
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="/bs/js/bootstrap.min.js"></script>
+  </body>
+</html>
