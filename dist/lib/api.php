@@ -4,4 +4,5 @@
  * 
  */
 
+return include "server.php";
 ?>

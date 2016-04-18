@@ -21,10 +21,10 @@ if(empty($response)) {
 	header("HTTP/1.1 204 No Content");
 } else {
 	if(preg_match('/(?i)msie [5-8]/',$_SERVER['HTTP_USER_AGENT']))
-		header('ContentType: text/javascript');
+		header('Content-Type: text/javascript');
 	else
-		header('ContentType: application/json');
-	echo json_encode($response);
+		header('Content-Type: application/json');
+	echo json_encode($response,JSON_PRETTY_PRINT);
 }
 
 ?>
