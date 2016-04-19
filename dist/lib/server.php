@@ -4,6 +4,8 @@
  * 
  */
 
+$ph_uri_case = [['{.*}',0,'mod/pub/pub.php','404']];
+
 $obj = [0=>[]];
 $prefixes = ['HTTP','SERVER','REQUEST','SCRIPT','PATH','REDIRECT'];
 foreach($prefixes as $p) {
@@ -25,6 +27,62 @@ if(isset($_COOKIES))
 	$obj['cookies'] = $_COOKIES;
 if(isset($_SESSION))
 	$obj['session'] = $_SESSION;
+
+$line = isset($_GET['line'])? $_GET['line']:
+	(isset($obj['redirect']['url'])? ltrim($obj['redirect']['url'],'/'):
+		(isset($obj['request']['uri'])? ltrim($obj['request']['uri'],'/'):
+			''));
+
+$script = isset($obj['script']['name'])? ltrim($obj['script']['name'],'/'):
+		(isset($obj[0]['php_self'])? ltrim($obj[0]['php_self'],'/'):
+			'');
+			
+$obj['line'] = [
+	'script' => $script,
+	'line' => $line,
+];
+
+$obj['dir'] = [
+	'root' => $obj[0]['document_root'],
+];
+$mods=(rtrim($obj['dir']['root'],'/').'/mod');
+if($script=='api.php') {
+	if(!preg_match('{(\w+)\b(.*)}',$line,$m)) {
+		$obj[] = 'No Match';
+		return $obj;
+	}
+	if(count($m)<3) {
+		$obj[] = $m;
+		return $obj;
+	}
+	$mod = $m[1];
+	if(file_exists("$mods/$mod/api.php"))
+		$obj['line']['module'] = "mod/$mod/api.php";
+	elseif(file_exists("$mods/$mod/$mod.php"))
+		$obj['line']['module'] = "mod/$mod/$mod.php";
+	else
+		$obj['line']['module'] = "";
+	$obj['line']['query'] = $m[2] or "";
+} else {
+	$d = dir($mods);
+	while(false!==($entry = $d->read())) {
+		if(substr($entry,0,1)=='.') continue;
+		$obj['dir'][$entry] = "$mods/$entry/";
+		if(file_exists($fn="$mods/$entry/reg.php"))
+			require_once $fn;
+	}
+
+	$level = -1;
+	foreach($ph_uri_case as $rec) {
+		if($rec[1]<=$level) continue;
+		if(preg_match($rec[0], $line, $m)) {
+			$level = $rec[1];
+			$obj['line']['module'] = $rec[2];
+			$obj['line']['class'] = $rec[3];
+			$obj['line']['parts'] = $m;
+		}
+	}
+}
 
 return $obj;
 ?>
