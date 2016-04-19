@@ -5,6 +5,6 @@
  * Entry points for gallery module.
  */
 
-$ph_uri_case[] = ['{galeria\b(.*)}',10,'mod/gal/gal.php','gallery'];
+$ph_uri_case[] = ['{^galeria\b([^?]*)(\?|$)}',10,'mod/gal/gal.php','gallery'];
 
 ?>

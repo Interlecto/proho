@@ -4,9 +4,22 @@
  * 
  */
 
+if(!isset($_SESSION)) session_start();
 $ph_uri_case = [['{.*}',0,'mod/pub/pub.php','404']];
 
 $obj = [0=>[]];
+foreach($GLOBALS as $k=>$v) {
+	if(in_array($k,['ph_uri_case'])) continue;
+	$kk = explode('_',$k);
+	if(count($kk)<2 || $kk[0] != 'ph') continue;
+	array_shift($kk);
+	$kp = array_shift($kk);
+	if(empty($kk))
+		$obj[0][$kp] = $v;
+	else
+		$obj[$kp][implode(':',$kk)] = $v;
+}
+
 $prefixes = ['HTTP','SERVER','REQUEST','SCRIPT','PATH','REDIRECT'];
 foreach($prefixes as $p) {
 	$obj[strtolower($p)] = [];
@@ -47,7 +60,7 @@ $obj['dir'] = [
 ];
 $mods=(rtrim($obj['dir']['root'],'/').'/mod');
 if($script=='api.php') {
-	if(!preg_match('{(\w+)\b(.*)}',$line,$m)) {
+	if(!preg_match('{(\w+)\b([^?]*)(\?|$)}',$line,$m)) {
 		$obj[] = 'No Match';
 		return $obj;
 	}
@@ -63,7 +76,7 @@ if($script=='api.php') {
 	else
 		$obj['line']['module'] = "";
 	$obj['line']['query'] = $m[2] or "";
-} else {
+} elseif($script=='index.php') {
 	$d = dir($mods);
 	while(false!==($entry = $d->read())) {
 		if(substr($entry,0,1)=='.') continue;
@@ -71,6 +84,7 @@ if($script=='api.php') {
 		if(file_exists($fn="$mods/$entry/reg.php"))
 			require_once $fn;
 	}
+	$d->close();
 
 	$level = -1;
 	foreach($ph_uri_case as $rec) {

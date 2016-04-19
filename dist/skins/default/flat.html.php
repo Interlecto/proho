@@ -1,5 +1,5 @@
 <?php 
-/* <default skin>/normal.html.php
+/* <default skin>/front.html.php
  * @author: Carlos Thompson
  * 
  */
@@ -12,13 +12,6 @@ ob_start()?><!DOCTYPE html>
 		<link rel=icon href="{dir:skin}/favicon.ico">
 	</head>
 	<body class="{skin:template}">
-		<nav id=top>
-		</nav>
-		<aside id=sidebar>
-		</aside>
-		<header id=header>
-			<h1>{title}</h1>
-		</header>
 		<section id=body>
 			{content}
 		</section>

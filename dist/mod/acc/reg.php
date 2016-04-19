@@ -5,6 +5,6 @@
  * Entry points for security module.
  */
 
-$ph_uri_case[] = ['{^contabilidad\b(.*)}',10,'mod/acc/acc.php','accounting'];
+$ph_uri_case[] = ['{^contabilidad\b([^?]*)(\?|$)}',10,'mod/acc/acc.php','accounting'];
 
 ?>

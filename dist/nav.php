@@ -20,7 +20,7 @@ if(file_exists("config/site.php"))
 require "lib/catches.php";
 
 // generate content
-$page = require "lib/page.php";
+$page = require "lib/nav.php";
 $page->go();
 $page->close();
 ?>
