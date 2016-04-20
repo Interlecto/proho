@@ -13,6 +13,9 @@ ob_start()?><!DOCTYPE html>
 	</head>
 	<body class="{skin:template}">
 		<div class=wrapper>
+			<header id=header>
+				<h1>{title}</h1>
+			</header>
 			<section id=body>
 				{content}
 			</section>

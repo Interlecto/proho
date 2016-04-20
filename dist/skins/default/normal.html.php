@@ -14,17 +14,18 @@ ob_start()?><!DOCTYPE html>
 	<body class="{skin:template}">
 		<nav id=top>
 		</nav>
-		<aside id=sidebar>
-		</aside>
-		<header id=header>
-			<h1>{title}</h1>
-		</header>
-		<section id=body>
-			{content}
-		</section>
-		<footer id=footer>
-		</footer>
-		
+		<div class=wrapper>
+			<aside id=sidebar>
+			</aside>
+			<header id=header>
+				<h1>{title}</h1>
+			</header>
+			<section id=body>
+				{content}
+			</section>
+			<footer id=footer>
+			</footer>
+		</div>
 		<script src="{dir:skin}/js/common.js"></script>
 	</body>
 </html>

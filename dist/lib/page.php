@@ -6,7 +6,6 @@
 
 require_once 'lib/lib.php';
 require_once 'lib/tributer.php';
-$server = include 'server.php';
 class Page extends tributer {
 	static $first;
 	
@@ -14,7 +13,7 @@ class Page extends tributer {
 		tributer::__construct($enviro);
 		#$this->enviro = $enviro;
 		$this->set('skin/name','default',SET_REPLACE);
-		$this->set('skin/template','normal',SET_UNSET);
+		$this->set('skin/template', is_public()? 'clean': 'normal',SET_UNSET);
 		$this->set('skin/format','html',SET_UNSET);
 		$this->set('skin/version',5,SET_UNSET);
 		Page::$first = $this;
@@ -99,6 +98,8 @@ BLOQUE;
 		return $this->get('site/name',$this->get('server/name',$d,$h),$h);
 	}
 };
+
+$server = include 'server.php';
 
 function ph_get($key, $def=null, $how=DEF_EMPTY) { return Page::$first->get($key, $def, $how); }
 function ph_set($key, $val, $how=SET_REPLACE) { return Page::$first->set($key, $val, $how); }

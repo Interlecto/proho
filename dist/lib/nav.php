@@ -14,6 +14,9 @@ foreach(['css','png','jpeg','ico','md'] as $ext)
 	$ph_ext_alias[$ext] = $ext;
 class NavPage extends Page {
 	function go() {
+		if(is_public())
+			$this->set('skin/template','clean');
+			
 		$this->_root = $root = rtrim($this->get('dir/root'),'/');
 		$this->_path = $path = trim($this->get('line/line'),'/');
 		if(is_dir($d="$root/$path")) {
@@ -22,7 +25,7 @@ class NavPage extends Page {
 			
 			$this->_dir = dir($d);
 		} else {
-			$this->set('title',"404 Not Found");
+			set_status(404,"<p>Archivo <code>$d</code> no encontrado.</p>");
 		}
 
 		Page::go();

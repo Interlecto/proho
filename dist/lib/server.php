@@ -5,7 +5,7 @@
  */
 
 if(!isset($_SESSION)) session_start();
-$ph_uri_case = [['{.*}',0,'mod/pub/pub.php','404']];
+$ph_uri_case = [['{.*}',0,'mod/doc/status.php','404']];
 
 $obj = [0=>[]];
 foreach($GLOBALS as $k=>$v) {
@@ -94,6 +94,7 @@ if($script=='api.php') {
 			$obj['line']['module'] = $rec[2];
 			$obj['line']['class'] = $rec[3];
 			$obj['line']['parts'] = $m;
+			$obj['line']['case'] = $rec[0];
 		}
 	}
 }
