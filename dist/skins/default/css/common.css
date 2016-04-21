@@ -66,3 +66,10 @@ h2{font-size:1.35em;margin:0.3em 0}
 h3{font-size:1.1875em;margin:0.3em 0}
 h4{font-size:1em;margin:0.3em 0}
 h5{font-size:0.9375em;margin:0.3em 0}
+
+.display{border:inset thin #aaa;padding:1ex}
+.display p{margin:.5em 0}
+.display code{background-color:rgba(170,170,85,.25);padding:0 .5ex}
+.display pre code{display:block;padding:.25em .5ex}
+
+pre{overflow:auto}

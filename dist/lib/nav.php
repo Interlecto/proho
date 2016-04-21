@@ -13,7 +13,7 @@ $ph_ext_alias = [
 foreach(['css','png','jpeg','ico','gif','md'] as $ext)
 	$ph_ext_alias[$ext] = $ext;
 $ph_ext_handler = [
-	'md'=>'cgi/md.cgi',
+	'md'=>'cgi/md.pl',
 	];
 class NavPage extends Page {
 	function go() {

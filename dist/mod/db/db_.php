@@ -1,10 +1,4 @@
 <?php
-/* mod/db/mysql.php
- * @author: Carlos Thompson
- * 
- * Main implementation for MySQL/MariaSQL databases.
- */
-
 function db_str($string) { return mysqli_real_escape_string(db::$first,$string); }
 function db__str(&$string,$idx=null) { return $string = db_str($string); }
 function db_val($value) { return is_null($value)? 'NULL': (is_numeric($value)? (float)$value: "'".db_str($value)."'"); }
@@ -14,8 +8,7 @@ function db__var(&$key,$idx=null) { return $key = db_var($key); }
 function db_varval($string) { return preg_match('{^[_A-Za-z]\w*$}',$string)? db_var($string): db_val($string); }
 function db__varval(&$string,$idx=null) { return $string = db_varval($string); }
 
-require_once 'mod/db/db.php';
-class db_mysql extends mysqli implements database {
+class db extends mysqli {
 	static $first;
 
 	private function fix_columns($columns) {
@@ -183,18 +176,16 @@ class db_mysql extends mysqli implements database {
 		return true;
 	}
 
-	function __construct($host,$username,$passwd,$database=null,$prefix='') {
-		if(!isset(db_mysql::$first)) db_mysql::$first = $this;
+	function __construct($a,$b,$c,$d=null,$prefix='') {
+		if(!isset(db::$first)) db::$first = $this;
 		$this->prefix = $prefix;
-		@mysqli::__construct($host,$username,$passwd);
+		@mysqli::__construct($a,$b,$c);
 		if($this->connect_errno)
-			ph_add('queries','Connect Error: '.$this->connect_error);
-		if($database) {
-			if(!@$this->select_db($database)) {
-				if(file_exists($fn=rtensure($GLOBALS['obj']['dir']['root']).'install/index.php'))
-					redirect('/install/index.php', 303, "Database $database does not exist.");
-				else
-					die("Installation path <code>install/index.php</code> ($fn) not found.");
+			il_add('queries','Connect Error: '.$this->connect_error);
+		if($d) {
+			if(!@$this->select_db($d)) {
+				header('Location: /install.php');
+				die("Database $d does not exist.");
 			}
 		}
 	}
@@ -336,4 +327,51 @@ class db_mysql extends mysqli implements database {
 	}
 };
 
+function db_query($query) {
+	return db::$first->query($query);
+}
+
+function db_select_fetch($table, $columns='*', $where=null, $order=null, $limit=0, $offset=0) {
+	return db::$first->select_fetch($table, $columns, $where, $order, $limit, $offset);
+}
+
+function db_select($table, $columns='*', $where=null, $order=null, $limit=250, $offset=0) {
+	return db::$first->select($table, $columns, $where, $order, $limit, $offset);
+}
+
+function db_select_key($table, $columns, $where=null, $order=null, $limit=250, $offset=0) {
+	return db::$first->select_key($table, $columns, $where, $order, $limit, $offset);
+}
+
+function db_select_pairs($table, $col1, $col2, $where=null, $order=null, $limit=250, $offset=0) {
+	return db::$first->select_pairs($table, $col1, $col2, $where, $order, $limit, $offset);
+}
+
+function db_select_col($table, $columns, $where=null, $order=null, $limit=250, $offset=0) {
+	return db::$first->select_col($table, $columns, $where, $order, $limit, $offset);
+}
+
+function db_select_first($table, $columns, $where=null, $order=null) {
+	return db::$first->select_first($table, $columns, $where, $order);
+}
+
+function db_select_one($table, $columns, $where=null, $asarray=false) {
+	return db::$first->select_one($table, $columns, $where, $asarray);
+}
+
+function db_update($table, $updates, $where=null) {
+	return db::$first->update($table, $updates, $where);
+}
+
+function db_insert($table, $inserts, $columns=null, $ondup=false) {
+	return db::$first->insert($table, $inserts, $columns, $ondup);
+}
+
+function db_insert_ignore($table, $inserts, $columns=null) {
+	return db::$first->insert_ignore($table, $inserts, $columns);
+}
+
+function db_comment($limit) {
+	return db_query('-- '.trim($limit).chr(10));
+}
 ?>

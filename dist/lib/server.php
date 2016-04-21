@@ -15,8 +15,11 @@ $obj = [
 	'db'=>[
 		'engine' => 'mysql',
 		'server' => 'localhost',
-		'user' => 'root',
+		'username' => 'root',
 		'password' => '',
+		'database' => 'proho',
+		'prefix' => '',
+		'filename' => 'data/proho.db',
 		],
 	];
 foreach($GLOBALS as $k=>$v) {

@@ -11,7 +11,7 @@ class page_mdviewer extends Page {
 	function __construct($enviro) {
 		$p = $enviro['line']['parts'];
 		if(count($p)<4) $p[3] = '';
-		$can = 'cgi/md.cgi'.ltensure($p[3]);
+		$can = 'cgi/md.pl'.ltensure($p[3]);
 		check_redirect($can);
 		$this->_file = $p[3];
 		Page::__construct($enviro);
@@ -30,9 +30,9 @@ class page_mdviewer extends Page {
 		}
 		Page::go();
 	}
-	
+
 	function content() {
-		return $this->_content;
+		return "\n<div class=display>{$this->_content}\n</div>\n";
 	}
 }
 

@@ -4,10 +4,12 @@
  * 
  */
 
-function redirect($where, $type=303) {
+function redirect($where, $type=303, $message='') {
+	#die($message);
+	#echo $message; return;
 	if(preg_match('{^(https?|s?ftp)://}',$where)) {
 		header("Location: $where", true, $type);
-		die();
+		die($message);
 	}
 	$prot = empty($_SERVER['HTTPS'])? 'http': 'https';
 	$host = $_SERVER['HTTP_HOST'];
@@ -15,7 +17,7 @@ function redirect($where, $type=303) {
 	$server = $port==80? "$prot://$host":"$prot://$host:$port";
 	if(preg_match('{/.*}', $where)) {
 		header("Location: {$server}{$where}", true, $type);
-		die();
+		die($message);
 	}
 	$uri = $_SERVER['REQUEST_URI'];
 	$urip = explode('/',$uri);
@@ -23,7 +25,7 @@ function redirect($where, $type=303) {
 	$path = ltrim(implode('/',$uri),'/');
 
 	header("Location: {$server}/{$path}/{$where}", true, $type);
-	die();
+	die($message);
 }
 
 function preg_redirect($pattern, $transform, $line=null, $type=303) {
@@ -32,8 +34,7 @@ function preg_redirect($pattern, $transform, $line=null, $type=303) {
 	$target = preg_replace($pattern, $trasnform, $line);
 	lensure($target);
 	if($target==$line) return;
-	echo "<p>Redirige de <code>$line</code> as <a href\"$target\"><code>$target</code></a></p>\n";
-	redirect($target, $type);
+	redirect($target, $type, "<p>Redirige de <code>$line</code> as <a href\"$target\"><code>$target</code></a></p>\n");
 }
 
 function check_redirect($target, $line=null, $type=303) {
@@ -42,8 +43,7 @@ function check_redirect($target, $line=null, $type=303) {
 	lensure($line);
 	lensure($target);
 	if($target==$line) return;
-	echo "<p>Redirige de <code>$line</code> a <a href\"$target\"><code>$target</code></a></p>\n";
-	redirect($target, $type);
+	redirect($target, $type, "<p>Redirige de <code>$line</code> as <a href\"$target\"><code>$target</code></a></p>\n");
 }
 
 function is_public() {

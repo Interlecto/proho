@@ -9,6 +9,9 @@ define('SET_EMPTY', 1);
 define('SET_UNSET', 2);
 define('DEF_EMPTY', 1);
 define('DEF_UNSET', 2);
+define('ADD_ARRAY',1);
+define('ADD_STRING',2);
+define('ADD_NUMBER',3);
 
 function array_set(array &$array,$key,$value,$how=SET_REPLACE) {
 	if($how==SET_REPLACE)
@@ -102,6 +105,9 @@ class tributer {
 				array_set($this->$f,$s,$value,$how);
 			}
 		}
+	}
+
+	function add($key,$value,$how = ADD_ARRAY) {
 	}
 
 	function isempty($key) {
