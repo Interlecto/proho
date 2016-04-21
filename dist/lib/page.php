@@ -81,21 +81,40 @@ BLOQUE;
 	}
 
 	function html($template, $version) {
-		echo preg_replace_callback('#{((\w+):?([^}]*))}#','unbrace',$template);
+		echo temp2html($template, $version);
 		#echo str_replace('{content}',$this->content(),$template);
 	}
 	
 	function content() {
-		return "<pre>".print_r($this,true)."</pre>\n";
+		ob_start() ?>
+			<h2><?=ucwords($this->line['class'])?></h2>
+<pre><strong>Line:</strong> <?php print_r($this->line)?></pre>
+<pre><strong>Session:</strong> <?php print_r($this->session)?></pre>
+<?php
+		return ob_get_clean();
 	}
 	
 	function close() {
 	}
 	
-	function get_title($a,$d,$h) {
+	function get_title($wc=null,$def=null,$how=DEF_UNSET) {
 		if(isset($this->_var['title']))
 			return $this->_var['title'];
-		return $this->get('site/name',$this->get('server/name',$d,$h),$h);
+		return $this->get('site/name',$this->get('server/name',$def,$how),$how);
+	}
+	
+	function get_area($area, $def='', $how=DEF_UNSET) {
+		$skin = $this->get('skin/name');
+		$root = rtensure($this->get('dir/root'),'/');
+		
+		$paths = ["skins/$skin/areas", "plugs/areas", "skins/$skin", "plugs"];
+		foreach($paths as $p) {
+			if(file_exists($fn="$root$p/$area.php"))
+				return include $fn;
+			if(file_exists($fn="$root$p/$area.html"))
+				return temp2html(file_get_contents($fn));
+		}
+		return $def;
 	}
 };
 
@@ -103,6 +122,8 @@ $server = include 'server.php';
 
 function ph_get($key, $def=null, $how=DEF_EMPTY) { return Page::$first->get($key, $def, $how); }
 function ph_set($key, $val, $how=SET_REPLACE) { return Page::$first->set($key, $val, $how); }
+function ph_empty($key) { return Page::$first->isempty($key); }
+function ph_isset($key) { return Page::$first->exits($key); }
 
 if(isset($server['line']['module']))
 	require_once $server['line']['module'];

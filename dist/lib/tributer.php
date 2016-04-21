@@ -25,22 +25,38 @@ function array_get(array $array,$key,$default,$how=DEF_UNSET) {
 	return $array[$key];
 }
 
+function array_empty(array &$array, $key) {
+	return empty($array) || empty($array[$key]);
+}
+
+function array_isset(array &$array, $key) {
+	return isset($array) && isset($array[$key]);
+}
+
 class tributer {
 	public $_var = [];
 	
 	function __construct($vars) {
-		foreach($vars as $k=>$v) {
-			if(empty($k)) $this->_var = $v;
-			else $this->$k = $v;
+		if(is_array($vars))
+			foreach($vars as $key=>$val) {
+				if(empty($key)) $this->_var = $val;
+				else $this->$key = $val;
+			}
+		elseif(is_object($vars)) {
+			foreach(get_object_vars($vars) as $att) {
+				if(is_object($vars->$att))
+					$this->$att = new tributer($vars->$att);
+				else
+					$this->$att = $vars->$att;
+			}
 		}
 	}
 	
 	function get($key,$default=null,$how = DEF_UNSET) {
 		$k = explode('/',$key);
 		$f = array_shift($k);
-		if(method_exists($this,$m="get_$f")) {
+		if(method_exists($this,$m="get_$f"))
 			return $this->$m(implode(':',$k),$default,$how);
-		}
 		if(empty($k)) {
 			if(array_key_exists($f,$this->_var))
 				return array_get($this->_var,$f,$default,$how);
@@ -48,9 +64,8 @@ class tributer {
 				return $this->$f();
 			return $default;
 		} elseif(isset($this->$f)) {
-			if(is_array($this->$f)) {
+			if(is_array($this->$f))
 				return array_get($this->$f,implode(':',$k),$default,$how);
-			}
 			if(is_a($this->$f,'tributer'))
 				return $this->$f->get(implode('/',$k),$how);
 			$g = array_shift($k);
@@ -89,5 +104,71 @@ class tributer {
 		}
 	}
 
+	function isempty($key) {
+		$k = explode('/',$key);
+		$f = array_shift($k);
+		if(method_exists($this,$m="empty_$f"))
+			return $this->$m(implode(':',$k),$default,$how);
+		if(empty($k)) {
+			if(array_key_exists($f,$this->_var))
+				return array_empty($this->_var,$f);
+			return true;
+		} elseif(isset($this->$f)) {
+			if(is_array($this->$f))
+				return array_empty($this->$f,implode(':',$k));
+			if(is_a($this->$f,'tributer'))
+				return $this->$f->isempty(implode('/',$k));
+			$g = array_shift($k);
+			$s = implode(':',$k);
+			if(method_exists($this->$f,$m = 'empty_'.$g))
+				return $this->$f->$m($s);
+			return true;
+		} else {
+			$s = implode(':',$k);
+			if(method_exists($this,$m='empty_'.$f))
+				return $this->$m($s);
+			return true;
+		}
+		return true;
+	}
+	
+	function exists($key) {
+		$k = explode('/',$key);
+		$f = array_shift($k);
+		if(method_exists($this,$m="isset_$f"))
+			return $this->$m(implode(':',$k));
+		if(method_exists($this,$m="exists_$f"))
+			return $this->$m(implode(':',$k));
+		if(empty($k)) {
+			if(array_key_exists($f,$this->_var))
+				return array_isset($this->_var,$f);
+			if(method_exists($this,$f))
+				return true;
+			return false;
+		} elseif(isset($this->$f)) {
+			if(is_array($this->$f))
+				return array_isset($this->$f,implode(':',$k),$default,$how);
+			if(is_a($this->$f,'tributer'))
+				return $this->$f->exists(implode('/',$k),$how);
+			$g = array_shift($k);
+			$s = implode(':',$k);
+			if(method_exists($this->$f,$m = 'isset_'.$g))
+				return $this->$f->$m($s);
+			if(method_exists($this->$f,$m = 'exists_'.$g))
+				return $this->$f->$m($s);
+			if(method_exists($this->$f,$g))
+				return true;
+			return false;
+		} else {
+			$s = implode(':',$k);
+			if(method_exists($this,$m='isset_'.$f))
+				return $this->$m($s);
+			if(method_exists($this,$m='exists_'.$f))
+				return $this->$m($s);
+			if(method_exists($this,$f))
+				return true;
+		}
+		return false;
+	}
 }
 ?>

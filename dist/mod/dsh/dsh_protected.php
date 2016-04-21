@@ -5,7 +5,7 @@
  * Dashboard for logged in users.
  */
 
-class page_home extends Page {
+class user_dash extends page_dashboard {
 	function __construct($enviro) {
 		Page::__construct($enviro);
 		$this->set('title','ProHo - Escritorio');
@@ -14,9 +14,6 @@ class page_home extends Page {
 	function content() {
 		return "Escritorio privado\n".'<pre>'.print_r($this->line,true).'</pre>';
 	}
-}
-
-class page_entry extends page_home {
 }
 
 ?>

@@ -10,8 +10,11 @@ $ph_ext_alias = [
 	'js'=>'javascript',
 	'jpg'=>'jpeg',
 	];
-foreach(['css','png','jpeg','ico','md'] as $ext)
+foreach(['css','png','jpeg','ico','gif','md'] as $ext)
 	$ph_ext_alias[$ext] = $ext;
+$ph_ext_handler = [
+	'md'=>'cgi/md.cgi',
+	];
 class NavPage extends Page {
 	function go() {
 		if(is_public())
@@ -34,7 +37,7 @@ class NavPage extends Page {
 			$this->_dir->close();
 	}
 	function content() {
-		global $ph_ext_alias;
+		global $ph_ext_alias, $ph_ext_handler;
 
 		if(!isset($this->_dir)) return '<p>Archivo no existente</p>';
 		$root = $this->_root;
@@ -50,7 +53,10 @@ class NavPage extends Page {
 				$ext = strtolower($pi['extension']);
 				if(isset($ph_ext_alias[$ext])) {
 					$cl = $ph_ext_alias[$ext];
-					$e["1-$entry"] = "<li class=$cl><a href=\"/$path/$entry\">$entry</a></li>\n";
+					$href = empty($ph_ext_handler[$cl])?
+						"/$path/$entry":
+						"/{$ph_ext_handler[$cl]}/$path/$entry";
+					$e["1-$entry"] = "<li class=$cl><a href=\"$href\">$entry</a></li>\n";
 				}
 			}
 		}

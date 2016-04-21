@@ -7,7 +7,18 @@
 if(!isset($_SESSION)) session_start();
 $ph_uri_case = [['{.*}',0,'mod/doc/status.php','404']];
 
-$obj = [0=>[]];
+$obj = [
+	0=>[],
+	'site'=>[
+		'name' => 'ProHo',
+		],
+	'db'=>[
+		'engine' => 'mysql',
+		'server' => 'localhost',
+		'user' => 'root',
+		'password' => '',
+		],
+	];
 foreach($GLOBALS as $k=>$v) {
 	if(in_array($k,['ph_uri_case'])) continue;
 	$kk = explode('_',$k);

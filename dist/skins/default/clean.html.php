@@ -11,16 +11,14 @@ ob_start()?><!DOCTYPE html>
 		<link rel=stylesheet href="{dir:skin}/css/common.css">
 		<link rel=icon href="{dir:skin}/favicon.ico">
 	</head>
-	<body class="{skin:template}">
+	<body class={if:page:class}"{page:class} {skin:template}"{else}{skin:template}{fi}>
+		{area:clean-top}
 		<div class=wrapper>
-			<header id=header>
-				<h1>{title}</h1>
-			</header>
+			{area:header}
 			<section id=body>
 				{content}
 			</section>
-			<footer id=footer>
-			</footer>
+			{area:footer}
 		</div>
 		<script src="{dir:skin}/js/common.js"></script>
 	</body>
