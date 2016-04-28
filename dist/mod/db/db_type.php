@@ -82,6 +82,7 @@ new db_type('binary32',32,'db_type_bin');
 new db_type('tinyint',null,'db_type_int');
 new db_type('smallint',null,'db_type_int');
 new db_type('int',null,'db_type_int');
+new db_type('unsigned',null,'db_type_int');
 new db_type('bigint',null,'db_type_int');
 new db_type('label10',10,'db_type_label');
 new db_type('label20',20,'db_type_label');
@@ -120,7 +121,7 @@ class db_column {
 	public function set_collect($collect) {
 		$this->collect = $collect;
 	}
-	
+
 	public function clean(string $input, ...$params) {
 		return $this->type->clean($input, ...$params);
 	}
@@ -206,7 +207,7 @@ class db_table {
 	public function column_exists(string $name) {
 		return isset($this->columns[$name]);
 	}
-	
+
 	public function new_reference(string $name, db_table $refers, string $key, $flags=DB_NOTNULL, $default=null) {
 		$this->columns[$name] = $fk = new db_reference($name, $refers->name, $refers->columns[$key], $flags, $default);
 		$this->constrains[] = ['FK', $fk];

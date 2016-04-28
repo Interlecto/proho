@@ -5,6 +5,8 @@
  * Database definitions for profile module.
  */
 
+require_once 'mod/db/db_obj.php';
+
 $db_person_table = new db_table('person');
 $db_person_table->new_reference('id',$db_obj_table,'oid',DB_PRIM_KEY);
 $db_person_table->new_column('email','email',DB_CLEAR);
@@ -35,7 +37,6 @@ class db_person extends db_obj {
 				$person->set($field,$params[$i]);
 			else
 				$person->set($field,null);
-//			print_r([$i,$field,$params[$i]]);
 		}
 		return $person;
 	}

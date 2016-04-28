@@ -15,7 +15,7 @@ $db_log_table->new_column('errno','int',0,0);
 $db_log_table->new_column('error','text200');
 
 $db_obj_table = new db_table('obj');
-$db_obj_table->new_column('oid','bigint',DB_PRIM_KEY);
+$db_obj_table->new_column('oid','unsigned',DB_PRIM_KEY);
 $db_obj_table->new_column('label','label40',DB_UNIKEY);
 $db_obj_table->new_column('table','label40',DB_CLEAR);
 
@@ -35,7 +35,7 @@ class db_obj {
 
 	private $_oid, $_label, $_table;
 	protected $fields = [];
-	
+
 	function table_name() {
 		return $this->fields[0]->name;
 	}
@@ -66,7 +66,7 @@ class db_obj {
 		$object->_table = $read['table'];
 		return $object;
 	}
-	
+
 	static function find_label($label) {
 		return db_obj::_find_label(null,$label);
 	}
@@ -89,21 +89,21 @@ class db_obj {
 	static function _create(&$object,$label,$table) {
 		if(empty($object))
 			$object = new self();
-			
+
 		$object->_oid = $id = db_obj::new_oid();
 		$object->_label = $label;
 		$object->_table = $table;
 		return $object;
 	}
-	
+
 	static function get_list($where=null,$orderby=null) {
 		return [];
 	}
 
 	static function new_oid($seed='') {
-		$hx = substr(md5($seed.microtime()),2,16);
-		if(false!==($n=strpos('89abcedf',substr($hx,0,1))))
-			$hx= $n.substr($hx,1);
+		$hx = substr(md5($seed.microtime()),7,8);
+		#if(false!==($n=strpos('89abcedf',substr($hx,0,1))))
+		#	$hx= $n.substr($hx,1);
 		$id = hexdec($hx);
 		$n = db_obj::$db->select_count('obj',['oid'=>(int)$id]);
 		return $n? db_obj::new_oid($id): $id;
@@ -142,7 +142,7 @@ class db_obj {
 	function id() { return $this->_oid; }
 	function label() { return $this->_label; }
 	function table() { return $this->_table; }
-	
+
 	static function get_label($label, $lang=null) {
 		global $obj;
 		if(!$lang && isset($obj['site']['lang']))

@@ -1,13 +1,13 @@
 <?php
 /* mod/db/mysql.php
  * @author: Carlos Thompson
- * 
+ *
  * Main implementation for MySQL/MariaSQL databases.
  */
 
 function db_str($string) { return mysqli_real_escape_string(db_mysql::$first,$string); }
 function db__str(&$string,$idx=null) { return $string = db_str($string); }
-function db_val($value) { return is_null($value)? 'NULL': (is_numeric($value)? (float)$value: "'".db_str($value)."'"); }
+function db_val($value) { return is_null($value)? 'NULL': (is_numeric($value)? (float)$value: (substr($value,0,2)=='0x'? "x'".db_str(substr($value,2))."'":"'".db_str($value)."'")); }
 function db__val(&$value,$idx=null) { return $value = db_val($value); }
 function db_var($key) { return "`".db_str($key)."`"; }
 function db__var(&$key,$idx=null) { return $key = db_var($key); }
@@ -207,7 +207,7 @@ class db_mysql extends mysqli implements database {
 		$table = db_var($this->prefix.$table);
 		$limit = isset($extra[0])? $extra[0]: null;
 		$offset = isset($extra[1])? $extra[1]: null;
-		
+
 		$query = 'SELECT '.($this->fix_columns($columns))." FROM $table".
 			($this->fix_where($where)).($this->fix_orderby($orderby)).
 			($this->fix_limits($offset,$limit)).";\n";
@@ -352,7 +352,7 @@ class db_mysql extends mysqli implements database {
 		}
 		return $array;
 	}
-	
+
 	function create($table, $recreate=false) {
 		if(is_string($table))
 			$table = db_table::$pool[$table];
@@ -394,6 +394,7 @@ db_type::$pool['binary32']->set_mysql('BINARY','db_mysql_bin');
 db_type::$pool['tinyint']->set_mysql('TINYINT','db_mysql_int');
 db_type::$pool['smallint']->set_mysql('SMALLINT','db_mysql_int');
 db_type::$pool['int']->set_mysql('INT','db_mysql_int');
+db_type::$pool['unsigned']->set_mysql('INT UNSIGNED','db_mysql_int');
 db_type::$pool['bigint']->set_mysql('BIGINT','db_mysql_int');
 db_type::$pool['label10']->set_mysql('CHAR',null,'ascii');
 db_type::$pool['label20']->set_mysql('CHAR',null,'ascii');
