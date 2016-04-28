@@ -1,7 +1,7 @@
 <?php
 /* lib/server.php
  * @author: Carlos Thompson
- * 
+ *
  */
 
 if(!isset($_SESSION)) session_start();
@@ -52,8 +52,17 @@ $obj['get'] = $_GET;
 $obj['post'] = $_POST;
 if(isset($_COOKIES))
 	$obj['cookies'] = $_COOKIES;
-if(isset($_SESSION))
+if(isset($_SESSION)) {
+	foreach(['warning','danger','alert','error'] as $alert) {
+		if(isset($_SESSION[$alert])) {
+			if(!isset($obj['alert']))
+				$obj['alert'] = [];
+			$obj['alert'][$alert] = $_SESSION[$alert];
+			unset($_SESSION[$alert]);
+		}
+	}
 	$obj['session'] = $_SESSION;
+}
 
 $line = isset($_GET['line'])? $_GET['line']:
 	(isset($obj['redirect']['url'])? ltrim($obj['redirect']['url'],'/'):
@@ -63,7 +72,7 @@ $line = isset($_GET['line'])? $_GET['line']:
 $script = isset($obj['script']['name'])? ltrim($obj['script']['name'],'/'):
 		(isset($obj[0]['php_self'])? ltrim($obj[0]['php_self'],'/'):
 			'');
-			
+
 $obj['line'] = [
 	'script' => $script,
 	'line' => $line,
@@ -91,10 +100,12 @@ if($script=='api.php') {
 		$obj['line']['module'] = "";
 	$obj['line']['query'] = $m[2] or "";
 } elseif($script=='index.php') {
+	require_once($mods.'/db/reg.php');
 	$d = dir($mods);
 	while(false!==($entry = $d->read())) {
 		if(substr($entry,0,1)=='.') continue;
 		$obj['dir'][$entry] = "$mods/$entry/";
+		if($entry=='db') continue;
 		if(file_exists($fn="$mods/$entry/reg.php"))
 			require_once $fn;
 	}

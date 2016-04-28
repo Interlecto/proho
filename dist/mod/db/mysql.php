@@ -5,7 +5,7 @@
  * Main implementation for MySQL/MariaSQL databases.
  */
 
-function db_str($string) { return mysqli_real_escape_string(db::$first,$string); }
+function db_str($string) { return mysqli_real_escape_string(db_mysql::$first,$string); }
 function db__str(&$string,$idx=null) { return $string = db_str($string); }
 function db_val($value) { return is_null($value)? 'NULL': (is_numeric($value)? (float)$value: "'".db_str($value)."'"); }
 function db__val(&$value,$idx=null) { return $value = db_val($value); }
@@ -30,13 +30,13 @@ class db_mysql extends mysqli implements database {
 	private function fix_where($where) {
 		if(empty($where)) return '';
 		if(is_array($where)) {
-			$a = array();
+			$array = array();
 			foreach($where as $key=>$act) {
 				db__var($key);
 				if(is_array($act)) {
 					array_walk($act,'db__val');
 					$valstr = implode(',',$act);
-					$a[] =  "$key IN ($valstr)";
+					$array[] =  "$key IN ($valstr)";
 					continue;
 				}
 				preg_match('{^([[(=<>!#&])?([^&)]*)&?(.*)}',$act,$m);
@@ -44,33 +44,33 @@ class db_mysql extends mysqli implements database {
 				case '&':
 					$i0 = db_val($m[2]);
 					$i1 = db_val($m[3]);
-					$a[] = "$key>=$i0 AND $key<$i1";
+					$array[] = "$key>=$i0 AND $key<$i1";
 					break;
 				case '#':
-					$a[] = "$key IS NULL";
+					$array[] = "$key IS NULL";
 					break;
 				case '!':
-					$a[] = $m[2]=='#'? "$key IS NOT NULL": "$key <> ".db_val($m[2]);
+					$array[] = $m[2]=='#'? "$key IS NOT NULL": "$key <> ".db_val($m[2]);
 					break;
 				case '(':
 					$values = explode(',',$m[2]);
 					array_walk($values,'db__val');
 					$valstr = implode(',',$values);
-					$a[] =  "$key IN ($valstr)";
+					$array[] =  "$key IN ($valstr)";
 					break;
 				case '[':
 					$s = rtrim($m[2],']');
 					$l = strlen($s);
-					$a[] = "LEFT($key,$l) = ".db_val($s);
+					$array[] = "LEFT($key,$l) = ".db_val($s);
 					break;
 				case '':
 					$c='=';
 				default:
 					$val = db_val($m[2]);
-					$a[] = "$key $c $val";
+					$array[] = "$key $c $val";
 				}
 			}
-			return " WHERE ".(count($a)?implode(' AND ',$a):1);
+			return " WHERE ".(count($array)?implode(' AND ',$array):1);
 		}
 		if($where===false) return " WHERE 0";
 		if(is_numeric($where)) return " WHERE ".(int)$where;
@@ -84,11 +84,11 @@ class db_mysql extends mysqli implements database {
 			return " ORDER BY ".db_varval($orderby);
 		}
 		if(is_array($orderby)) {
-			$a = array();
+			$array = array();
 			foreach($orderby as $key)
-				$a[] = substr($key,0,1)=='-'? db_varval(substr($key,1)).' DESC': db_varval($key);
-			if(count($a))
-				return " ORDER BY ".implode(',',$a);
+				$array[] = substr($key,0,1)=='-'? db_varval(substr($key,1)).' DESC': db_varval($key);
+			if(count($array))
+				return " ORDER BY ".implode(',',$array);
 		}
 		return '';
 	}
@@ -191,6 +191,8 @@ class db_mysql extends mysqli implements database {
 			ph_add('queries','Connect Error: '.$this->connect_error);
 		if($database) {
 			if(!@$this->select_db($database)) {
+				if(trim($_SERVER['SCRIPT_NAME'],'/')=='install.php')
+					return;
 				if(file_exists($fn=rtensure($GLOBALS['obj']['dir']['root']).'install/index.php'))
 					redirect('/install/index.php', 303, "Database $database does not exist.");
 				else
@@ -201,106 +203,106 @@ class db_mysql extends mysqli implements database {
 
 	function str($string) { return $this->real_escape_string($string); }
 
-	function select_fetch($table,$columns='*',$where=null,$orderby=null,$limit=null,$offset=null) {
+	function select_fetch($table,$columns='*',$where=null,$orderby=null,...$extra) {
 		$table = db_var($this->prefix.$table);
+		$limit = isset($extra[0])? $extra[0]: null;
+		$offset = isset($extra[1])? $extra[1]: null;
+		
 		$query = 'SELECT '.($this->fix_columns($columns))." FROM $table".
 			($this->fix_where($where)).($this->fix_orderby($orderby)).
 			($this->fix_limits($offset,$limit)).";\n";
 		return $this->query($query);
 	}
 
-	function select($table,$columns='*',$where=null,$orderby=null,$limit=250,$offset=0) {
-		$r = $this->select_fetch($table,$columns,$where,$orderby,$limit,$offset);
-		if($r===false) return false;
-		$a = array();
-		while($ar = $r->fetch_array(MYSQLI_ASSOC))
-			$a[] = $ar;
-		$r->free();
-		return $a;
+	function select($table,$columns='*',$where=null,$orderby=null,...$extra) {
+		if(!isset($extra[0])) $extra[0] = 250;
+		if(!isset($extra[1])) $extra[1] = 0;
+		$result = $this->select_fetch($table,$columns,$where,$orderby,...$extra);
+		if($result===false) return false;
+		$array = $result->fetch_all(MYSQLI_ASSOC);
+		$result->free();
+		return $array;
 	}
 
-	function select_key($table,$key_columns,$where=null,$orderby=null,$limit=250,$offset=0) {
-		$table = db_var($this->prefix.$table);
+	function select_key($table,$key_columns,$where=null,$orderby=null,...$extra) {
+		if(!isset($extra[0])) $extra[0] = 250;
+		if(!isset($extra[1])) $extra[1] = 0;
+
 		if(is_array($key_columns)) {
 			$key = $key_columns[0];
-			$cols = $this->fix_columns($key_columns);
+			$cols = $key_columns;
 		} else {
 			$key = "$key_columns";
 			$cols = '*';
 		}
-		$query = "SELECT $cols FROM $table".
-			($this->fix_where($where)).($this->fix_orderby($orderby)).
-			($this->fix_limits($offset,$limit)).";\n";
-		$r = $this->query($query);
-		if($r===false) return false;
-		$a = array();
-		while($ar = $r->fetch_array(MYSQLI_ASSOC))
-			$a[$ar[$key]] = $ar;
-		$r->free();
-		return $a;
+		$result = $this->select_fetch($table, $cols, $where, $orderby, ...$extra);
+
+		if($result===false) return false;
+		$array = array();
+		while($ar = $result->fetch_array(MYSQLI_ASSOC))
+			$array[$ar[$key]] = $ar;
+		$result->free();
+		return $array;
 	}
 
-	function select_pairs($table,$key_col,$val_col,$where=null,$orderby=null,$limit=250,$offset=0) {
-		$table = db_var($this->prefix.$table);
-		db__var($key_col);
-		db__var($val_col);
-		$query = "SELECT $key_col,$val_col FROM $table".
-			($this->fix_where($where)).($this->fix_orderby($orderby)).
-			($this->fix_limits($offset,$limit)).";\n";
-		$r = $this->query($query);
-		if($r===false) return false;
-		$a = array();
-		while($ar = $r->fetch_array(MYSQLI_NUM))
-			$a[$ar[0]] = $ar[1];
-		$r->free();
-		return $a;
+	function select_pairs($table,$key_col,$val_col,$where=null,$orderby=null,...$extra) {
+		if(!isset($extra[0])) $extra[0] = 250;
+		if(!isset($extra[1])) $extra[1] = 0;
+
+		$result = $this->select_fetch($table, [$key_col, $val_col], $where, $orderby, ...$extra);
+		if($result===false) return false;
+		$array = array();
+		while($ar = $result->fetch_array(MYSQLI_NUM))
+			$array[$ar[0]] = $ar[1];
+		$result->free();
+		return $array;
 	}
 
-	function select_col($table,$col,$where=null,$orderby=null,$limit=250,$offset=0) {
-		$table = db_var($this->prefix.$table);
-		db__var($col);
-		$query = "SELECT $col FROM $table".
-			($this->fix_where($where)).($this->fix_orderby($orderby)).
-			($this->fix_limits($offset,$limit)).";\n";
-		$r = $this->query($query);
-		if($r===false) return false;
-		$a = array();
-		while($ar = $r->fetch_array(MYSQLI_NUM))
-			$a[] = $ar[0];
-		$r->free();
-		return $a;
+	function select_col($table,$col,$where=null,$orderby=null,...$extra) {
+		if(!isset($extra[0])) $extra[0] = 250;
+		if(!isset($extra[1])) $extra[1] = 0;
+
+		$result = $this->select_fetch($table, [$col], $where, $orderby, ...$extra);
+		if($result===false) return false;
+		$array = array();
+		while($ar = $result->fetch_array(MYSQLI_NUM))
+			$array[] = $ar[0];
+		$result->free();
+		return $array;
 	}
 
 	function select_first($table,$columns='*',$where=null,$orderby=null) {
-		$r = $this->select($table,$columns,$where,$orderby,1);
-		return $r? $r[0]: false;
+		$result = $this->select($table,$columns,$where,$orderby,1);
+		return $result? $result[0]: false;
 	}
 
 	function select_one($table,$column,$where=null,$asarray=false) {
-		$table = db_var($this->prefix.$table);
-		db__var($column);
-		$query = "SELECT $column FROM $table".($this->fix_where($where));
-		if(!is_bool($asarray)) $query.= $this->fix_orderby($asarray);
-		elseif($asarray===true) $query.= " ORDER BY $column";
-		$query.= ";\n";
-		$r = $this->query($query);
-		if($r===false) return false;
+		$result = $this->select_fetch($table,[$column],$where,null,1);
+		if($result===false) return false;
 		if($asarray===false) {
-			$a = $r->fetch_array(MYSQLI_NUM);
-			$r->free();
-			return $a[0];
+			$array = $result->fetch_array(MYSQLI_NUM);
+			$result->free();
+			return $array[0];
 		}
-		$a = array();
-		while($ar = $r->fetch_array(MYSQLI_NUM))
-			$a[] = $ar[0];
-		$r->free();
-		return $a;
+		$array = [];
+		while($ar = $result->fetch_array(MYSQLI_NUM))
+			$array[] = $ar[0];
+		$result->free();
+		return $array;
+	}
+
+	function select_count($table,$where=null) {
+		$result = $this->select_fetch($table,'*',$where);
+		if($result===false) return false;
+		$n = $result->num_rows;
+		$result->free();
+		return $n;
 	}
 
 	function update($table,$updates,$where=null) {
 		$table = db_var($this->prefix.$table);
 		$query = "UPDATE $table SET ".($this->fix_updates($updates)).($this->fix_where($where)).";\n";
-		$this->query($query);
+		return $this->query($query);
 	}
 
 	function insert($table,$inserts,$columns=null,$ondup=false) {
@@ -310,7 +312,7 @@ class db_mysql extends mysqli implements database {
 		$fc = db_var($columns[0]);
 		$dupseq = empty($ondup)? '': chr(10).'ON DUPLICATE KEY UPDATE '.($ondup===true? "$fc=$fc": (is_array($ondup)? $this->fix_updates($ondup):"$ondup"));
 		$query = "INSERT INTO $table ($colstr) VALUES$values$dupseq;\n";
-		$this->query($query);
+		return $this->query($query);
 	}
 
 	function insert_ignore($table,$inserts,$columns=null) {
@@ -319,21 +321,91 @@ class db_mysql extends mysqli implements database {
 		$colstr = $this->fix_columns($columns);
 		$fc = db_var($columns[0]);
 		$query = "INSERT IGNORE INTO $table ($colstr) VALUES$values;\n";
-		$this->query($query);
+		return $this->query($query);
+	}
+
+	function delete($table,$where,...$extra) {
+		$limit = isset($extra[0])? $extra[0]: null;
+		$table = db_var($this->prefix.$table);
+		$query = "DELETE FROM $table".
+			($this->fix_where($where)).
+			(empty($limit)?'':' LIMIT '.((int)$limit))
+			.";\n";
+		return $this->query($query);
+	}
+
+	function log($query,$errno=null,$error=null) {
+		$le_q = $this->str($query);
+		$le_n = (int)(is_null($errno)? $this->errno: $errno);
+		$le_r = $this->str(is_null($error)? $this->error: $error);
+		$qerr = "INSERT INTO `log` (`query`,`errno`,`error`) VALUES('$le_q',$le_n,'$le_r');";
+		return mysqli::query($qerr);
 	}
 
 	function query($query) {
-		il_add('queries',$query);
-		$a = mysqli::query($query);
-		if($a===false) {
-			il_add('queries','Error ('.$this->errno.'): '.$this->error.chr(10));
-			$errno = $this->errno;
-			$error = $this->escape_string($this->error);
-			$qquery = $this->escape_string($query);
-			mysqli::query("INSERT INTO `log`(`errno`,`error`,`query`) VALUES ($errno,'$error','$qquery');");
+		ph_add('queries',$query);
+		$array = mysqli::query($query);
+		if($array===false || $this->errno) {
+			ph_add('queries','Error ('.$this->errno.'): '.$this->error.chr(10));
+			print_r([$query,$this->errno,$this->error]);
+			$this->log($query, $this->errno, $this->error);
 		}
-		return $a;
+		return $array;
+	}
+	
+	function create($table, $recreate=false) {
+		if(is_string($table))
+			$table = db_table::$pool[$table];
+		if($recreate)
+			$this->query('DROP TABLE IF EXISTS '.$table->mysql_ref($this).';');
+		$this->query($table->mysql_create($this));
 	}
 };
+
+function db_mysql_str(database $db,string $str) {
+	return "'".$db->str($str)."'";
+}
+
+function db_mysql_bin(database $db,string $str) {
+	return "x'".$db->str($str)."'";
+}
+
+function db_mysql_int(database $db,string $str) {
+	return (int)$str;
+}
+
+function db_mysql_dt(database $db,string $str) {
+	return "'".date('Y-m-d H:i:s',(int)$str)."'";
+}
+
+function db_mysql_date(database $db,string $str) {
+	return "'".date('Y-m-d',(int)$str)."'";
+}
+
+function db_mysql_time(database $db,string $str) {
+	return "'".date('H:i:s',(int)$str)."'";
+}
+
+function db_mysql_bool(database $db,string $str) {
+	return empty($str)? 'false': 'true';
+}
+
+db_type::$pool['binary32']->set_mysql('BINARY','db_mysql_bin');
+db_type::$pool['tinyint']->set_mysql('TINYINT','db_mysql_int');
+db_type::$pool['smallint']->set_mysql('SMALLINT','db_mysql_int');
+db_type::$pool['int']->set_mysql('INT','db_mysql_int');
+db_type::$pool['bigint']->set_mysql('BIGINT','db_mysql_int');
+db_type::$pool['label10']->set_mysql('CHAR',null,'ascii');
+db_type::$pool['label20']->set_mysql('CHAR',null,'ascii');
+db_type::$pool['label40']->set_mysql('CHAR',null,'ascii');
+db_type::$pool['text64']->set_mysql('VARCHAR');
+db_type::$pool['text200']->set_mysql('VARCHAR');
+db_type::$pool['email']->set_mysql('VARCHAR',null,'ascii');
+db_type::$pool['timestamp']->set_mysql('TIMESTAMP','db_mysql_dt');
+db_type::$pool['datetime']->set_mysql('DATETIME','db_mysql_dt');
+db_type::$pool['date']->set_mysql('DATE','db_mysql_date');
+db_type::$pool['time']->set_mysql('TIME','db_mysql_time');
+db_type::$pool['vartext']->set_mysql('TEXT');
+db_type::$pool['boolean']->set_mysql('BOOLEAN','db_mysql_bool');
 
 ?>

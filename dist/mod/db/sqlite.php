@@ -47,6 +47,33 @@ class db_sqlite extends SQLite3 implements database {
 	public function query($query) {
 		return SQLite3::query($query);
 	}
+	
+	function create($table, $coldesc, $recreate=false) {
+		if($recreate) {
+			$this->query("DROP TABLE IF EXISTS $table;");
+			$query = "CREATE TABLE $table (\n";
+		} else {
+			$query = "CREATE TABLE IF NOT EXISTS $table (\n";
+		}
+		$cols = [];
+		foreach($codesc as $column=>$attribs) {
+			$s = $column;
+			$type = strtoupper($attribs[0]);
+			$s.= ' '.$type;
+			if(!empty($attribs[1])) {
+				$flags = $attribs[1];
+				if($flags & DB_PRIMARY)
+					$s.= " CONSTRAIN pk_$table PRIMARY KEY".(($flags & DB_AUTO)? ' AUTOINCREMENT': '');
+				if($flags & DB_NOTNULL)
+					$s.= " CONSTRAIN nn_$table NOT NULL";
+				if($flags & DB_UNIQUE)
+					$s.= " CONSTRAIN un_$table UNIQUE";
+			}
+			$cols[] = $s;
+		}
+		$query.= implode(",\n", $cols);
+		$query.= ');';
+	}
 }
 
 ?>

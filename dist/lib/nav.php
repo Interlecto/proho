@@ -4,7 +4,16 @@
  * 
  */
 
+if(!function_exists('db_open')) {
+	function db_open() {}
+}
+if(!function_exists('db_close')) {
+	function db_close() {}
+}
+
 require_once 'lib/page.php';
+require_once 'mod/doc/status.php';
+
 
 $ph_ext_alias = [
 	'js'=>'javascript',

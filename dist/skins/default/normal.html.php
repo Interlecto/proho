@@ -1,7 +1,7 @@
-<?php 
+<?php
 /* <default skin>/normal.html.php
  * @author: Carlos Thompson
- * 
+ *
  */
 ob_start()?><!DOCTYPE html>
 <html>
@@ -15,6 +15,7 @@ ob_start()?><!DOCTYPE html>
 		{area:top}
 		<div class=wrapper>
 			{area:sidebar}
+			{area:alerts}
 			{area:header}
 			<section id=body>
 				{content}

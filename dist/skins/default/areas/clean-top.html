@@ -11,9 +11,9 @@
 					<a class=navbar-brand href="/info/proho.html">Proho</a>
 				</div>
 				<div id=navbar class="navbar-collapse collapse">
-					<form class="navbar-form navbar-right" action="/login/in.cgi">
-						<input type=text class=form-control placeholder="Usuario">
-						<input type=password class=form-control placeholder="Contraseña">
+					<form class="navbar-form navbar-right" action="/login/in.cgi" method=post>
+						<input type=text name=username class=form-control placeholder="Usuario" required>
+						<input type=password name=password class=form-control placeholder="Contraseña" required>
 						<button type=submit href="/login/registro.pl" class="btn btn-sm btn-primary">entrar</button>
 						<a href="/login/registro.pl" class="btn btn-sm btn-success">o registrarse</a>
 					</form>

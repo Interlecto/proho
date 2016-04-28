@@ -1,7 +1,7 @@
-<?php 
+<?php
 /* <default skin>/front.html.php
  * @author: Carlos Thompson
- * 
+ *
  */
 ob_start()?><!DOCTYPE html>
 <html>
@@ -14,6 +14,7 @@ ob_start()?><!DOCTYPE html>
 	<body class={if:page:class}"{page:class} {skin:template}"{else}{skin:template}{fi}>
 		{area:clean-top}
 		<div class=wrapper>
+			{area:alerts}
 			{area:header}
 			<section id=body>
 				{content}

@@ -71,5 +71,11 @@ h5{font-size:0.9375em;margin:0.3em 0}
 .display p{margin:.5em 0}
 .display code{background-color:rgba(170,170,85,.25);padding:0 .5ex}
 .display pre code{display:block;padding:.25em .5ex}
+.display table{background:#eee;border-collapse:collapse;border:solid 2px #555}
+.display th{border:solid 2px #aaa;background:black;color:white;padding:3px}
+.display td{border:solid 1px black;padding:1px 3px}
 
 pre{overflow:auto}
+
+.blog-footer,
+.news-footer{font-size:.8em;padding:1ex 0}

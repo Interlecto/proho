@@ -1,30 +1,12 @@
 <?php
 /* mod/pub/pub.php
  * @author: Carlos Thompson
- * 
+ *
  * Main implementation of the publications module.
  */
 
-$blogs = [
-	1=>[
-		'title'=>'La importancia del verde',
-		'body'=>'Aun cuando la política del edificio...',
-		'author'=>'Jairo, del 509',
-		'author-tag'=>'jairo',
-	],
-	2=>[
-		'title'=>'Un año de logros',
-		'body'=>'Señores copropietarios. Les presento...',
-		'author'=>'Administración',
-		'author-tag'=>'admin',
-	],
-	3=>[
-		'title'=>'Los cerramientos y el modelo de ciudad',
-		'body'=>'En los últimos años hemos venido viendo cómo...',
-		'author'=>'Esteban, del 105',
-		'author-tag'=>'esteban',
-	],
-];
+require_once 'mod/pub/db.php';
+
 class page_blog extends Page {
 	function __construct($enviro,$inherit=false) {
 		if(!$inherit) {
@@ -36,43 +18,67 @@ class page_blog extends Page {
 		}
 		Page::__construct($enviro);
 	}
-	
+
 	function prepare() {
-		global $blogs;
-		if(empty($this->entries))
-			$this->_entries = $blogs;
 		$this->set('title','Blog');
+		$this->_entries = db_blog_post::get_list();
 	}
-	
-	function write_item($n, $item) {
+
+	function write_item($id, $item) {
+		$db = $this->db;
+		$author = db_person::retrieve($item->get('author'));
+		$label = $item->label();
+		$title = $item->get_label($label);
+		$path = date('Y/m/d', $item->get('date'));
+		$tags = $db->select_col('pub_tag','label',['pid'=>"=$id"]);
+		$cats = $db->select_col('pub_cat','label',['pid'=>"=$id"]);
+
 			ob_start()?>
 			<section class=blog-item>
 				<header class=blog-header>
-					<h2><a href="/blog/<?=$n?>"><?=$item['title']?></a></h2>
+					<h2><a href="/<?=$path?>/<?=$label?>"><?=$title?></a></h2>
 				</header>
 				<div class=blog-body>
-					<?=$item['body']?>
+					<?=$item->get('body')?>
 				</div>
 				<footer class=blog-footer>
-					Por <a href="/blog/por/<?=$item['author-tag']?>"><?=$item['author']?></a>.
+					<p>Por <a href="/blog/por/<?=$author->label()?>"><?=$author->full_name()?></a>.</p>
+					<p>Etiquetas: <?php
+					$s=[];
+					foreach($tags as $tag) {
+						$name = db_obj::get_label($tag);
+						$s[] = "<a href=\"/blog/tag/$tag\">#$name</a>";
+					}
+					echo empty($s)? 'ninguna': implode(', ',$s);
+					?>.</p>
+					<p>Categoría: <?php
+					$s=[];
+					foreach($cats as $cat) {
+						$name = db_obj::get_label($cat);
+						$s[] = "<a href=\"/blog/cat/$cat\">$name</a>";
+					}
+					echo empty($s)? 'ninguna': implode(', ',$s);
+					?>.</p>
 				</footer>
 			</section>
 <?php		return ob_get_clean();
 	}
-	
+
 	function include_entry($item) {
 		return true;
 	}
-	
+
 	function content() {
 		$entries = $this->_entries;
 		$s = '';
 		$count = 0;
-		foreach($entries as $n=>$item)
+		foreach($entries as $id=>$item)
 			if($this->include_entry($item)) {
-				$s.= $this->write_item($n, $item);
+				$s.= $this->write_item($id, $item);
 				if(++$count >= 10) break;
 			}
+	/*	foreach(db_table::$pool as $tn=>$td)
+			$s.= "<pre>\n".$td->mysql_create(db_mysql::$first)."</pre>\n";/**/
 		return $s;
 	}
 };
@@ -84,19 +90,26 @@ class page_blogtag extends page_blog {
 		$this->_tag_match = trim($p[2],'/');
 		page_blog::__construct($enviro,true);
 	}
-	
+
 	function prepare() {
 		page_blog::prepare();
+		$db = $this->db;
+		$match = $this->_tag_match;
+
 		switch($this->_tag_type) {
 		case 'cat':
-			$this->set('title', 'Blog: Categoría <code>'.$this->_tag_match.'</code>');
+			$this->set('title', 'Blog: Categoría <code>'.$match.'</code>');
+			$this->_cats = $db->select_col('pub_cat','pid',['label'=>$match]);
 			break;
 		case 'tag':
-			$this->set('title', 'Blog: Etiqueta <code>'.$this->_tag_match.'</code>');
+			$this->set('title', 'Blog: Etiqueta <code>'.$match.'</code>');
+			$this->_tags = $db->select_col('pub_tag','pid',['label'=>$match]);
 			break;
 		case 'aut':
 		case 'por':
-			$this->set('title', 'Blog: Por <em>'.$this->_tag_match.'</em>');
+			$this->_author = $author = db_person::find_label($match);
+			$this->_author_id = $author->id();
+			$this->set('title', 'Blog: entradas de '.$author->full_name().'');
 			break;
 		default:
 		}
@@ -105,12 +118,12 @@ class page_blogtag extends page_blog {
 	function include_entry($item) {
 		switch($this->_tag_type) {
 		case 'cat':
-			return $item['cat'] == $this->_tag_match;
+			return in_array($item->id(), $this->_cats);
 		case 'tag':
-			return in_array($this->_tag_match, $item['tags']);
+			return in_array($item->id(), $this->_tags);
 		case 'aut':
 		case 'por':
-			return $item['author-tag'] == $this->_tag_match;
+			return $item->get('author') == $this->_author_id;
 		default:
 			return true;
 		}
@@ -119,84 +132,75 @@ class page_blogtag extends page_blog {
 
 class page_blogpost extends Page {
 	function prepare() {
-		global $blogs;
+		$db = $this->db;
 		$p = $this->get('line/parts');
-		if(count($p)<5) {
-			$n = (int)$p[1];
-			if(isset($blogs[$n]))
-				$this->_item = $blogs[$n];
-		} else {
-			$ref = $p[4];
-			foreach($blogs as $n=>$item)
-				if(isset($item['refs']) && in_array($ref, $item['refs'])) {
-					$this->_item = $item;
-					break;
-				}
-		}
-		if(empty($this->_item))
+		if(count($p)<5)
+			$this->_item = $item = db_blog_post::retrieve($p[1]);
+		else
+			$this->_item = $item = db_news_item::find_label($p[4]);
+		if(empty($item))
 			set_status(404,"<p>Artículo <code>{$p[0]}</code> no encontrado.</p>");
 		else
-			$this->set('title',$this->_item['title']);
+			$this->set('title',$item->get_label($item->label()));
 	}
-	
+
 	function content() {
+		$db = $this->db;
 		$item = $this->_item;
+		$author = db_person::retrieve($item->get('author'));
 		ob_start()?>
 			<div class=blog-body>
-				<?=$item['body']?>
+				<?=$item->get('body')?>
 			</div>
 			<footer class=blog-footer>
-				Por <a href="/blog/por/<?=$item['author-tag']?>"><?=$item['author']?></a>.
+				Por <a href="/blog/por/<?=$author->label()?>"><?=$author->full_name()?></a>.
 			</footer>
 <?php	return ob_get_clean();
 	}
 };
 
-$noticias = [
-	1=>[
-		'title'=>'Cuota extaordinaria',
-		'body'=>'La asamblea aprobó una cuota extraordinaria $20.000.000, repartida por el coeficiente de copropiedad, para el arreglo de zonas comunes.',
-		'tags'=>['plata', 'cuota'],
-	],
-	2=>[
-		'title'=>'Reglamento sobre mascotas',
-		'body'=>'El Concejo Distrital aprobó una nueva norma sobre mascotas en propiedad horizontal.',
-		'tags'=>['mascotas'],
-	],
-	3=>[
-		'title'=>'Nuevo revisor fiscal',
-		'body'=>'En asamblea se nombró a la señora Pepa Pérez como nueva revisora fiscal.',
-		'tags'=>['nombramientos','plata'],
-	],
-];
 class page_news extends page_blog {
 	function prepare() {
-		global $noticias;
-		if(empty($this->entries))
-			$this->_entries = $noticias;
 		$this->set('title','Noticias');
+		$this->_entries = db_news_item::get_list();
 	}
-	
-	function write_item($n, $item) {
+
+	function write_item($id, $item) {
+		$db = $this->db;
+		$label = $item->label();
+		$title = $item->get_label($label);
+		$tags = $db->select_col('pub_tag','label',['pid'=>"=$id"]);
+		$cats = $db->select_col('pub_cat','label',['pid'=>"=$id"]);
 			ob_start()?>
 			<section class=news-item>
 				<header class=news-header>
-					<h2><a href="/noticias/<?=$n?>"><?=$item['title']?></a></h2>
+					<h2><a href="/noticias/<?=$label?>"><?=$title?></a></h2>
 				</header>
 				<div class=news-body>
-					<?=$item['body']?>
+					<?=$item->get('body')?>
 				</div>
 				<footer class=news-footer>
-					Etiquetas: <?php
+					<p>Etiquetas: <?php
 					$s=[];
-					foreach($item['tags'] as $tag)
-						$s[] = "<a href=\"/noticias/tag/$tag\">#$tag</a>";
-					echo implode(', ',$s);
-					?>
+					foreach($tags as $tag) {
+						$name = db_obj::get_label($tag);
+						$s[] = "<a href=\"/noticias/tag/$tag\">#$name</a>";
+					}
+					echo empty($s)? 'ninguna': implode(', ',$s);
+					?>.</p>
+					<p>Categoría: <?php
+					$s=[];
+					foreach($cats as $cat) {
+						$name = db_obj::get_label($cat);
+						$s[] = "<a href=\"/noticias/cat/$cat\">$name</a>";
+					}
+					echo empty($s)? 'ninguna': implode(', ',$s);
+					?>.</p>
 				</footer>
 			</section>
 <?php		return ob_get_clean();
 	}
+
 };
 
 class page_newstag extends page_news {
@@ -209,12 +213,17 @@ class page_newstag extends page_news {
 
 	function prepare() {
 		page_news::prepare();
+		$db = $this->db;
+		$match = $this->_tag_match;
+
 		switch($this->_tag_type) {
 		case 'cat':
-			$this->set('title', 'Blog: Categoría <code>'.$this->_tag_match.'</code>');
+			$this->set('title', 'Noticias: Categoría <code>'.$match.'</code>');
+			$this->_cats = $db->select_col('pub_cat','pid',['label'=>$match]);
 			break;
 		case 'tag':
-			$this->set('title', 'Blog: Etiqueta <code>'.$this->_tag_match.'</code>');
+			$this->set('title', 'Noticias: Etiqueta <code>'.$this->_tag_match.'</code>');
+			$this->_tags = $db->select_col('pub_tag','pid',['label'=>$match]);
 			break;
 		default:
 		}
@@ -223,9 +232,9 @@ class page_newstag extends page_news {
 	function include_entry($item) {
 		switch($this->_tag_type) {
 		case 'cat':
-			return $item['cat'] == $this->_tag_match;
+			return in_array($item->id(), $this->_cats);
 		case 'tag':
-			return in_array($this->_tag_match, $item['tags']);
+			return in_array($item->id(), $this->_tags);
 		default:
 			return true;
 		}
@@ -234,31 +243,23 @@ class page_newstag extends page_news {
 
 class page_newsitem extends page_blogpost {
 	function prepare() {
-		global $noticias;
+		$db = $this->db;
 		$p = $this->get('line/parts');
-		if($p[1]=='/') {
-			$ref = $p[2];
-			foreach($noticias as $n=>$item)
-				if(isset($item['refs']) && in_array($ref, $item['refs'])) {
-					$this->_item = $item;
-					break;
-				}
-		} else {
-			$n = (int)$p[1];
-			if(isset($noticias[$n]))
-				$this->_item = $noticias[$n];
-		}
-		if(empty($this->_item))
+		if($p[1]=='/')
+			$this->_item = $item = db_news_item::find_label($p[2]);
+		else
+			$this->_item = $item = db_news_item::retrieve($p[1]);
+		if(empty($item))
 			set_status(404,"<p>Artículo <code>{$p[0]}</code> no encontrado.</p>");
 		else
-			$this->set('title',$this->_item['title']);
+			$this->set('title',$item->get_label($item->label()));
 	}
-	
+
 	function content() {
 		$item = $this->_item;
 		ob_start()?>
 			<div class=news-body>
-				<?=$item['body']?>
+				<?=$item->get('body')?>
 			</div>
 <?php	return ob_get_clean();
 	}

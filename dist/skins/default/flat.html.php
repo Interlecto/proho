@@ -1,7 +1,7 @@
-<?php 
+<?php
 /* <default skin>/front.html.php
  * @author: Carlos Thompson
- * 
+ *
  */
 ob_start()?><!DOCTYPE html>
 <html>
@@ -13,9 +13,11 @@ ob_start()?><!DOCTYPE html>
 	</head>
 	<body class={if:page:class}"{page:class} {skin:template}"{else}{skin:template}{fi}>
 		<div class=wrapper>
+			{area:alerts}
 			<section id=body>
 				{content}
 			</section>
+			{area:footer}
 			{area:footer}
 		</div>
 		<script src="{dir:skin}/js/common.js"></script>

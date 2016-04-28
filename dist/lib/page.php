@@ -1,7 +1,7 @@
 <?php
 /* lib/page.php
  * @author: Carlos Thompson
- * 
+ *
  */
 
 require_once 'lib/lib.php';
@@ -17,13 +17,13 @@ class Page extends tributer {
 		$this->set('skin/format','html',SET_UNSET);
 		$this->set('skin/version',5,SET_UNSET);
 		Page::$first = $this;
-		db_open();
+		$this->db = db_open();
 	}
 
 	function prepare() {
 		// placeholder for any verification before go()
 	}
-	
+
 	function go() {
 		$this->prepare();
 		if(!empty($this->_status))
@@ -97,6 +97,13 @@ BLOQUE;
 	function content() {
 		ob_start() ?>
 			<h2><?=ucwords($this->line['class'])?></h2>
+<?php
+		if(!empty($this->alert)) {
+?>
+<pre><strong>Alerts:</strong> <?php print_r($this->alert)?></pre>
+<?php
+		}
+?>
 <pre><strong>Line:</strong> <?php print_r($this->line)?></pre>
 <pre><strong>Session:</strong> <?php print_r($this->session)?></pre>
 <!--
@@ -132,7 +139,7 @@ BLOQUE;
 		}
 		return $def;
 	}
-	
+
 	function exists_file($filename) {
 		$root = rtensure($this->get('dir/root',''));
 		if(file_exists($fn=$root.$filename)) return $fn;
