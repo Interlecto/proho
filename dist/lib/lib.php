@@ -1,7 +1,7 @@
 <?php
 /* lib/lib.php
  * @author: Carlos Thompson
- * 
+ *
  */
 
 function redirect($where, $type=303, $message='') {

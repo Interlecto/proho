@@ -13,10 +13,14 @@
 				<div id=navbar class="navbar-collapse collapse">
 					<ul class="nav navbar-nav navbar-right">
 						<li><a href="/home.pl">Escritorio</a></li>
-						<li><a href="/perfil/config.pl">Configuración</a></li>
-						<li><a href="/perfil/yo.pl">Perfil</a></li>
+						<li class=subentry><a href="#">{session:given_name}</a>
+							<ul class=submenu>
+								<li><a href="/perfil/yo.pl">Mi perfil</a></li>
+								<li><a href="/perfil/config.pl">Configuración</a></li>
+								<li><a href="/login/out.cgi">Salir</a></li>
+							</ul>
+						</li>
 						<li><a href="/ayuda/">Ayuda</a></li>
-						<li><a href="/login/out.cgi">Salir</a></li>
 					</ul>
 					<form class="navbar-form navbar-right" action="/buscar.cgi">
 						<input type=text class=form-control placeholder="Buscar...">

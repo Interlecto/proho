@@ -1,9 +1,10 @@
 
-body{background:#eee;margin:0 auto;padding:0;width:auto;font-size:11pt;font-family:serif}
+body{background:#eee;margin:0 auto;padding:0;width:auto;font-size:11pt;font-family:serif;z-index:0}
 :link, :visited{text-decoration:none}
 p,div{margin:0;padding:0}
-.wrapper{margin:0 auto;width:1024px;position:relative;background:white}
-#top{background:#000;height:40px;color:#ccc}
+.wrapper{margin:0 auto;width:1024px;position:relative;background:white;z-index:11}
+#top{background:#000;height:40px;color:#ccc;z-index:10}
+#top:hover{z-index:20}
 #top :link,#top :visited{color:#ddd}
 #top :link:hover,#top :visited:hover{color:#fff}
 #sidebar{position:absolute;top:0;left:0;width:275px;height:100px;min-height:100%;background:#36c;color:#fd0}
@@ -46,15 +47,21 @@ p,div{margin:0;padding:0}
 .navbar-brand{display:block;float:left;font-size:14pt;font-weight:bold;height:40px;margin:0;padding:5px 0;box-sizing:border-box}
 .navbar-right{display:block;float:right}
 .navbar-nav{display:block;margin:0;padding:0}
-.navbar-nav>*{display:inline-block;padding:0;margin:0}
+.navbar-nav>*{position:relative;display:inline-block;padding:0;margin:0;height:40px}
 .navbar-nav>*.active{background:#333}
-.navbar-nav a{display:block;padding:0.5ex;height:40px;box-sizing:border-box}
+.navbar-nav a{display:block;padding:0.5ex;height:100%;box-sizing:border-box}
 #top a:hover{background-color:#555}
 .navbar-form .form-control{width:10em}
 
+.subentry{position:relative}
+.subentry:hover{}
+.subentry:hover .submenu{z-index:100}
+.submenu{position:absolute;top:35px;margin:0;padding:0;display:block;background:#333;z-index:0}
+.submenu>*{display:block}
+
 .nav-sidebar{display:block;margin:1ex;padding:0}
 .nav-sidebar>*{display:block;margin:0;padding:0}
-.navbar-nav>*.active{background-color:#06f}
+.nav-sidebar>*.active{background-color:#06f}
 .nav-sidebar a{display:block;padding:3px}
 .nav-sidebar a:hover{background-color:#090}
 
@@ -79,3 +86,12 @@ pre{overflow:auto}
 
 .blog-footer,
 .news-footer{font-size:.8em;padding:1ex 0}
+
+p.alert{margin:0 1em 1ex;padding:1ex 0.5em;border:outset thin #aaa}
+.alert.al-danger{background:#c66;border-color:#933}
+.alert.al-error{background:#c96;border-color:#963}
+.alert.al-warning{background:#cc6;border-color:#993}
+.alert.al-default{background:#9c6;border-color:#693}
+.al-danger::before{display:block;float:left;margin-right:1ex;content:"Danger!";color:white;font-weight:bold}
+.al-error::before{display:block;float:left;margin-right:1ex;content:"Error!";color:white;font-weight:bold}
+.al-warning::before{display:block;float:left;margin-right:1ex;content:"Warning!";color:white;font-weight:bold}
