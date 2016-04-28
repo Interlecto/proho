@@ -5,7 +5,8 @@
  * Creates environment to handle database.
  */
 
-echo "INSTALLING database.\n";
+$t = microtime(true);
+echo "\nINSTALLING database.\n";
 require_once 'mod/db/db_obj.php';
 
 $db->query('DROP DATABASE IF EXISTS '.db_var($obj['db']['database']).';');
@@ -45,4 +46,5 @@ foreach($langs as $code=>$names)
 			$updates[] = [$lang, $names[0], $name];
 $db->insert('i18n',$updates,['lang','label','phrase']);
 
+echo 'Took '.(microtime(true)-$t)."s\n";
 ?>

@@ -5,9 +5,10 @@
  * Install database and other entries.
  */
 
-// Development mode, shall be removed for production 
+// Development mode, shall be removed for production
 ini_set('display_errors', true);
 error_reporting(E_ALL);
+$tt = microtime(true);
 
 header('Content-type: text/plain; charset=utf-8');
 set_include_path(get_include_path().PATH_SEPARATOR.'..');
@@ -38,7 +39,7 @@ if(!isset($_GET['noinstall'])) {
 }
 
 if(isset($_GET['sample'])) {
-	echo "\nInstalling samples:\n\n";
+	echo "\n\nPopulating with sample data:\n\n";
 	foreach($dirs as $d) {
 		if(substr($d,0,1)=='.') continue;
 		if(file_exists($fn="mod/$d/sample.php"))
@@ -49,4 +50,5 @@ if(isset($_GET['sample'])) {
 #print_r($GLOBALS);
 db_close();
 echo "The End!\n";
+echo 'Took '.(microtime(true)-$tt)."s\n";
 ?>

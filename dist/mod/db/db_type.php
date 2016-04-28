@@ -6,6 +6,7 @@
  */
 
 require_once "mod/db/db.php";
+require_once "lib/lib.php";
 
 class db_type {
 	static $pool=[];
@@ -61,7 +62,7 @@ function db_type_int(string $input, ...$params) {
 }
 
 function db_type_label(string $input, int $n, ...$params) {
-	$s = preg_replace(['{^\W+|\W+$}','{\W+}'],['','_'],strtolower($input));
+	$s = preg_replace(['{^\W+|\W+$}','{\W+}'],['','_'],strtolower(toASCII($input)));
 	return substr($s,0,$n);
 }
 
@@ -160,6 +161,65 @@ class db_column {
 	public function mysql_ref(database $db) {
 		return '`'.$db->str($this->name).'`';
 	}
+	
+	public function mysql_data(database $db, string $str) {
+		return $this->type->mysql_data($db,$str);
+	}
+	
+	public function mysql_assign(database $db, $value) {
+		return $this->mysql_ref($db).' = '.$this->mysql_data($db, $value);
+	}
+	
+	public function mysql_comp(database $db, $value, $sign=' = ') {
+		$field = $this->mysql_ref($db);
+		if(is_array($value)) {
+			$vl = [];
+			foreach($value as $v)
+				$vl[] = $this->mysql_data($db, $v);
+			switch(trim($sign)) {
+			case '2':
+				return "$field BETWEEN {$vl[0]} AND {$vl[1]}";
+			case '!2':
+				return "$field NOT BETWEEN {$v[0]} AND {$v[1]}";
+			case '!':
+				return "$field NOT IN (".implode(', '.$vl).')';
+			default:
+				return "$field IN (".implode(', '.$vl).')';
+			}
+		}
+		if(is_null($value)) {
+			switch(trim($sign)) {
+			case '!':
+				return "$field IS NOT NULL";
+			default:
+				return "$field IS NULL";
+			}
+		}
+		if(is_bool($value)) {
+			switch(trim($sign)) {
+			case '!':
+				return "$field IS NOT ".($value?'TRUE':'FALSE');
+			default:
+				return "$field IS ".($value?'TRUE':'FALSE');
+			}
+		}
+		$data = $this->mysql_data($db, $value);
+		switch(trim($sign)) {
+		case '~':
+			return "$field LIKE $data";
+		case '!~':
+			return "$field NOT LIKE $data";
+		case '!=':
+			$sign = '<>';
+		case '<': case '<=':
+		case '>': case '>=':
+		case '=': case '<>':
+		case '<=>':
+			return $field.$sign.$data;
+		default:
+			return "$field = $data";
+		}
+	}
 }
 
 class db_reference extends db_column {
@@ -253,6 +313,88 @@ class db_table {
 		}
 		return "CREATE TABLE ".$this->mysql_ref($db)." (\n\t".
 			implode(",\n\t",$s)."\n);\n";
+	}
+
+	public function mysql_insert(database $db,array $columns,array $values,$flags=0) {
+		// $columns is an array of strings, representing the names of the columns
+		// $values is an array of associative arrays
+		$cl = [];
+		$cls = [];
+		foreach($columns as $col)
+			if(isset($this->columns[$col])) {
+				$cls[] = $col;
+				$cl[] = $db->field($col);
+			}
+		if(empty($cl)) return false;
+		$column_list = ' ('.implode(', ',$cl).')';
+		$value_list = [];
+		foreach($values as $touple) {
+			$tl = [];
+			foreach($cls as $c)
+				$tl[] = isset($touple[$c]) && !is_null($touple[$c])?
+					$this->columns[$c]->clean($touple[$c]):
+					'NULL';
+			$value_list[] = '('.implode(', ',$tl).')';
+		}
+		return "INSERT INTO ".$this->mysql_ref($db).
+			$column_list."\nVALUES\n\t".
+			implode(",\n\t",$value_list).";\n";
+	}
+	
+	public function mysql_update(database $db, array $updates, array $where, $flags=0) {
+		// $updates is an associative array of the form 'column_name'=>'value to update'
+		// $where is an associative array of the form 'column_name'=>'value to match'
+		$assigns = [];
+		foreach($updates as $col=>$val) {
+			if(!isset($this->columns[$col])) continue;
+			$assigns[] = $this->columns[$col]->assign($db,$val);
+		}
+		$conditions = [];
+		foreach($where as $col=>$val) {
+			if(!isset($this->columns[$col])) continue;
+			preg_match('/^(\W{0,2})(.*)/',$val,$m);
+			$conditions[] = $this->columns[$col]->comp($db,$m[2],$m[1]);
+		}
+		return "UPDATE ".$this->mysql_ref($db)." SET\n\t".
+			implode(",\n\t",$asigns)."\nWHERE\n\t".
+			implode("\nAND\t",$conditions).";\n";
+	}
+	
+	public function mysql_select(database $db, array $columns=null, array $where=[], array $orderby=[], $flags=0) {
+		// $columns is a list of column names; or null or empty array for all columns.
+		// $where is an associative array of the form 'column_name'=>'value to match'
+		// $orderby is a list of column names, which might be preceded by a sign.
+		if(empty($columns))
+			$columns_list = '*';
+		else {
+			$cl = [];
+			$cls = [];
+			foreach($columns as $col)
+				if(isset($this->columns[$col])) {
+					$cls[] = $col;
+					$cl[] = $db->field($col);
+				}
+			if(empty($cl)) return false;
+			$column_list = ' ('.implode(', ',$cl).')';
+		}
+		$conditions = [];
+		foreach($where as $col=>$val) {
+			if(!isset($this->columns[$col])) continue;
+			preg_match('/^([!~<=>]{0,3})(.*)/',$val,$m);
+			$conditions[] = $this->columns[$col]->comp($db,$m[2],$m[1]);
+		}
+		$orders = [];
+		foreach($orderby as $scol) {
+			$col = trim($col,'+-');
+			if(!isset($this->columns[$col])) continue;
+			$f = $db->field($col);
+			if(substr($scol,0,1)=='-') $f.=' DESC';
+			if(substr($scol,0,1)=='+') $f.=' ASC';
+			$orders[] = $f;
+		}
+		return "SELECT ".$column_list." FROM ".$this->mysql_ref($db).
+			(empty($conditions)?'':"\nWHERE\n\t".implode("\nAND\t",$conditions)).
+			(empty($orders)?'':"\nORDER BY\n\t".implode(",\n\t",$orders)).";\n";
 	}
 }
 

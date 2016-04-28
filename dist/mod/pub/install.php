@@ -5,9 +5,11 @@
  * Creates environment and database entries to handle publications.
  */
 
-echo "INSTALLING publications.\n";
+$t = microtime(true);
+echo "\nINSTALLING publications.\n";
 require_once 'mod/pub/db.php';
 
+(new db_module('pub',4))->save();
 $db->create('pub_format',true);
 $db->create('pub_status',true);
 $db->create('pub_scope',true);
@@ -33,4 +35,5 @@ $updates = explode(';',$scope);
 array_walk($updates,'_explode');
 $db->insert('pub_scope',$updates,['key','label']);
 
+echo 'Took '.(microtime(true)-$t)."s\n";
 ?>

@@ -139,6 +139,11 @@ class db_obj {
 		return db_obj::$db->delete("obj", $where);
 	}
 
+	protected function change_id($id) {
+		if(empty(db_obj::label_of($id)))
+			$this->_oid = $id;
+	}
+
 	function id() { return $this->_oid; }
 	function label() { return $this->_label; }
 	function table() { return $this->_table; }
@@ -158,6 +163,19 @@ class db_obj {
 	static function get_from_oid($oid, $lang=null) {
 		$lab = db_obj::$db->select_one('obj','label',['oid'=>(int)$oid]);
 		return db_obj::get_label($label, $lang);
+	}
+	static function get_oid($label) {
+		return db_obj::$db->select_one('obj','oid',['label'=>$label]);
+	}
+	static function label_of($oid) {
+		return db_obj::$db->select_one('obj','label',['oid'=>$oid]);
+	}
+}
+
+class db_module extends db_obj {
+	function __construct($name,$id) {
+		db_obj::_create($this,$name,'root');
+		$this->change_id($id);
 	}
 }
 

@@ -202,6 +202,10 @@ class db_mysql extends mysqli implements database {
 	}
 
 	function str($string) { return $this->real_escape_string($string); }
+	function strval($string) { return "'".$this->str($string)."'"; }
+	function numval($string) { return (string)(float)$string; }
+	function hexval($string) { return "x'".preg_replace('/[^0-9A-Fa-f]+/','',$string)."'"; }
+	function field($string) { return "`".$this->str($string)."`"; }
 
 	function select_fetch($table,$columns='*',$where=null,$orderby=null,...$extra) {
 		$table = db_var($this->prefix.$table);

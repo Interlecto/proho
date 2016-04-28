@@ -16,12 +16,24 @@ $db_usersts_table->new_column('key','tinyint',DB_PRIM_KEY);
 $db_usersts_table->new_column('label','label20',DB_UNIKEY);
 
 $db_user_table = new db_table('user');
-$db_user_table->new_reference('id',$db_obj_table,'oid',DB_PRIM_KEY);
+$db_user_table->new_reference('id',$db_person_table,'id',DB_PRIM_KEY);
 $db_user_table->new_column('hash','binary32',DB_CLEAR);
 $db_user_table->new_reference('hash_type',$db_userhash_table,'key',DB_NOTNULL,1);
 $db_user_table->new_reference('status',$db_usersts_table,'key',DB_NOTNULL,0);
 
+$db_userlvl_table = new db_table('user_level');
+$db_userlvl_table->new_column('key','tinyint',DB_PRIM_KEY);
+$db_userlvl_table->new_column('label','label20',DB_UNIKEY);
+
+$db_userpermit_table = new db_table('user_permit');
+$db_userpermit_table->set_pk(['id','on']);
+$db_userpermit_table->new_reference('id',$db_user_table,'id',DB_NOTNULL);
+$db_userpermit_table->new_reference('on',$db_obj_table,'oid',DB_NOTNULL,0);
+$db_userpermit_table->new_reference('level',$db_userlvl_table,'key',DB_NOTNULL,1);
+
 class db_user extends db_person {
+	protected $_permits = [];
+
 	static function retrieve($pid) {
 		$user = new self();
 		db_obj::_retrieve($user,$pid);
@@ -39,22 +51,24 @@ class db_user extends db_person {
 	static function create($label,...$params) {
 		$user = new self();
 		db_obj::_create($user,$label,'user');
-		foreach(['email','gname','sname'] as $i=>$field) {
+		foreach([1=>'email','gname','sname'] as $i=>$field) {
 			if(isset($params[$i]))
 				$user->set($field,$params[$i]);
 			else
 				$user->set($field,null);
 		}
+		$user->_permits[0] = isset($params[0])? $params[0]: 1;
 		return $user;
 	}
 
-	static function upgrade(db_person $person) {
+	static function upgrade(db_person $person,$level=1) {
 		$pid = $person->id();
 		$user = new self();
 		db_obj::_retrieve($user,$pid);
 		$user->set('email',$person->get('email'));
 		$user->set('gname',$person->get('gname'));
 		$user->set('sname',$person->get('sname'));
+		$user->_permits[0] = $level;
 		return $user;
 	}
 
@@ -72,11 +86,13 @@ class db_user extends db_person {
 		$this->set('hash', $o->hx);
 		$this->set('hash_type', $o->hash_type);
 		$this->set('status', $o->sname);
+		$this->_permits = db_obj::$db->select_pairs('user_permit','on','level',['id'=>$id]);
 	}
 
 	function save() {
 		db_person::save();
-		$where = ['id'=>(int)$this->id()];
+		$id = (int)$this->id();
+		$where = ['id'=>$id];
 		$update = [];
 		if(isset($this->hash))
 			$update['hash'] = '0x'.$this->hash;
@@ -84,9 +100,19 @@ class db_user extends db_person {
 			if(isset($this->$field))
 				$update[$field] = $this->$field;
 		if(db_obj::$db->select_count('user',$where))
-			return db_obj::$db->update('user',$update,$where);
+			db_obj::$db->update('user',$update,$where);
 		else
-			return db_obj::$db->insert('user',array_merge($where,$update));
+			db_obj::$db->insert('user',array_merge($where,$update));
+		$pp = db_obj::$db->select_pairs('user_permit','on','level',$where);
+		$inserts = [];
+		foreach($this->_permits as $on=>$level) {
+			if(isset($pp[$on]) && $pp[$on] != $level)
+				db_obj::$db->update('user_permit',['level'=>$level],['id'=>$id,'on'=>$on]);
+			else
+				$inserts[] = [$id,$on,$level];
+		}
+		if(!empty($inserts))
+			db_obj::$db->insert('user_permit',$inserts,['id','on','level']);
 	}
 
 	function remove() {
@@ -148,6 +174,18 @@ class db_user extends db_person {
 		$a = db_obj::$db->select_pairs('user_status','key','label');
 		$M = max(array_keys($a));
 		return db_obj::$db->insert('user_status',['key'=>++$M,'label'=>$status]);
+	}
+
+	function set_level($on, int $level) {
+		$id = $this->id();
+		$oid = is_numeric($on)? (int)$on: db_obj::get_oid($on);
+		$this->_permits[$oid] = $level;
+	}
+
+	function get_level($on, $strict=false) {
+		$permits = $this->_permits;
+		$oid = is_numeric($on)? (int)$on: db_obj::get_oid($on);
+		return isset($permits[$oid])? $permits[$oid]: ($strict? false: $permits[0]);
 	}
 }
 
