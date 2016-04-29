@@ -6,39 +6,18 @@
  */
 
 require_once 'mod/pro/db.php';
-/*
-$db_pubfmt_table = new db_table('pub_format');
-$db_pubfmt_table->new_column('key','tinyint',DB_PRIM_KEY);
-$db_pubfmt_table->new_column('label','label20',DB_UNIKEY);
-/**/
+
 $db_pubsts_table = new db_table('pub_status');
 $db_pubsts_table->new_column('key','tinyint',DB_PRIM_KEY);
 $db_pubsts_table->new_column('label','label20',DB_UNIKEY);
-/*
-$db_pubscp_table = new db_table('pub_scope');
-$db_pubscp_table->new_column('key','tinyint',DB_PRIM_KEY);
-$db_pubscp_table->new_column('label','label20',DB_UNIKEY);
-/**/
-/*
-$db_doc_table = new db_table('document');
-$db_doc_table->set_pk(['id','lang']);
-$db_doc_table->new_reference('id',$db_obj_table,'oid',DB_NOTNULL);
-$db_doc_table->new_reference('id',$db_lang_table,'code',DB_NOTNULL);
-$db_doc_table->new_reference('ns',$db_docns_table,'id',DB_DEFNULL);
-$db_doc_table->new_reference('id',$db_docscp_table,'key',DB_NOTNULL);
-$db_doc_table->new_column('body','vartext',DB_CLEAR);
-$db_doc_table->new_reference('format',$db_docfmt_table,'key',DB_CLEAR,1);
-/**/
+
 $db_pub_table = new db_table('publication');
 $db_pub_table->set_pk(['id','lang']);
 $db_pub_table->new_reference('id',$db_doc_table,'id',DB_NOTNULL);
 $db_pub_table->new_reference('lang',$db_lang_table,'code');
-#$db_pub_table->new_column('body','vartext',DB_CLEAR);
-#$db_pub_table->new_reference('format',$db_pubfmt_table,'key',DB_CLEAR,1);
 $db_pub_table->new_reference('author',$db_person_table,'id',DB_DEFNULL);
 $db_pub_table->new_column('date','timestamp',DB_CURRENT);
 $db_pub_table->new_reference('status',$db_pubsts_table,'key',DB_CLEAR,0);
-#$db_pub_table->new_reference('scope',$db_pubscp_table,'key',DB_CLEAR,1);
 
 $db_pubhst_table = new db_table('pub_history');
 $db_pubhst_table->set_pk(['pid','lang','mark']);
@@ -63,12 +42,7 @@ $db_pubblog_table->set_pk(['pid','lang']);
 $db_pubblog_table->new_reference('pid',$db_pub_table,'id',DB_NOTNULL);
 $db_pubblog_table->new_reference('lang',$db_lang_table,'code');
 $db_pubblog_table->new_column('priority','tinyint',DB_NOTNULL,0);
-/*
-$db_pubtag_table = new db_table('pub_tag');
-$db_pubtag_table->set_pk(['pid','label']);
-$db_pubtag_table->new_reference('pid',$db_pub_table,'id',DB_NOTNULL);
-$db_pubtag_table->new_column('label','label40',DB_NOTNULL);
-/**/
+
 $db_pubcat_table = new db_table('pub_cat');
 $db_pubcat_table->set_pk(['pid','label']);
 $db_pubcat_table->new_reference('pid',$db_pub_table,'id',DB_NOTNULL);
