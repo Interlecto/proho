@@ -62,7 +62,7 @@ function db_type_int(string $input, ...$params) {
 }
 
 function db_type_label(string $input, int $n, ...$params) {
-	$s = preg_replace(['{^\W+|\W+$}','{\W+}'],['','_'],strtolower(toASCII($input)));
+	$s = preg_replace(["{'}",'{^\W+|\W+$}','{\W+}'],['','','_'],strtolower(toASCII($input)));
 	return substr($s,0,$n);
 }
 
@@ -161,15 +161,15 @@ class db_column {
 	public function mysql_ref(database $db) {
 		return '`'.$db->str($this->name).'`';
 	}
-	
+
 	public function mysql_data(database $db, string $str) {
 		return $this->type->mysql_data($db,$str);
 	}
-	
+
 	public function mysql_assign(database $db, $value) {
 		return $this->mysql_ref($db).' = '.$this->mysql_data($db, $value);
 	}
-	
+
 	public function mysql_comp(database $db, $value, $sign=' = ') {
 		$field = $this->mysql_ref($db);
 		if(is_array($value)) {
@@ -340,7 +340,7 @@ class db_table {
 			$column_list."\nVALUES\n\t".
 			implode(",\n\t",$value_list).";\n";
 	}
-	
+
 	public function mysql_update(database $db, array $updates, array $where, $flags=0) {
 		// $updates is an associative array of the form 'column_name'=>'value to update'
 		// $where is an associative array of the form 'column_name'=>'value to match'
@@ -359,7 +359,7 @@ class db_table {
 			implode(",\n\t",$asigns)."\nWHERE\n\t".
 			implode("\nAND\t",$conditions).";\n";
 	}
-	
+
 	public function mysql_select(database $db, array $columns=null, array $where=[], array $orderby=[], $flags=0) {
 		// $columns is a list of column names; or null or empty array for all columns.
 		// $where is an associative array of the form 'column_name'=>'value to match'

@@ -68,6 +68,7 @@ class db_user extends db_person {
 		$user->set('email',$person->get('email'));
 		$user->set('gname',$person->get('gname'));
 		$user->set('sname',$person->get('sname'));
+		$user->change_table('user');
 		$user->_permits[0] = $level;
 		return $user;
 	}

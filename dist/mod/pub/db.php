@@ -6,29 +6,39 @@
  */
 
 require_once 'mod/pro/db.php';
-
+/*
 $db_pubfmt_table = new db_table('pub_format');
 $db_pubfmt_table->new_column('key','tinyint',DB_PRIM_KEY);
 $db_pubfmt_table->new_column('label','label20',DB_UNIKEY);
-
+/**/
 $db_pubsts_table = new db_table('pub_status');
 $db_pubsts_table->new_column('key','tinyint',DB_PRIM_KEY);
 $db_pubsts_table->new_column('label','label20',DB_UNIKEY);
-
+/*
 $db_pubscp_table = new db_table('pub_scope');
 $db_pubscp_table->new_column('key','tinyint',DB_PRIM_KEY);
 $db_pubscp_table->new_column('label','label20',DB_UNIKEY);
-
+/**/
+/*
+$db_doc_table = new db_table('document');
+$db_doc_table->set_pk(['id','lang']);
+$db_doc_table->new_reference('id',$db_obj_table,'oid',DB_NOTNULL);
+$db_doc_table->new_reference('id',$db_lang_table,'code',DB_NOTNULL);
+$db_doc_table->new_reference('ns',$db_docns_table,'id',DB_DEFNULL);
+$db_doc_table->new_reference('id',$db_docscp_table,'key',DB_NOTNULL);
+$db_doc_table->new_column('body','vartext',DB_CLEAR);
+$db_doc_table->new_reference('format',$db_docfmt_table,'key',DB_CLEAR,1);
+/**/
 $db_pub_table = new db_table('publication');
 $db_pub_table->set_pk(['id','lang']);
-$db_pub_table->new_reference('id',$db_obj_table,'oid',DB_NOTNULL);
+$db_pub_table->new_reference('id',$db_doc_table,'id',DB_NOTNULL);
 $db_pub_table->new_reference('lang',$db_lang_table,'code');
-$db_pub_table->new_column('body','vartext',DB_CLEAR);
-$db_pub_table->new_reference('format',$db_pubfmt_table,'key',DB_CLEAR,1);
+#$db_pub_table->new_column('body','vartext',DB_CLEAR);
+#$db_pub_table->new_reference('format',$db_pubfmt_table,'key',DB_CLEAR,1);
 $db_pub_table->new_reference('author',$db_person_table,'id',DB_DEFNULL);
 $db_pub_table->new_column('date','timestamp',DB_CURRENT);
 $db_pub_table->new_reference('status',$db_pubsts_table,'key',DB_CLEAR,0);
-$db_pub_table->new_reference('scope',$db_pubscp_table,'key',DB_CLEAR,1);
+#$db_pub_table->new_reference('scope',$db_pubscp_table,'key',DB_CLEAR,1);
 
 $db_pubhst_table = new db_table('pub_history');
 $db_pubhst_table->set_pk(['pid','lang','mark']);
@@ -36,7 +46,7 @@ $db_pubhst_table->new_reference('pid',$db_pub_table,'id',DB_NOTNULL);
 $db_pubhst_table->new_reference('lang',$db_lang_table,'code');
 $db_pubhst_table->new_column('mark','timestamp',DB_CURRENT);
 $db_pubhst_table->new_column('edit','vartext',DB_CLEAR);
-$db_pubhst_table->new_reference('format',$db_pubfmt_table,'key',DB_CLEAR,1);
+$db_pubhst_table->new_reference('format',$db_docfmt_table,'key',DB_CLEAR,1);
 $db_pubhst_table->new_column('diffetential','boolean',DB_NOTNULL,false);
 $db_pubhst_table->new_reference('editor',$db_person_table,'id',DB_DEFNULL);
 
@@ -53,18 +63,18 @@ $db_pubblog_table->set_pk(['pid','lang']);
 $db_pubblog_table->new_reference('pid',$db_pub_table,'id',DB_NOTNULL);
 $db_pubblog_table->new_reference('lang',$db_lang_table,'code');
 $db_pubblog_table->new_column('priority','tinyint',DB_NOTNULL,0);
-
+/*
 $db_pubtag_table = new db_table('pub_tag');
 $db_pubtag_table->set_pk(['pid','label']);
 $db_pubtag_table->new_reference('pid',$db_pub_table,'id',DB_NOTNULL);
 $db_pubtag_table->new_column('label','label40',DB_NOTNULL);
-
+/**/
 $db_pubcat_table = new db_table('pub_cat');
 $db_pubcat_table->set_pk(['pid','label']);
 $db_pubcat_table->new_reference('pid',$db_pub_table,'id',DB_NOTNULL);
 $db_pubcat_table->new_column('label','label40',DB_NOTNULL);
 
-class db_publication extends db_obj {
+class db_publication extends db_document {
 	static function retrieve($pid) {
 		$publication = new self();
 		db_obj::_retrieve($publication,$pid);
@@ -74,7 +84,7 @@ class db_publication extends db_obj {
 
 	static function find_label($label) {
 		$publication = new self();
-		db_obj::_find_label($publication,$this,$label);
+		db_obj::_find_label($publication,$label);
 		$publication->load();
 		return $publication;
 	}
@@ -82,6 +92,7 @@ class db_publication extends db_obj {
 	static function create($label,...$params) {
 		$publication = new self();
 		db_obj::_create($publication,$label,'publication');
+		$publication->set_params($params);
 		return $publication;
 	}
 
@@ -95,23 +106,25 @@ class db_publication extends db_obj {
 
 	function __construct() {
 		$this->fields['publication'] = db_table::$pool['publication'];
-		db_obj::__construct();
+		db_document::__construct();
 	}
 
 	function load($pid=null,...$p) {
 		$id = (int)(is_null($pid)? $this->id(): $pid);
 		if(isset($p[0]))
-			$lang = $p[0];
+			$lang = array_shift($p[0]);
 		else {
 			global $obj;
 			$lang = isset($obj['site']['lang'])? $obj['site']['lang']: null;
 		}
+		db_document::load($id,$lang,...$p);
+
 		$a = db_obj::$db->select_key('publication','lang',['id'=>"=$id"]);
 		if(empty($a))
-			return db_obj::log('publication::load',"'$id'","No publication yet with ID '$id'");
+			return db_obj::log('db_publication::load',"'$id'","No publication yet with ID '$id'");
 		if($lang) {
 			if(empty($a[$lang]))
-				return db_obj::log('publication::load',"'$id'","No publication yet with ID '$id' and language '$lang'");
+				return db_obj::log('db_publication::load',"'$id'","No publication yet with ID '$id' and language '$lang'");
 			foreach(array_keys($this->fields['publication']->columns) as $field)
 				$this->set($field, $a[$lang][$field]);
 		}
@@ -121,7 +134,7 @@ class db_publication extends db_obj {
 	}
 
 	function save() {
-		db_obj::save();
+		db_document::save();
 		$where = ['id'=>(int)$this->id(),'lang'=>$this->lang];
 		$update = [];
 		foreach(array_keys($this->fields['publication']->columns) as $field)
@@ -136,7 +149,7 @@ class db_publication extends db_obj {
 	function remove() {
 		$where = ['id'=>(int)$this->id(),'lang'=>$this->lang];
 		return db_obj::$db->delete('publication',$where) &&
-			db_obj::remove();
+			db_document::remove();
 	}
 }
 
@@ -158,6 +171,7 @@ class db_blog_post extends db_publication {
 	static function create($label,...$params) {
 		$blog_post = new self();
 		db_obj::_create($blog_post,$label,'blog_post');
+		$blog_post->set_params('blog',...$params);
 		return $blog_post;
 	}
 
@@ -225,6 +239,7 @@ class db_news_item extends db_publication {
 	static function create($label,...$params) {
 		$news_item = new self();
 		db_obj::_create($news_item,$label,'news_item');
+		$news_item->set_params('news',...$params);
 		return $news_item;
 	}
 

@@ -30,7 +30,7 @@ class page_blog extends Page {
 		$label = $item->label();
 		$title = $item->get_label($label);
 		$path = date('Y/m/d', $item->get('date'));
-		$tags = $db->select_col('pub_tag','label',['pid'=>"=$id"]);
+		$tags = $db->select_col('doc_tag','label',['pid'=>"=$id"]);
 		$cats = $db->select_col('pub_cat','label',['pid'=>"=$id"]);
 
 			ob_start()?>
@@ -103,7 +103,7 @@ class page_blogtag extends page_blog {
 			break;
 		case 'tag':
 			$this->set('title', 'Blog: Etiqueta <code>'.$match.'</code>');
-			$this->_tags = $db->select_col('pub_tag','pid',['label'=>$match]);
+			$this->_tags = $db->select_col('doc_tag','pid',['label'=>$match]);
 			break;
 		case 'aut':
 		case 'por':
@@ -169,7 +169,7 @@ class page_news extends page_blog {
 		$db = $this->db;
 		$label = $item->label();
 		$title = $item->get_label($label);
-		$tags = $db->select_col('pub_tag','label',['pid'=>"=$id"]);
+		$tags = $db->select_col('doc_tag','label',['pid'=>"=$id"]);
 		$cats = $db->select_col('pub_cat','label',['pid'=>"=$id"]);
 			ob_start()?>
 			<section class=news-item>
@@ -223,7 +223,7 @@ class page_newstag extends page_news {
 			break;
 		case 'tag':
 			$this->set('title', 'Noticias: Etiqueta <code>'.$this->_tag_match.'</code>');
-			$this->_tags = $db->select_col('pub_tag','pid',['label'=>$match]);
+			$this->_tags = $db->select_col('doc_tag','pid',['label'=>$match]);
 			break;
 		default:
 		}

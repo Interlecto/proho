@@ -143,6 +143,13 @@ class db_obj {
 		if(empty(db_obj::label_of($id)))
 			$this->_oid = $id;
 	}
+	protected function change_label($label) {
+		if(empty(db_obj::get_oid($label)))
+			$this->_label = $label;
+	}
+	protected function change_table($table) {
+		$this->_table = $table;
+	}
 
 	function id() { return $this->_oid; }
 	function label() { return $this->_label; }
@@ -159,6 +166,17 @@ class db_obj {
 		if(isset($r['en'])) return $r['en'];
 		if(isset($r['es'])) return $r['es'];
 		return array_values($r)[0];
+	}
+	static function set_label($label, $phrase, $lang=null) {
+		global $obj;
+		if(!$lang && isset($obj['site']['lang']))
+			$lang = $obj['site']['lang'];
+		if(!$lang) $lang = 'en';
+		$r = db_obj::$db->select_pairs('i18n','lang','phrase',['label'=>$label]);
+		if(isset($r[$lang]))
+			return db_obj::$db->update('i18n',['phrase'=>$phrase],['label'=>$label,'lang'=>$lang]);
+		else
+			return db_obj::$db->insert('i18n',['label'=>$label,'lang'=>$lang,'phrase'=>$phrase]);
 	}
 	static function get_from_oid($oid, $lang=null) {
 		$lab = db_obj::$db->select_one('obj','label',['oid'=>(int)$oid]);

@@ -35,23 +35,21 @@ foreach($blogposts as $blogpost) {
 	if($db->select_count('obj',['label'=>$label]))
 		continue;
 	$db->insert_ignore('i18n',['lang'=>'es','label'=>$label,'phrase'=>$blogpost['title']]);
-	
+
 	$author = db_person::find_label($blogpost['author']);
-	$bs = db_blog_post::create($label);
-	$bs->set('lang','es');
+	$bs = db_blog_post::create($label,'es');
 	$bs->set('author',$author->id());
 	$bs->set('body',$blogpost['body']);
 	$bs->set('status',2);
-	$bs->set('scope',2);
 	$bs->set('priority',1);
 	$bs->save();
-	
+
 	$pid = $bs->id();
 	$updates = [];
 	if(isset($blogpost['tags'])) {
 		foreach($blogpost['tags'] as $tag)
 			$updates[] = [$pid,$tag];
-		$db->insert('pub_tag',$updates,['pid','label']);
+		$db->insert('doc_tag',$updates,['pid','label']);
 	}
 	if(isset($blogpost['cat']))
 		$db->insert('pub_cat',['pid'=>$pid,'label'=>$blogpost['cat']]);
@@ -86,21 +84,19 @@ foreach($newsitems as $newsitem) {
 	$db->insert_ignore('i18n',['lang'=>'es','label'=>$label,'phrase'=>$newsitem['title']]);
 
 	$author = db_person::find_label($newsitem['author']);
-	$ni = db_news_item::create($label);
-	$ni->set('lang','es');
+	$ni = db_news_item::create($label,'es');
 	$ni->set('author',$author->id());
 	$ni->set('body',$newsitem['body']);
 	$ni->set('status',2);
-	$ni->set('scope',2);
 	$ni->set('priority',1);
 	$ni->save();
-	
+
 	$pid = $ni->id();
 	$updates = [];
 	if(isset($newsitem['tags'])) {
 		foreach($newsitem['tags'] as $tag)
 			$updates[] = [$pid,$tag];
-		$db->insert('pub_tag',$updates,['pid','label']);
+		$db->insert('doc_tag',$updates,['pid','label']);
 	}
 	if(isset($newsitem['cat']))
 		$db->insert('pub_cat',['pid'=>$pid,'label'=>$newsitem['cat']]);

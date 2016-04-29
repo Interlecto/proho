@@ -1,7 +1,7 @@
 <?php
 /* mod/doc/status.php
  * @author: Carlos Thompson
- * 
+ *
  * Main implementation of the documents module.
  */
 
@@ -84,6 +84,12 @@ class page_404 extends Page {
 		$line = $this->get('line/line');
 		set_status(404,"<p>Recurso <code>$line</code> no encontrado.</p>");
 		Page::go();
+	}
+}
+
+class page_418 extends Page {
+	function prepare() {
+		set_status(418,"<p>Soy una tetera.</p>");
 	}
 }
 

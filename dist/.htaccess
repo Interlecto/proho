@@ -9,3 +9,6 @@ RewriteRule	.?	-	[L]
 RewriteCond	%{REQUEST_FILENAME}	-d
 RewriteRule	.+	nav.php	[L]
 RewriteRule	.?	index.php	[L]
+
+ErrorDocument	404	/status/404
+ErrorDocument	500	/status/500
