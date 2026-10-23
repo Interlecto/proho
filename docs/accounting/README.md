@@ -1,6 +1,6 @@
 # Accounting
 
-Status: **draft for review** (Phase 0). Must be validated by a Colombian
+Status: **provisional** (Phase 0). Must be validated by a Colombian
 public accountant (*contador público*) before Phase 2 is implemented. Points
 that need that validation are marked **[accountant]**.
 
