@@ -1,0 +1,33 @@
+# OS / editors
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+*.iml
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.jks
+*.p12
+*.keystore
+# Shared debug key, committed on purpose (see docs/development.md)
+!android/keystore/debug.keystore
+
+# Gradle / JVM
+.gradle/
+.kotlin/
+build/
+local.properties
+
+# Node
+node_modules/
+/web/dist/
+coverage/
+
+# Xcode
+DerivedData/
+xcuserdata/
+*.xcuserstate
