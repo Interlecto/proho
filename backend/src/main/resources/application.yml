@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: proho
+  datasource:
+    url: ${PROHO_DB_URL:jdbc:postgresql://localhost:5432/proho}
+    username: ${PROHO_DB_USER:proho}
+    password: ${PROHO_DB_PASSWORD:proho}
+  flyway:
+    locations: classpath:db/migration
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
