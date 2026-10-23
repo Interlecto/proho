@@ -101,9 +101,10 @@ The MVP must include the following accounting foundation:
 - Configurable chart of accounts.
 - Accounting periods and fiscal-year settings.
 - Double-entry journal entries and journal lines.
-- Ordinary and extraordinary assessments.
+- Ordinary and extraordinary assessments, allocated per unit or by ownership coefficient (*coeficiente de copropiedad*) from the start.
 - Accounts receivable by community and residential unit.
 - Manual payment recording and allocation.
+- Resident-reported payments (*reportar pago*): a resident reports a transfer or deposit with its reference and receipt; it stays pending, without touching the ledger, until a treasurer confirms or rejects it, and only confirmation records and allocates the payment.
 - Income and expense classification.
 - Expense recording, including suppliers and supporting documents where required.
 - Trial balance, general ledger, income and expense statement, and balance sheet.
@@ -156,6 +157,29 @@ Required safeguards include:
 Provider discovery, account eligibility, API access, merchant onboarding, and settlement currency must be validated before implementation. In particular, the Llave requirement should be tied to the specific Colombian payment-network interface intended, and Venmo's availability must not be assumed for Colombian community accounts.
 
 Manual payments must remain supported after electronic payments are introduced. Bank transfers, cash, corrections, and exceptional transactions will continue to need manual workflows.
+
+### 3.5. Publishing workflow
+
+Announcements, news, and board posts follow the publication model of the original ProHo design (see `docs/legacy-salvage.md`):
+
+- States: draft, pending approval, pending publication, published, and withdrawn.
+- Audience on publication: community members, privileged (board and administration), or public.
+- Optional scheduled publication and expiry dates.
+- Edit history with editor and changes, feeding the audit log.
+- Categories, tags, and Markdown bodies.
+
+Unmoderated boards skip the approval state; moderated boards and official announcements require it.
+
+### 3.6. Backlog from the original design
+
+These features were part of the 2016 ProHo design and are kept as candidates after the first release, in addition to maintenance requests, reservations, and visitor management:
+
+- Community marketplace (*tienda*): units offered for rent or sale, and services offered by residents.
+- Public visitor page with content the community chooses to publish, such as available units.
+- Photo galleries.
+- Document repository for rules, minutes, and official documents.
+- Search across permitted content.
+- Threaded comments on posts and announcements.
 
 ### 3.4. Offline functionality
 
@@ -266,6 +290,7 @@ Exit criterion: A resident can switch between communities and view permitted inf
 - Posting engine with balanced journal entries.
 - Receivables by responsible party and residential unit.
 - Manual payment entry, allocation, and receipt generation.
+- Resident-reported payments with treasurer confirmation.
 - Expense and supplier records.
 - Credits, refunds, reversals, and opening balances.
 - Trial balance, general ledger, income and expense statement, and balance sheet.
@@ -278,7 +303,7 @@ Exit criterion: Financial reports reconcile to the ledger, every posted journal 
 ### Phase 3 — Social features and offline reading
 
 - Official announcements and distribution lists.
-- Moderated and unmoderated discussion boards.
+- Moderated and unmoderated discussion boards, using the publishing workflow in §3.5.
 - Direct messaging and conversation history.
 - In-app and email notifications.
 - Android push notifications and iOS push notifications.
@@ -384,7 +409,7 @@ Before declaring the MVP complete, verify the following:
 The broad product direction is now defined. A few implementation details still need explicit decisions before development reaches the relevant modules:
 
 1. Accounting jurisdiction: Whether the first community operates under Colombian accounting and reporting requirements, and which reporting conventions the accountant expects.
-2. Assessment rules: Whether fees are charged per unit, by area, by coefficient, by occupancy, or through a combination of methods. The data model should support configurable allocation rules.
+2. Assessment rules: Whether fees are charged per unit, by area, by coefficient, by occupancy, or through a combination of methods. The data model should support configurable allocation rules. Allocation by ownership coefficient is already required: the original ProHo design splits extraordinary assessments that way.
 3. Payment connector order: Which provider should be integrated first, based on merchant eligibility, transaction fees, API maturity, and settlement behavior.
 4. Offline retention: How much message history to cache, for how long, and how sensitive local data should be protected on shared or lost devices.
 5. iOS distribution: Whether the first iOS build will be distributed through TestFlight and the App Store, with a corresponding Apple Developer account and signing pipeline.

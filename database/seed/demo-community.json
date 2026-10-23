@@ -1,0 +1,127 @@
+{
+  "$comment": "Demo community for development and demos, adapted from the 2016 ProHo sample data. All people are fictional; emails use the reserved example.org domain. Amounts are in Colombian pesos (COP), without decimals.",
+  "community": {
+    "key": "los-robles",
+    "name": "Edificio Los Robles",
+    "type": "residential",
+    "city": "Bogotá",
+    "country": "CO",
+    "currency": "COP"
+  },
+  "units": [
+    { "number": "105", "floor": 1, "area_m2": 72, "coefficient": 14.4 },
+    { "number": "212", "floor": 2, "area_m2": 65, "coefficient": 13.0 },
+    { "number": "307", "floor": 3, "area_m2": 80, "coefficient": 16.0 },
+    { "number": "408", "floor": 4, "area_m2": 72, "coefficient": 14.4 },
+    { "number": "509", "floor": 5, "area_m2": 95, "coefficient": 19.0 },
+    { "number": "702", "floor": 7, "area_m2": 116, "coefficient": 23.2 }
+  ],
+  "people": [
+    { "key": "lucia", "given_name": "Lucía", "surname": "Vargas Ortega", "email": "lucia.vargas@example.org", "account": true },
+    { "key": "esteban", "given_name": "Esteban", "surname": "Gil Moreno", "email": "esteban.gil@example.org", "account": true },
+    { "key": "hernan", "given_name": "Hernán", "surname": "Peña Arias", "email": "hernan.pena@example.org", "account": true },
+    { "key": "claudia", "given_name": "Claudia", "surname": "Ortiz Lara", "email": "claudia.ortiz@example.org", "account": true },
+    { "key": "carlos", "given_name": "Carlos", "surname": "Rincón Silva", "email": "carlos.rincon@example.org", "account": true },
+    { "key": "sofia", "given_name": "Sofía", "surname": "Méndez Cruz", "email": "sofia.mendez@example.org", "account": true },
+    { "key": "jairo", "given_name": "Jairo", "surname": "Duarte Pinto", "email": "jairo.duarte@example.org", "account": true },
+    { "key": "marta", "given_name": "Marta", "surname": "Duarte Pinto", "email": null, "account": false },
+    { "key": "andrea", "given_name": "Andrea", "surname": "Salazar Ruiz", "email": "andrea.salazar@example.org", "account": true }
+  ],
+  "unit_relationships": [
+    { "unit": "105", "person": "esteban", "roles": ["owner", "resident", "responsible_party"] },
+    { "unit": "212", "person": "hernan", "roles": ["owner", "responsible_party"] },
+    { "unit": "212", "person": "claudia", "roles": ["tenant", "resident"] },
+    { "unit": "307", "person": "carlos", "roles": ["owner", "responsible_party"] },
+    { "unit": "408", "person": "sofia", "roles": ["owner", "resident", "responsible_party"] },
+    { "unit": "509", "person": "jairo", "roles": ["owner", "resident", "responsible_party"] },
+    { "unit": "509", "person": "marta", "roles": ["household_member", "resident"] },
+    { "unit": "702", "person": "andrea", "roles": ["owner", "responsible_party"] }
+  ],
+  "community_roles": [
+    { "person": "lucia", "roles": ["administrator"] },
+    { "person": "sofia", "roles": ["treasurer", "board_member"] },
+    { "person": "jairo", "roles": ["board_member", "moderator"] }
+  ],
+  "assessments": [
+    {
+      "key": "admin-2026-04",
+      "kind": "ordinary",
+      "description": "Cuota de administración abril 2026",
+      "total": 3000000,
+      "allocation": "coefficient",
+      "issued_on": "2026-04-01",
+      "due_on": "2026-04-30",
+      "expected_by_unit": { "105": 432000, "212": 390000, "307": 480000, "408": 432000, "509": 570000, "702": 696000 }
+    },
+    {
+      "key": "extra-2026-zonas-comunes",
+      "kind": "extraordinary",
+      "description": "Cuota extraordinaria arreglo de zonas comunes, aprobada por la asamblea",
+      "total": 20000000,
+      "allocation": "coefficient",
+      "issued_on": "2026-04-01",
+      "due_on": "2026-06-30",
+      "expected_by_unit": { "105": 2880000, "212": 2600000, "307": 3200000, "408": 2880000, "509": 3800000, "702": 4640000 }
+    }
+  ],
+  "payments": [
+    { "unit": "509", "payer": "jairo", "amount": 570000, "date": "2026-04-10", "method": "bank_transfer", "reference": "TRF-88412", "status": "confirmed", "allocate_to": ["admin-2026-04"] },
+    { "unit": "702", "payer": "andrea", "amount": 696000, "date": "2026-04-15", "method": "cash", "reference": "REC-0042", "status": "confirmed", "allocate_to": ["admin-2026-04"] },
+    { "unit": "105", "payer": "esteban", "amount": 432000, "date": "2026-04-28", "method": "bank_transfer", "reference": "TRF-90127", "status": "reported", "allocate_to": ["admin-2026-04"] }
+  ],
+  "posts": [
+    {
+      "kind": "announcement",
+      "author": "lucia",
+      "title": "Cuota extraordinaria",
+      "body": "La asamblea aprobó una cuota extraordinaria de $20.000.000, repartida por el coeficiente de copropiedad, para el arreglo de zonas comunes.",
+      "status": "published",
+      "audience": "community",
+      "publish_on": "2026-04-01",
+      "category": "asamblea"
+    },
+    {
+      "kind": "announcement",
+      "author": "lucia",
+      "title": "Reglamento sobre mascotas",
+      "body": "El Concejo Distrital aprobó una nueva norma sobre mascotas en zonas comunes. Consulte el reglamento actualizado en la sección de documentos.",
+      "status": "published",
+      "audience": "community",
+      "publish_on": "2026-04-05",
+      "category": "normas"
+    },
+    {
+      "kind": "board_post",
+      "author": "jairo",
+      "title": "La importancia del verde",
+      "body": "Aun cuando la política del edificio ha sido mantener las zonas verdes, vale la pena proponer más jardineras en la terraza.",
+      "status": "published",
+      "audience": "community",
+      "publish_on": "2026-04-12",
+      "tags": ["zonas-verdes"]
+    },
+    {
+      "kind": "board_post",
+      "author": "lucia",
+      "title": "Un año de logros",
+      "body": "Resumen de las obras y mejoras realizadas durante el último año de administración.",
+      "status": "published",
+      "audience": "public",
+      "publish_on": "2026-03-20"
+    },
+    {
+      "kind": "board_post",
+      "author": "esteban",
+      "title": "Los cerramientos y el modelo de ciudad",
+      "body": "Borrador para discusión sobre el cerramiento del antejardín.",
+      "status": "pending_approval",
+      "audience": "community"
+    }
+  ],
+  "listings": [
+    { "kind": "unit_for_sale", "unit": "702", "contact": "andrea", "title": "Apartamento 702 en venta", "public": true },
+    { "kind": "unit_for_rent", "unit": "307", "contact": "carlos", "title": "Apartamento 307 en arriendo", "details": "Unidad de 80 m², canon de $1.200.000", "public": true },
+    { "kind": "service", "contact": "claudia", "title": "Servicio de almuerzos", "public": false },
+    { "kind": "service", "contact": "sofia", "title": "Servicio de contador público", "public": false }
+  ]
+}
