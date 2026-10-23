@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name" translatable="false">ProHo</string>
+    <string name="tagline">Administración de propiedad horizontal</string>
+    <string name="no_community">Sin comunidad</string>
+    <string name="switch_community">Cambiar de comunidad</string>
+    <string name="welcome_title">Bienvenido a ProHo</string>
+    <string name="welcome_body">Aquí verá los estados de cuenta, anuncios y mensajes de sus comunidades.</string>
+</resources>

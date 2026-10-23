@@ -22,3 +22,7 @@ Debug builds use the application ID `net.interlecto.proho.debug` and the label
 
 The release key must never be committed. It will be provided to the build
 through environment variables or CI secrets.
+
+Debug certificate: `CN=ProHo Debug, O=Interlecto, C=CO`, SHA-256
+`03:C3:FE:52:FF:FA:95:3D:97:22:1C:56:E4:F6:21:FF:D4:1C:3E:51:ED:11:08:CE:5B:A9:8A:35:92:E0:F8:30`
+(valid until 2056). Check an APK with `apksigner verify --print-certs`.
