@@ -1,33 +1,110 @@
-# OS / editors
+# ---------------------------------------------------------------------------
+# OS and editors
+# ---------------------------------------------------------------------------
 .DS_Store
 Thumbs.db
+Desktop.ini
 *.swp
+*~
 .idea/
-.vscode/
+.vscode/*
+!.vscode/extensions.json
 *.iml
+*.ipr
+*.iws
+.fleet/
+.project
+.classpath
+.settings/
 
-# Environment and secrets
+# ---------------------------------------------------------------------------
+# Secrets and local configuration
+# ---------------------------------------------------------------------------
 .env
 .env.*
 !.env.example
 *.jks
 *.p12
+*.pem
+*.key
 *.keystore
 # Shared debug key, committed on purpose (see docs/development.md)
 !android/keystore/debug.keystore
+local.properties
+keystore.properties
+application-local.yml
+application-local.properties
 
-# Gradle / JVM
+# ---------------------------------------------------------------------------
+# Kotlin / Gradle (backend, android, shared JVM modules)
+# ---------------------------------------------------------------------------
 .gradle/
 .kotlin/
 build/
-local.properties
+out/
+*.class
+*.hprof
+hs_err_pid*
+replay_pid*
 
-# Node
+# ---------------------------------------------------------------------------
+# Android
+# ---------------------------------------------------------------------------
+*.apk
+*.aab
+*.ap_
+*.dex
+captures/
+.externalNativeBuild/
+.cxx/
+.navigation/
+lint/intermediates/
+lint/generated/
+lint/outputs/
+lint/tmp/
+output-metadata.json
+
+# ---------------------------------------------------------------------------
+# Web (React + TypeScript)
+# ---------------------------------------------------------------------------
 node_modules/
 /web/dist/
+/web/dist-ssr/
+.vite/
 coverage/
+*.tsbuildinfo
+.eslintcache
+.stylelintcache
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+/web/playwright-report/
+/web/test-results/
 
-# Xcode
+# ---------------------------------------------------------------------------
+# API contract: generated clients and servers are build outputs
+# ---------------------------------------------------------------------------
+/api/generated/
+**/generated-sources/
+.openapi-generator/
+
+# ---------------------------------------------------------------------------
+# iOS
+# ---------------------------------------------------------------------------
 DerivedData/
 xcuserdata/
 *.xcuserstate
+.build/
+/ios/Pods/
+
+# ---------------------------------------------------------------------------
+# Logs, local data and infrastructure
+# ---------------------------------------------------------------------------
+*.log
+logs/
+/infrastructure/docker/data/
+.terraform/
+*.tfstate
+*.tfstate.*
