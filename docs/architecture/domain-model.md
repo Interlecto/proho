@@ -24,18 +24,28 @@ The demo community in [`database/seed/demo-community.json`](../../database/seed/
    The same human in two communities has one account, two memberships and two
    person records. Community A's administrators never see community B's
    record of that person.
-3. **Receivables are kept per billing account, not per person.** A billing
-   account normally covers one unit (or an apartment together with its
-   parking space and storage room). Under Ley 675 de 2001, art. 29, an
-   owner's debt follows the unit to the next owner, and owner and tenant are
-   jointly liable. So the balance belongs to the unit, and each charge
-   records who the responsible party was when it was issued.
+3. **Receivables are kept per billing account, not per person.** In a
+   property community a billing account covers one unit (or an apartment
+   together with its parking space and storage room). Under Ley 675 de 2001,
+   art. 29, an owner's debt follows the unit to the next owner, and owner and
+   tenant are jointly liable. So the balance belongs to the unit, and each
+   charge records who the responsible party was when it was issued. In a
+   community without units (a club, an association) a billing account covers
+   a member instead.
 4. **Everything financial is append-only.** Charges, payments, allocations and
    journal entries are never edited or deleted once posted. Corrections are
    new records that reverse or adjust (see accounting rules).
 5. **Relationships are effective-dated.** Ownership, occupancy, roles and
    coefficients have `valid_from` / `valid_to`, so history ("who owned 307 in
    March?") is a query, not an archaeology project.
+6. **Residential is the first kind of community, not the only one.** Features
+   are modules that a community has enabled or not, according to its kind
+   and its plan (§10). Only the core (identity, communities, people, audit)
+   is always present. Residential units, coefficients and Ley 675 rules live
+   in the `properties` module; a club without units never sees them.
+7. **Who holds the keys is part of the plan.** Free communities have their
+   personal data pseudonymized with keys the platform manages; paying
+   communities own their data completely and hold their own keys (§10).
 
 ## 2. Overview
 
@@ -58,7 +68,9 @@ erDiagram
     UNIT ||--o{ UNIT_RELATIONSHIP : "has"
 
     COMMUNITY ||--o{ BILLING_ACCOUNT : "has"
-    BILLING_ACCOUNT ||--|{ UNIT : "covers"
+    BILLING_ACCOUNT |o--o{ UNIT : "covers"
+    BILLING_ACCOUNT }o--o| PERSON : "bills member"
+    COMMUNITY ||--o{ COMMUNITY_PLAN : "subscribes"
     BILLING_ACCOUNT ||--o{ CHARGE : "owes"
     BILLING_ACCOUNT ||--o{ PAYMENT : "receives"
     PAYMENT ||--o{ ALLOCATION : "split into"
@@ -147,7 +159,8 @@ administration, accountant, auditor).
 | id, key         | `key` is a URL-safe slug, unique platform-wide (`los-robles`) |
 | name, legal_name |                                                             |
 | tax_id          | NIT                                                          |
-| kind            | `residential` (MVP), `mixed`, `commercial`; later `club`, … |
+| kind            | A kind template (§10.2): `ph_residential` (MVP), `ph_mixed`, `ph_commercial`; later `club`, `association`, … |
+| plan            | Effective-dated subscription plan (§10.3)                    |
 | country, currency, timezone | `CO`, `COP`, `America/Bogota`                    |
 | address         |                                                              |
 
@@ -222,7 +235,8 @@ resident of 105). A unit can be owned by someone who does not live there
 | Field              | Notes                                                   |
 | ------------------ | ------------------------------------------------------- |
 | community_id       |                                                         |
-| units              | One or more units; each unit in exactly one open billing account |
+| units              | One or more units; each unit in exactly one open billing account. Used when the `properties` module is enabled |
+| member             | The person billed, in communities without units (club dues). Exactly one of `units` / `member` is set |
 | responsible_party  | Effective-dated person: who statements are addressed to and charges are issued against. Default: the owner (or first co-owner) |
 | code               | Human-readable, usually the main unit number (`509`)    |
 
@@ -321,8 +335,123 @@ These must hold at all times and get automated tests in the backend:
 9. Posted charges, payments, allocations and journal entries are immutable.
 10. A payment report creates at most one payment, and only on confirmation.
 11. Receipt and voucher numbers are unique and gapless per community and type.
+12. A billing account covers either units or a member, never both.
+13. Commands of a disabled module, or beyond an entitlement's limit, are
+    rejected; changing kind, modules or plan never deletes data.
+14. Protected personal fields are never stored, logged or exported in clear
+    text outside the community's own authorized views and exports.
 
-## 10. Open questions for review
+## 10. Modules, kinds, plans and data custody
+
+### 10.1 Modules
+
+A module owns its entities, permissions, API paths, screens and migrations
+(the backend packages in §2). The core is always on; every other module is
+enabled per community.
+
+| Module            | Always on | Needed by                                            |
+| ----------------- | :-------: | ---------------------------------------------------- |
+| `identity`, `communities`, `residents` (people), `audit` | ✓ | everything |
+| `properties`      |           | Communities with private units (PH)                  |
+| `membership`      |           | Communities without units: member categories, dues (later) |
+| `billing`         |           | Charging and collecting                              |
+| `accounting`      |           | Double-entry ledger; requires `billing`              |
+| `communications`  |           | Announcements, boards, messages                      |
+| `payments`        |           | Electronic payments (Phase 5); requires `billing`    |
+| `marketplace`, `documents`, `assemblies`, … |  | Later modules (roadmap §3.6)            |
+
+Rules for modules:
+
+- All migrations run for every community; a disabled module simply has no
+  rows. Enabling a module never needs a schema change.
+- Disabling a module or downgrading a plan **never deletes data**. The data
+  becomes read-only or hidden until the module is enabled again.
+- A module may depend on others (`accounting` → `billing`) but never on a
+  module that depends on it. The backend checks these boundaries in tests.
+- The API exposes, in `/me` and per community, which modules and
+  capabilities are enabled, so the three clients show only what applies.
+
+### 10.2 Community kinds
+
+A kind is a template applied when a community is created: which modules are
+enabled, the default roles, the terminology, the default chart of accounts
+and posting rules, and legal rules that apply.
+
+| Kind              | Modules                                       | Terminology and rules                         |
+| ----------------- | --------------------------------------------- | --------------------------------------------- |
+| `ph_residential`  | properties, billing, accounting, communications | *Unidad*, *cuota de administración*; Ley 675 |
+| `ph_mixed`, `ph_commercial` | as above, with sector coefficient schedules | Statutory auditor mandatory              |
+| `club`, `association` (later) | membership, billing, accounting, communications | *Socio*, *cuota de sostenimiento*; no coefficients |
+
+Terminology is data (labels per kind and locale), not code, so a new kind
+does not need new screens.
+
+### 10.3 Plans
+
+A community's plan is effective-dated and defines its **entitlements**: which
+modules and capabilities are available, and limits (history, storage,
+exports, users). Feature checks ask for an entitlement, never for a plan
+name, so plans can change without code changes.
+
+**Free plan**, for small communities, to help growth and familiarity.
+
+- **Eligibility:** fewer than 20 billable units (or members), **and** an
+  annual ordinary budget below 60 times the current monthly minimum wage
+  (*SMMLV*). Both thresholds are platform settings; the SMMLV is kept in a
+  yearly reference table.
+- **Functional:** people, units, announcements, charges, payments and
+  reported payments, member statements, and the basic ledger with its
+  standard reports.
+- **Limited:** for example no electronic payments, limited history and
+  storage, standard reports only. The exact limits are set when pricing is
+  defined.
+- **Data custody:** personal data is pseudonymized with keys the platform
+  manages (§10.4). Exports are limited to the standard reports, and the
+  platform may use anonymized aggregate data under its terms of service.
+- **Outgrowing it:** when a community passes a threshold, it keeps working
+  for a grace period and is then asked to upgrade. It never loses access to
+  data it already has.
+
+**First paid plan (minimum guarantee):**
+
+- **Complete ownership of the data:** full export at any time in open
+  formats (journal, ledger, subledgers, documents, audit log), API access,
+  and no secondary use by the platform.
+- **Customer-held keys:** the pseudonymization and encryption keys are
+  controlled by the community (§10.4).
+
+**[legal]** Even on the free plan the community is the data controller under
+Ley 1581 de 2012, and it must be able to produce its accounting books and
+supporting documents when required by law. "Not complete ownership" must
+therefore mean limited export formats, platform-held keys and aggregate use,
+never withholding a community's own books. The terms of service need legal
+review before launch.
+
+### 10.4 Pseudonymization and keys
+
+Detailed in the security architecture; the domain consequences are:
+
+- **What is protected:** names, identity document numbers, emails, phones
+  and addresses of people, and free-text fields that may contain them. They
+  are stored encrypted, with keyed tokens (HMAC) where search or uniqueness
+  is needed (for example a unique identity document per community).
+  Financial amounts and accounting structure are not encrypted, so the ledger
+  stays queryable and verifiable.
+- **Where it applies:** in the database, backups, logs, analytics and support
+  tools. Support staff see tokens, not names.
+- **Key hierarchy:** each community has its own data keys. They are wrapped
+  by a key-encryption key that the **platform** holds on the free plan and
+  the **community** holds on paid plans (its own cloud KMS or a key it
+  supplies, with access it can revoke).
+- **Upgrade:** moving to a paid plan re-wraps the community's data keys with
+  its own key; the data itself does not need re-encryption.
+- **Consequences of customer-held keys:** if the community revokes access,
+  ProHo can no longer show its people's data and the community is locked
+  until access is restored. If it loses the key, the protected data cannot
+  be recovered, so the paid onboarding must include a key-recovery
+  procedure.
+
+## 11. Open questions for review
 
 1. **Billing account grouping:** is "one billing account per apartment,
    including its parking and storage units" the right default for the pilot
@@ -333,3 +462,9 @@ These must hold at all times and get automated tests in the backend:
    leave for after the MVP?
 4. **Person identity documents:** required for owners in the MVP (needed for
    certificates and *paz y salvo*), or optional?
+5. **Free-plan thresholds:** do parking and storage units count toward the
+   20-unit limit, or only apartments and houses? And is the 60 SMMLV limit
+   measured on the approved annual budget or on the amount actually billed
+   in the last twelve months?
+6. **Free-plan aggregate use:** which anonymized aggregates may the platform
+   use (e.g. fee benchmarks by city and size), and is opting out possible?

@@ -25,6 +25,8 @@ The platform will have three clients sharing one centralized backend: web, Andro
 | Payment providers | No electronic provider required for MVP     | Colombia PSE, Colombia's Llave system, PayPal, Venmo           |
 | Social features   | Announcements, boards, messaging            | Expanded moderation and notifications                          |
 | Offline access    | Read cached news and direct messages        | More resilient synchronization and additional offline features |
+| Modularity        | Features as modules enabled per community kind and plan | New community kinds (clubs, associations) as templates |
+| Plans             | Free plan for small communities (< 20 units and < 60 SMMLV budget), platform-held keys; entitlements model | Paid plans: complete data ownership and customer-held keys as the minimum |
 
 Two distinctions are worth preserving in the implementation plan:
 
