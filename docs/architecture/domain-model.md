@@ -1,6 +1,7 @@
 # Domain model
 
-Status: **draft for review** (Phase 0). Reviewed together with
+Status: **provisional** (Phase 0). Open questions in §11 do not block
+development; they are settled before release. Reviewed together with
 [`docs/accounting/`](../accounting/README.md), as the roadmap requires: the
 billing model below is the subledger of the general ledger, not a separate
 receivables system.
@@ -396,9 +397,13 @@ name, so plans can change without code changes.
 **Free plan**, for small communities, to help growth and familiarity.
 
 - **Eligibility:** fewer than 20 billable units (or members), **and** an
-  annual ordinary budget below 60 times the current monthly minimum wage
-  (*SMMLV*). Both thresholds are platform settings; the SMMLV is kept in a
-  yearly reference table.
+  approved annual ordinary budget **and** an amount billed over the last
+  twelve months each below its own threshold (initially 60 times the
+  current monthly minimum wage, *SMMLV*, for both). Parking spaces and
+  storage rooms count as units only when they are billed separately (their
+  own billing account); when grouped with an apartment they do not.
+  Thresholds are platform settings; the SMMLV is kept in a yearly reference
+  table.
 - **Functional:** people, units, announcements, charges, payments and
   reported payments, member statements, and the basic ledger with its
   standard reports.
@@ -462,9 +467,5 @@ Detailed in the security architecture; the domain consequences are:
    leave for after the MVP?
 4. **Person identity documents:** required for owners in the MVP (needed for
    certificates and *paz y salvo*), or optional?
-5. **Free-plan thresholds:** do parking and storage units count toward the
-   20-unit limit, or only apartments and houses? And is the 60 SMMLV limit
-   measured on the approved annual budget or on the amount actually billed
-   in the last twelve months?
-6. **Free-plan aggregate use:** which anonymized aggregates may the platform
+5. **Free-plan aggregate use:** which anonymized aggregates may the platform
    use (e.g. fee benchmarks by city and size), and is opting out possible?
