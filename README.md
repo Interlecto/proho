@@ -16,11 +16,15 @@ share one backend. See [ROADMAP.md](ROADMAP.md) for scope and phases.
 | `web/`                 | React + TypeScript web client                     |
 | `android/`             | Kotlin + Jetpack Compose client                   |
 | `ios/`                 | Swift + SwiftUI client                            |
+| `landing/`             | Public, static landing page (`proho.ilecto.app`)  |
 | `api/openapi/`         | Shared REST/OpenAPI contract                      |
 | `database/migrations/` | Database migrations                               |
 | `infrastructure/`      | Docker and deployment configuration               |
 | `docs/`                | Architecture, accounting, security, API, operations |
 | `legacy/`              | Original 2016 PHP implementation, kept for reference |
+
+See [docs/infrastructure.md](docs/infrastructure.md) for the planned public
+domains (`proho.ilecto.app`, `api.ilecto.net/proho/`).
 
 ## Development
 
