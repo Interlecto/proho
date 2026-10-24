@@ -1,0 +1,48 @@
+.app {
+  min-height: 100vh;
+  background: #f7f7f5;
+  color: #1c1c1a;
+}
+
+.top-bar {
+  background: #1f6f4f;
+  color: #ffffff;
+  padding: 16px 24px;
+}
+
+.app-name {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.tagline {
+  display: block;
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.content {
+  padding: 24px;
+  max-width: 640px;
+}
+
+.chip {
+  display: inline-block;
+  border: 1px solid #c9c7bf;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  color: #5b5b56;
+  margin-bottom: 16px;
+}
+
+.content h1 {
+  margin: 0 0 12px;
+  font-size: 1.5rem;
+}
+
+.content p {
+  margin: 0;
+  color: #5b5b56;
+}
