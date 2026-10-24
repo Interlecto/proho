@@ -24,6 +24,7 @@ functional spec.
 | `web/`                 | React + TypeScript web client                     |
 | `android/`             | Kotlin + Jetpack Compose client                   |
 | `ios/`                 | Swift + SwiftUI client                            |
+| `landing/`             | Public, static landing page (`proho.ilecto.app`)  |
 | `api/openapi/`         | Shared REST/OpenAPI contract                      |
 | `database/migrations/` | Database migrations                               |
 | `infrastructure/`      | Docker and deployment configuration               |

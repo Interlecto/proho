@@ -324,6 +324,11 @@ Exit criterion: Members can use core communication features from any client and 
 - Test offline behavior and synchronization after reconnecting.
 - Test database backups and restoration.
 - Establish monitoring, incident procedures, and operational documentation.
+- Deploy the production API behind `https://api.ilecto.net/proho/` and point
+  the web, Android and iOS clients at it. The static landing page at
+  `https://proho.ilecto.app/` (`landing/`, Cloudflare Pages) can go live
+  earlier, independently of this; see
+  [docs/infrastructure.md](docs/infrastructure.md).
 - Pilot with one or more residential communities.
 
 Exit criterion: The platform can operate a pilot community without manual database repairs, and financial records can be independently reconciled.
@@ -373,6 +378,7 @@ community-platform/
 │   ├── Features/
 │   ├── Core/
 │   └── Tests/
+├── landing/
 ├── api/
 │   └── openapi/
 ├── database/
