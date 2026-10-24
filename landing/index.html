@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="es" data-lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ProHo — Administración de propiedad horizontal</title>
+  <meta name="description" content="ProHo: plataforma de administración y comunicación para comunidades residenciales (propiedad horizontal). En desarrollo." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="/">ProHo</a>
+      <button id="lang-toggle" class="lang-toggle" type="button" aria-label="Switch language / Cambiar idioma">
+        <span data-lang-es>EN</span>
+        <span data-lang-en>ES</span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero wrap">
+      <p class="eyebrow" data-lang-es>por Interlecto</p>
+      <p class="eyebrow" data-lang-en>by Interlecto</p>
+
+      <h1 data-lang-es>Administración de propiedad horizontal, clara y auditable.</h1>
+      <h1 data-lang-en>Residential community management, transparent and auditable.</h1>
+
+      <p class="lead" data-lang-es>
+        ProHo es una plataforma de administración y comunicación para edificios
+        residenciales, conjuntos y urbanizaciones cerradas: facturación,
+        contabilidad de partida doble y comunicación entre residentes, en un
+        solo lugar.
+      </p>
+      <p class="lead" data-lang-en>
+        ProHo is a management and communication platform for residential
+        buildings, condominiums and gated communities: billing, double-entry
+        accounting, and resident communication, in one place.
+      </p>
+
+      <div class="status-badge">
+        <span class="dot" aria-hidden="true"></span>
+        <span data-lang-es>En desarrollo activo — fase de fundación</span>
+        <span data-lang-en>In active development — foundation phase</span>
+      </div>
+    </section>
+
+    <section class="panel wrap">
+      <h2 data-lang-es>Qué resuelve</h2>
+      <h2 data-lang-en>What it solves</h2>
+
+      <div class="cards">
+        <article class="card">
+          <h3 data-lang-es>Contabilidad de partida doble</h3>
+          <h3 data-lang-en>Double-entry accounting</h3>
+          <p data-lang-es>Cuotas ordinarias y extraordinarias, pagos, gastos y
+            reportes financieros, con un libro mayor auditable desde el MVP.</p>
+          <p data-lang-en>Ordinary and extraordinary assessments, payments,
+            expenses, and financial reports, with an auditable general ledger
+            from the MVP.</p>
+        </article>
+        <article class="card">
+          <h3 data-lang-es>Comunicación de la comunidad</h3>
+          <h3 data-lang-en>Community communication</h3>
+          <p data-lang-es>Anuncios oficiales, foros moderados y mensajería
+            directa entre residentes y administración.</p>
+          <p data-lang-en>Official announcements, moderated boards, and direct
+            messaging between residents and administration.</p>
+        </article>
+        <article class="card">
+          <h3 data-lang-es>Web, Android e iOS</h3>
+          <h3 data-lang-en>Web, Android and iOS</h3>
+          <p data-lang-es>Tres clientes nativos sobre un mismo backend, con
+            acceso sin conexión a mensajes y noticias ya sincronizados.</p>
+          <p data-lang-en>Three native clients sharing one backend, with
+            offline access to already-synchronized messages and news.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel wrap">
+      <h2 data-lang-es>Estado del proyecto</h2>
+      <h2 data-lang-en>Project status</h2>
+      <p data-lang-es>
+        ProHo está en una etapa temprana de desarrollo. El modelo de dominio y
+        el marco contable están definidos (pendientes de validación por un
+        contador público colombiano); el backend y la app de Android son
+        apenas un esqueleto inicial. Todavía no hay una versión pública para
+        comunidades.
+      </p>
+      <p data-lang-en>
+        ProHo is in an early stage of development. The domain model and
+        accounting framework are drafted (pending sign-off from a Colombian
+        accountant); the backend and the Android app are only an initial
+        shell. There is no public version for communities yet.
+      </p>
+      <p>
+        <a data-lang-es href="https://github.com/Interlecto/proho">Ver el progreso en GitHub →</a>
+        <a data-lang-en href="https://github.com/Interlecto/proho">Follow progress on GitHub →</a>
+      </p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>
+        <span data-lang-es>Un proyecto de</span>
+        <span data-lang-en>A project by</span>
+        <a href="https://ilecto.app/">Interlecto</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var toggle = document.getElementById('lang-toggle');
+      function apply(lang) {
+        root.setAttribute('data-lang', lang);
+        root.setAttribute('lang', lang);
+      }
+      toggle.addEventListener('click', function () {
+        apply(root.getAttribute('data-lang') === 'es' ? 'en' : 'es');
+      });
+      var preferred = (navigator.language || '').toLowerCase().indexOf('es') === 0 ? 'es' : 'en';
+      apply(preferred);
+    })();
+  </script>
+</body>
+</html>
