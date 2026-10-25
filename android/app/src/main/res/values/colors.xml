@@ -1,4 +1,4 @@
 <resources>
-    <!-- ProHo brand blue, from the original mockups. -->
-    <color name="proho_blue">#FF428BCA</color>
+    <!-- ProHo brand ink, from brand/proho-monogram.svg. -->
+    <color name="proho_ink">#FF0E1B2E</color>
 </resources>

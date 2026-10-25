@@ -5,21 +5,22 @@
 }
 
 .top-bar {
-  background: #1f6f4f;
+  background: #0e1b2e;
   color: #ffffff;
   padding: 16px 24px;
 }
 
-.app-name {
+.app-mark {
   display: block;
-  font-size: 1.1rem;
-  font-weight: 700;
+  width: 72px;
+  height: auto;
 }
 
 .tagline {
   display: block;
   font-size: 0.85rem;
   opacity: 0.9;
+  margin-top: 4px;
 }
 
 .content {

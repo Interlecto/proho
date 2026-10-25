@@ -25,6 +25,7 @@ functional spec.
 | `android/`             | Kotlin + Jetpack Compose client                   |
 | `ios/`                 | Swift + SwiftUI client                            |
 | `landing/`             | Public, static landing page (`proho.ilecto.app`)  |
+| `brand/`               | Shared visual identity: wordmark, monogram, palette |
 | `api/openapi/`         | Shared REST/OpenAPI contract                      |
 | `database/migrations/` | Database migrations                               |
 | `infrastructure/`      | Docker and deployment configuration               |

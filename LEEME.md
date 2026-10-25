@@ -24,6 +24,8 @@ la especificación funcional detallada del MVP.
 | `web/`                 | Cliente web en React + TypeScript                    |
 | `android/`             | Cliente en Kotlin + Jetpack Compose                  |
 | `ios/`                 | Cliente en Swift + SwiftUI                           |
+| `landing/`             | Página pública estática (`proho.ilecto.app`)         |
+| `brand/`               | Identidad visual compartida: wordmark, monograma, paleta |
 | `api/openapi/`         | Contrato REST/OpenAPI compartido                     |
 | `database/migrations/` | Migraciones de base de datos                         |
 | `infrastructure/`      | Configuración de Docker y despliegue                 |
