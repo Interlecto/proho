@@ -4,7 +4,8 @@
   --text: #1c1c1a;
   --muted: #5b5b56;
   --border: #e4e2dc;
-  --accent: #1f6f4f;
+  --ink: #0e1b2e;
+  --accent: #9c6418;
   --accent-contrast: #ffffff;
   --status-dot: #1f9d55;
 }
@@ -16,8 +17,9 @@
     --text: #f1f1ee;
     --muted: #a6a6a0;
     --border: #2b2d33;
-    --accent: #4fcf92;
-    --accent-contrast: #0b1310;
+    --ink: #0e1b2e;
+    --accent: #f0b36b;
+    --accent-contrast: #0e1b2e;
     --status-dot: #4fcf92;
   }
 }
@@ -61,10 +63,15 @@ html[data-lang="en"] [data-lang-es] {
 }
 
 .brand {
-  font-weight: 700;
-  font-size: 1.25rem;
+  display: inline-flex;
   color: var(--text);
   text-decoration: none;
+}
+
+.brand-mark {
+  width: 86px;
+  height: auto;
+  display: block;
 }
 
 .lang-toggle {
@@ -82,8 +89,29 @@ html[data-lang="en"] [data-lang-es] {
   border-color: var(--accent);
 }
 
+.hero-visual {
+  background-image: url("hero-skyline.jpg");
+  background-size: cover;
+  background-position: center;
+  min-height: 200px;
+}
+
+.hero-visual-overlay {
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  background: linear-gradient(180deg, rgba(14, 27, 46, 0.5), rgba(14, 27, 46, 0.88));
+}
+
+.hero-wordmark {
+  width: min(80%, 420px);
+  height: auto;
+}
+
 .hero {
-  padding-top: 56px;
+  padding-top: 40px;
   padding-bottom: 40px;
 }
 

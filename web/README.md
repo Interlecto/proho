@@ -12,3 +12,7 @@ React + TypeScript administrative and member interface, built with Vite.
 This is a shell: it renders a static placeholder screen and has no routing,
 state management or API client yet. Those are added as the corresponding
 backend modules land (see [ROADMAP.md](../ROADMAP.md) Phase 1 onward).
+
+`public/icon.svg` and the favicons rasterized from it come from
+[`brand/`](../brand/README.md), which documents their provenance and the
+color palette.

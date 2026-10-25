@@ -23,3 +23,13 @@ owning only its own custom-domain route, declared in `wrangler.jsonc`. See
 This page is intentionally separate from `web/` (the React/TypeScript member
 and administrator app): it is public, unauthenticated, and has no
 dependency on the backend.
+
+## Visual identity
+
+`public/icon.svg`, the favicons rasterized from it (`favicon.ico`,
+`icon-32.png`, `favicon-180.png`), and `public/hero-skyline.jpg` all come
+from [`brand/`](../brand/README.md), which documents their provenance and
+the color palette. The wordmark itself is inlined directly in
+`public/index.html` (once in the header, using `currentColor` so it follows
+the page's own light/dark theme, and once in white over the hero photo) so
+it stays crisp and recolorable without an extra network request.
