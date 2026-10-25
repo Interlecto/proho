@@ -35,8 +35,8 @@ la especificación funcional detallada del MVP.
 ## Estado de avance
 
 En etapa temprana de la **Fase 0 — fundación** (ver [ROADMAP.md §4](ROADMAP.md)).
-Todavía no hay nada desplegable ni usable; el trabajo hecho hasta ahora es la
-base sobre la que se construirán las fases siguientes:
+La página pública ya está en línea; los tres clientes y el backend todavía no
+son usables:
 
 - **Modelo de dominio y marco contable** — redactados, de carácter
   provisional: [docs/architecture/domain-model.md](docs/architecture/domain-model.md)
@@ -44,17 +44,23 @@ base sobre la que se construirán las fases siguientes:
   contabilización, invariantes del libro mayor). Pendientes de validación por
   un contador público colombiano antes de iniciar la Fase 2 (implementación
   de facturación/contabilidad).
-- **Backend** — solo el esqueleto de un monolito modular en Spring Boot
-  (`backend/`), con verificación de límites entre módulos (`ModularityTest`)
-  ya configurada, pero sin los módulos de dominio (identidad, comunidades,
-  facturación, contabilidad, …) implementados todavía.
-- **Android** — esqueleto de aplicación en Jetpack Compose (`android/`), con
-  firma de depuración compartida configurada, sin funcionalidades aún.
-- **Web e iOS** — sin iniciar; solo README de marcador de posición.
-- **Base de datos** — una migración base y un conjunto de datos de ejemplo
-  (comunidad demo); todavía sin tablas de dominio.
-- **Contrato de API e infraestructura** — estructura vacía (`api/openapi/`,
-  `infrastructure/`), aún sin definir.
+- **Backend** — monolito modular en Spring Boot (`backend/`), con
+  verificación de límites entre módulos (`ModularityTest`). Un módulo ya
+  implementado: **identity** (registro de cuentas, `POST /accounts`). El
+  resto (comunidades, facturación, contabilidad, …) son solo límites de
+  módulo declarados, sin código todavía.
+- **Web y Android** — esqueletos de aplicación (`web/`, `android/`) con la
+  identidad visual del proyecto ([`brand/`](brand/README.md)) aplicada, sin
+  funcionalidades aún.
+- **iOS** — sin iniciar; solo README de marcador de posición.
+- **Página pública** — en línea en [proho.ilecto.app](https://proho.ilecto.app/)
+  (`landing/`), independiente del resto de la plataforma.
+- **Base de datos** — dos migraciones (base del tenant, identidad) y un
+  conjunto de datos de ejemplo (comunidad demo).
+- **Contrato de API** — [api/openapi/openapi.yaml](api/openapi/openapi.yaml),
+  iniciado con el único endpoint que tiene el backend (`POST /accounts`);
+  crece junto con el backend.
+- **Infraestructura** — estructura vacía (`infrastructure/`), aún sin definir.
 - **Aprovechamiento del legado** — completo:
   [docs/legacy-salvage.md](docs/legacy-salvage.md) registra qué se conserva
   del diseño de 2016 (pantallas, flujos), pantalla por pantalla y fase por
