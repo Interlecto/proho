@@ -45,10 +45,11 @@ son usables:
   un contador público colombiano antes de iniciar la Fase 2 (implementación
   de facturación/contabilidad).
 - **Backend** — monolito modular en Spring Boot (`backend/`), con
-  verificación de límites entre módulos (`ModularityTest`). Un módulo ya
-  implementado: **identity** (registro de cuentas, `POST /accounts`). El
-  resto (comunidades, facturación, contabilidad, …) son solo límites de
-  módulo declarados, sin código todavía.
+  verificación de límites entre módulos (`ModularityTest`). Dos módulos ya
+  implementados: **identity** (registro de cuentas, `POST /accounts`) y
+  **audit** (registra eventos de cambio de estado para que los demás
+  módulos los invoquen). El resto (comunidades, facturación, contabilidad,
+  …) son solo límites de módulo declarados, sin código todavía.
 - **Web y Android** — esqueletos de aplicación (`web/`, `android/`) con la
   identidad visual del proyecto ([`brand/`](brand/README.md)) aplicada, sin
   funcionalidades aún.

@@ -43,9 +43,10 @@ landing page is live; the three clients and the backend are not usable yet:
   rules, ledger invariants). Still pending sign-off from a Colombian
   accountant before Phase 2 (billing/ledger implementation) starts.
 - **Backend** — a Spring Boot modular monolith (`backend/`) with
-  module-boundary enforcement (`ModularityTest`). One module is implemented:
-  **identity** (account registration, `POST /accounts`). The rest
-  (communities, billing, accounting, …) are still just declared module
+  module-boundary enforcement (`ModularityTest`). Two modules are
+  implemented: **identity** (account registration, `POST /accounts`) and
+  **audit** (records state-changing events for other modules to call). The
+  rest (communities, billing, accounting, …) are still just declared module
   boundaries with no code.
 - **Web and Android** — app shells (`web/`, `android/`) with the project's
   visual identity ([`brand/`](brand/README.md)) applied, no features yet.
