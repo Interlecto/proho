@@ -19,3 +19,20 @@ needed to run them. `bootRun` needs a PostgreSQL server, configured with
 
 Migrations are in `database/migrations/` at the repository root and are
 packaged into the jar.
+
+## Modules implemented so far
+
+- **identity** — `POST /accounts` registers an account (email, password,
+  display name). Passwords are hashed with Spring Security's delegating
+  encoder (bcrypt by default); ids are UUIDv7 ([`shared/Uuid7.kt`](src/main/kotlin/net/interlecto/proho/shared/Uuid7.kt)),
+  assigned by the application rather than the database, so account creation
+  goes through `JdbcAggregateOperations.insert()` rather than
+  `CrudRepository.save()` (Spring Data JDBC can't tell INSERT from UPDATE
+  from a non-null id it didn't generate itself).
+- **audit** — no API of its own. `AuditEventRecorder.record(...)` is how
+  every other module writes an `AuditEvent` (see
+  `docs/architecture/domain-model.md` §8); call it, don't use
+  `AuditEventRepository` directly outside this module.
+
+See [`api/openapi/openapi.yaml`](../api/openapi/openapi.yaml) for the
+request/response contract.

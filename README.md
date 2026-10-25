@@ -34,25 +34,31 @@ functional spec.
 
 ## Status
 
-Early **Phase 0 — foundation** (see [ROADMAP.md §4](ROADMAP.md)). Nothing is
-deployable or usable yet; the work so far is the groundwork the later phases
-build on:
+Early **Phase 0 — foundation** (see [ROADMAP.md §4](ROADMAP.md)). The public
+landing page is live; the three clients and the backend are not usable yet:
 
 - **Domain model and accounting framework** — drafted and provisional:
   [docs/architecture/domain-model.md](docs/architecture/domain-model.md) and
   [docs/accounting/](docs/accounting/README.md) (chart of accounts, posting
   rules, ledger invariants). Still pending sign-off from a Colombian
   accountant before Phase 2 (billing/ledger implementation) starts.
-- **Backend** — a Spring Boot modular-monolith shell (`backend/`), with
-  module-boundary enforcement (`ModularityTest`) wired up but no domain
-  modules (identity, communities, billing, accounting, …) implemented yet.
-- **Android** — a Jetpack Compose app shell (`android/`) with shared debug
-  signing configured, no features yet.
-- **Web and iOS** — not started; only placeholder READMEs.
-- **Database** — one baseline migration and a demo-community seed fixture;
-  no domain tables yet.
-- **API contract, infrastructure** — empty scaffolding (`api/openapi/`,
-  `infrastructure/`), not yet defined.
+- **Backend** — a Spring Boot modular monolith (`backend/`) with
+  module-boundary enforcement (`ModularityTest`). Two modules are
+  implemented: **identity** (account registration, `POST /accounts`) and
+  **audit** (records state-changing events for other modules to call). The
+  rest (communities, billing, accounting, …) are still just declared module
+  boundaries with no code.
+- **Web and Android** — app shells (`web/`, `android/`) with the project's
+  visual identity ([`brand/`](brand/README.md)) applied, no features yet.
+- **iOS** — not started; only a placeholder README.
+- **Landing page** — live at [proho.ilecto.app](https://proho.ilecto.app/)
+  (`landing/`), independent of the rest of the platform.
+- **Database** — two migrations (tenant baseline, identity) and a
+  demo-community seed fixture.
+- **API contract** — [api/openapi/openapi.yaml](api/openapi/openapi.yaml),
+  started with the one endpoint the backend has (`POST /accounts`); grows
+  alongside the backend.
+- **Infrastructure** — empty scaffolding (`infrastructure/`), not yet defined.
 - **Legacy salvage** — complete: [docs/legacy-salvage.md](docs/legacy-salvage.md)
   records what the 2016 design (screens, workflows) carries over, screen by
   screen and phase by phase. No legacy code or data is reused.

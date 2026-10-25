@@ -1,0 +1,95 @@
+openapi: 3.0.3
+info:
+  title: ProHo API
+  description: >
+    Shared REST contract for the ProHo backend. Grows module by module,
+    alongside the backend; see docs/architecture/domain-model.md for the
+    entities and docs/development.md for the branch workflow.
+  version: "0.1"
+
+servers:
+  - url: http://localhost:8080
+    description: Local development
+  - url: https://api.ilecto.net/proho
+    description: Production (see docs/infrastructure.md)
+
+paths:
+  /accounts:
+    post:
+      summary: Register an account
+      description: >
+        Creates a platform login (identity module). The account starts
+        `pending_verification`; it holds no community data of its own —
+        see docs/architecture/domain-model.md §3.
+      operationId: registerAccount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterAccountRequest"
+      responses:
+        "201":
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+        "400":
+          description: Invalid request (bad email, password too short, etc.)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: The email is already registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  schemas:
+    RegisterAccountRequest:
+      type: object
+      required: [email, password, displayName]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 320
+        password:
+          type: string
+          minLength: 8
+          maxLength: 72
+          description: Never returned; stored as a password hash.
+        displayName:
+          type: string
+          maxLength: 200
+        locale:
+          type: string
+          maxLength: 10
+          default: es-CO
+
+    Account:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        displayName:
+          type: string
+        locale:
+          type: string
+        status:
+          type: string
+          enum: [pending_verification, active, locked, closed]
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
