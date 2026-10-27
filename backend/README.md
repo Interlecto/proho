@@ -20,6 +20,42 @@ needed to run them. `bootRun` needs a PostgreSQL server, configured with
 Migrations are in `database/migrations/` at the repository root and are
 packaged into the jar.
 
+## Local PostgreSQL (Windows, no admin terminal)
+
+No local Postgres and no Docker Desktop? This gets `bootRun` working against
+the defaults above, without ever needing an elevated prompt:
+
+1. Install PostgreSQL 17 (any 14+ works): `winget install --id PostgreSQL.PostgreSQL.17`.
+   It registers a Windows service (`postgresql-x64-17`, Automatic startup),
+   but starting/stopping that service *does* need an elevated prompt — it's
+   fine to skip that and use step 3 instead.
+2. The installer sets no superuser password when run unattended, and
+   `pg_hba.conf` requires one for every connection (even local), so create
+   the `proho` role/database via single-user mode, which talks to the data
+   directory directly and bypasses `pg_hba.conf` auth entirely. Run this once,
+   with the server **stopped**:
+   ```powershell
+   $data = "C:\Program Files\PostgreSQL\17\data"
+   $exe  = "C:\Program Files\PostgreSQL\17\bin\postgres.exe"
+   @"
+   ALTER USER postgres WITH PASSWORD 'postgres';
+   CREATE ROLE proho LOGIN PASSWORD 'proho';
+   CREATE DATABASE proho OWNER proho;
+   "@ | Out-File -Encoding ascii pg_init.sql
+   cmd /c "`"$exe`" --single -D `"$data`" postgres < pg_init.sql"
+   ```
+3. Start the server without the Windows service (works from a non-admin
+   terminal; does not survive reboot/logoff — re-run as needed, or start the
+   service instead if you do have an elevated prompt):
+   ```powershell
+   & "C:\Program Files\PostgreSQL\17\bin\pg_ctl.exe" start -D "C:\Program Files\PostgreSQL\17\data" -l pg.log
+   ```
+   Stop it the same way: `pg_ctl.exe stop -D "C:\Program Files\PostgreSQL\17\data"`.
+4. `./gradlew bootRun` now works with no env vars — it uses `proho`/`proho`/`proho`.
+
+None of this is needed for `./gradlew test`, which starts its own embedded
+Postgres.
+
 ## Modules implemented so far
 
 - **identity** — `POST /accounts` registers an account (email, password,
