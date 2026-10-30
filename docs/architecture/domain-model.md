@@ -217,6 +217,17 @@ A **coefficient schedule** is a named, effective-dated set of coefficients:
 
 Assessments use the schedule version in force on their issue date.
 
+**Implementation note (first `properties` slice):** `CoefficientSchedule`
+and `UnitCoefficient` are not built yet, and `plan` on `Community` stays a
+plain string column rather than an effective-dated table against a
+`plans`/entitlements module — neither `billing`/`accounting` nor any
+entitlement check exists yet to consume them. Revisit when `billing`
+lands. The `properties`/`residents` `package-info.java` files were
+written ahead of this with `allowedDependencies` on a `plans` module and
+without `identity`; both were corrected (dropped the unused `plans`
+dependency, added `identity` for `@AuthenticationPrincipal`) when this
+slice actually needed to compile.
+
 ## 5. People and relationships (`residents`)
 
 ### Person
@@ -242,6 +253,15 @@ Assessments use the schedule version in force on their issue date.
 One person can hold several roles on the same unit (Esteban is owner and
 resident of 105). A unit can be owned by someone who does not live there
 (Hernán, 212) and lived in by someone who owns nothing (Claudia, 212).
+
+**Implementation note (first `residents` slice):** invariant #5 (co-owner
+shares *in force* sum to 100) is enforced here only as "reject an owner
+relationship whose share would push the active sum over 100" — not as an
+atomic "set all co-owners to exactly 100" operation. A unit can therefore
+sit under-owned (e.g. one 60% owner recorded, the rest not yet entered)
+indefinitely; nothing currently requires reaching exactly 100. Revisit
+once a workflow needs the stronger guarantee (e.g. closing an ownership
+transfer).
 
 ## 6. Billing (`billing`)
 
