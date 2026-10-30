@@ -127,6 +127,20 @@ At most one non-ended membership per (account, community). Joining is by
 invitation: an administrator invites an email, optionally pre-linked to a
 person record; the invitee registers or signs in and accepts.
 
+### Session / Token (`identity`)
+
+`AccountSession` (bearer tokens for API access) and `PasswordResetToken`
+(single-use recovery tokens) each store only a SHA-256 hash of a
+high-entropy random token, plus `account_id`, timing fields, and a
+revoked/used marker — never the raw token. `Credential` stays folded into
+`Account.password_hash` for now rather than becoming its own table: with
+exactly one credential type in use, a separate table has no current
+consumer. When a second credential type (a linked Google identity, Phase
+5) is added, `password_hash` can be migrated out of `Account` into a
+`Credential` row in one bounded migration, without touching
+`Session/Token` — sessions are already keyed by `account_id` alone,
+independent of how the account authenticated.
+
 ### Roles (`communities`)
 
 Permissions come from two sources:

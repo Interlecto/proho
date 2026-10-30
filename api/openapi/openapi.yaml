@@ -48,7 +48,136 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /auth/login:
+    post:
+      summary: Log in with email and password
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: >
+            Invalid email or password. The same error is returned whether
+            the email is unregistered or the password is wrong, and for a
+            locked or closed account, so the response never confirms
+            whether an email is registered.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/logout:
+    post:
+      summary: Revoke the current session
+      operationId: logout
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Session revoked
+        "401":
+          description: Missing, invalid, expired or already-revoked token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /me:
+    get:
+      summary: The authenticated account
+      description: >
+        Will later also expose, per docs/architecture/domain-model.md
+        §10.1, which modules and capabilities are enabled; this first
+        version returns only account fields.
+      operationId: getCurrentAccount
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: The authenticated account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+        "401":
+          description: Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/password-reset/request:
+    post:
+      summary: Request a password-reset token
+      description: >
+        Always returns 202, whether or not the email matches an eligible
+        account, so the response never confirms whether an email is
+        registered. Delivery of the token (by email) is not yet
+        implemented; see the notifications module.
+      operationId: requestPasswordReset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestPasswordResetRequest"
+      responses:
+        "202":
+          description: Request accepted
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/password-reset/confirm:
+    post:
+      summary: Apply a new password using a reset token
+      description: >
+        Revokes every existing session for the account on success.
+      operationId: confirmPasswordReset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConfirmPasswordResetRequest"
+      responses:
+        "204":
+          description: Password changed
+        "400":
+          description: >
+            Invalid request, or the token is missing, already used or
+            expired — one error for all three, so the response never
+            confirms which.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
   schemas:
     RegisterAccountRequest:
       type: object
@@ -93,3 +222,48 @@ components:
       properties:
         error:
           type: string
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 320
+        password:
+          type: string
+          maxLength: 72
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: Opaque bearer token. Send as "Authorization: Bearer <token>".
+        expiresAt:
+          type: string
+          format: date-time
+        account:
+          $ref: "#/components/schemas/Account"
+
+    RequestPasswordResetRequest:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 320
+
+    ConfirmPasswordResetRequest:
+      type: object
+      required: [token, newPassword]
+      properties:
+        token:
+          type: string
+        newPassword:
+          type: string
+          minLength: 8
+          maxLength: 72
+          description: Never returned; stored as a password hash.

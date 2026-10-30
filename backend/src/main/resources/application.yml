@@ -8,6 +8,11 @@ spring:
   flyway:
     locations: classpath:db/migration
 
+proho:
+  auth:
+    session-ttl: ${PROHO_SESSION_TTL:30d}
+    password-reset-token-ttl: ${PROHO_PASSWORD_RESET_TOKEN_TTL:1h}
+
 management:
   endpoints:
     web:

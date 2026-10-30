@@ -6,8 +6,10 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseStatus
@@ -35,7 +37,8 @@ data class AccountResponse(
     val status: String,
 )
 
-private fun Account.toResponse() = AccountResponse(id, email, displayName, locale, status.value)
+// Internal, not private: AuthController reuses this to build LoginResponse.account.
+internal fun Account.toResponse() = AccountResponse(id, email, displayName, locale, status.value)
 
 @RestController
 class AccountController(private val registrationService: AccountRegistrationService) {
@@ -55,6 +58,22 @@ class AccountController(private val registrationService: AccountRegistrationServ
             )
         return account.toResponse()
     }
+
+    // See docs/architecture/domain-model.md §10.1: "The API exposes, in /me
+    // and per community, which modules and capabilities are enabled."
+    // This slice returns only account fields; growing it to include enabled
+    // modules/capabilities is later work once the `communities` module exists.
+    @GetMapping("/me")
+    fun me(
+        @AuthenticationPrincipal account: AuthenticatedAccount,
+    ): AccountResponse =
+        AccountResponse(
+            id = account.accountId,
+            email = account.email,
+            displayName = account.displayName,
+            locale = account.locale,
+            status = account.status.value,
+        )
 
     @ExceptionHandler(EmailAlreadyRegisteredException::class)
     fun handleDuplicateEmail(): ResponseEntity<Map<String, String>> =

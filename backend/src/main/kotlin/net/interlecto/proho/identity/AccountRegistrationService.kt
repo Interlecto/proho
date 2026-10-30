@@ -1,9 +1,11 @@
 package net.interlecto.proho.identity
 
+import net.interlecto.proho.audit.AuditEventRecorder
 import net.interlecto.proho.shared.Uuid7
 import org.springframework.data.jdbc.core.JdbcAggregateOperations
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 
 data class RegisterAccountCommand(
@@ -23,10 +25,12 @@ class AccountRegistrationService(
     // would issue a no-op UPDATE instead. insert() always inserts.
     private val jdbcAggregateOperations: JdbcAggregateOperations,
     private val passwordEncoder: PasswordEncoder,
+    private val auditEventRecorder: AuditEventRecorder,
 ) {
     // A 409 here confirms the email is registered (a user-enumeration trade-off).
     // Hardening this to a generic response plus a "someone tried to sign up
     // with your address" email is deferred until the notifications module exists.
+    @Transactional
     fun register(command: RegisterAccountCommand): Account {
         if (accounts.existsByEmail(command.email)) {
             throw EmailAlreadyRegisteredException(command.email)
@@ -41,6 +45,13 @@ class AccountRegistrationService(
                 passwordHash = passwordEncoder.encode(command.password)!!,
                 createdAt = Instant.now(),
             )
-        return jdbcAggregateOperations.insert(account)
+        val saved = jdbcAggregateOperations.insert(account)
+        auditEventRecorder.record(
+            entityType = "account",
+            entityId = saved.id,
+            action = "registered",
+            actorAccountId = saved.id,
+        )
+        return saved
     }
 }
