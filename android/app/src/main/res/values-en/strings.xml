@@ -4,4 +4,25 @@
     <string name="switch_community">Switch community</string>
     <string name="welcome_title">Welcome to ProHo</string>
     <string name="welcome_body">Statements, announcements and messages from your communities will appear here.</string>
+    <string name="login_title">Log in</string>
+    <string name="register_title">Create account</string>
+    <string name="name_label">Name</string>
+    <string name="email_label">Email</string>
+    <string name="password_label">Password</string>
+    <string name="no_account_prompt">No account? Create one</string>
+    <string name="has_account_prompt">Already have an account? Log in</string>
+    <string name="error_invalid_credentials">Wrong email or password.</string>
+    <string name="error_email_already_registered">That email is already registered.</string>
+    <string name="error_invalid_request">Check the entered data.</string>
+    <string name="error_unknown">Something went wrong.</string>
+    <string name="your_communities_title">Your communities</string>
+    <string name="logout_action">Log out</string>
+    <string name="loading">Loading…</string>
+    <string name="no_communities_yet">You don\'t belong to any community yet.</string>
+    <string name="create_community_action">Create community</string>
+    <string name="community_name_label">Name</string>
+    <string name="community_key_label">Key (unique, lowercase and dashes)</string>
+    <string name="create_action">Create</string>
+    <string name="cancel_action">Cancel</string>
+    <string name="error_community_key_already_registered">A community with that key already exists.</string>
 </resources>
