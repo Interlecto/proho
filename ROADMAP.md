@@ -6,6 +6,21 @@ The most important change is the accounting requirement: the MVP will already in
 
 The platform will have three clients sharing one centralized backend: web, Android, and native iOS.
 
+## Status at a glance
+
+✅ done &nbsp;&nbsp; ⚠️ in progress &nbsp;&nbsp; 🔴 blocked &nbsp;&nbsp; ⬜ not started
+
+One row per phase from §4 below; see that section for the full bullet lists and exit criteria.
+
+| Phase | Status | Where things stand |
+| --- | :-: | --- |
+| 0 — Foundation | ⚠️ | Domain model, accounting-policy docs, the OpenAPI contract, the Kotlin/Spring backend, CI, audit logging and tenant isolation are in place. Web and Android have project shells; **iOS has no project yet**. Deployment infra and secrets management are still documented conventions, not running infrastructure. |
+| 1 — Identity and community administration | ⚠️ | Registration, login, logout and password reset are built and tested; so are multi-community membership and basic community/building/unit/person/relationship creation, verified end to end on web and Android demos. Still missing: invite-by-email, role administration beyond the founding administrator, member profiles/privacy controls, and real dashboards on any client. |
+| 2 — Accounting MVP | ⬜ | `billing` and `accounting` are empty module stubs — no code yet. Policy decisions P1–P8 in `docs/accounting/README.md` (contingency fund, extraordinary-assessment recognition, etc.) are still provisional, pending review by a Colombian public accountant — 🔴 a real blocker before posting rules can be finalized. |
+| 3 — Social features and offline reading | ⬜ | `communications` doesn't exist yet: no announcements, boards, messaging, or offline caching. |
+| 4 — Pilot and production readiness | ⬜ | No data-import tooling, no production deployment, no pilot community. Depends on Phases 2–3 landing first. |
+| 5 — First release | ⬜ | Google sign-in and payment connectors are explicitly deferred; the identity schema is already designed so a Google identity can be added later without rework. |
+
 ## 1. Confirmed product decisions
 
 | Area              | MVP                                         | First release                                                  |
