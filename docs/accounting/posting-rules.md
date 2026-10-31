@@ -1,5 +1,7 @@
 # Posting rules
 
+*[Leer en español](reglas-de-contabilizacion.md)*
+
 How every financial event becomes a journal entry. Accounts are written as
 roles (see [chart-of-accounts.md](chart-of-accounts.md)); codes in the
 examples are the template defaults. Billing-account subledger keys are shown
