@@ -1,0 +1,14 @@
+#include "Base.xcconfig"
+
+// Installs next to a release build, like Android's .debug suffix.
+PRODUCT_BUNDLE_IDENTIFIER = net.interlecto.proho.debug
+PROHO_DISPLAY_NAME = ProHo (dev)
+
+// The simulator shares the Mac's network, so 127.0.0.1 is the Mac's
+// backend. On a physical device, override this in Local.xcconfig with the
+// Mac's Bonjour name, e.g. http:/$()/my-mac.local:8080 (allowed by
+// NSAllowsLocalNetworking in Info.plist).
+PROHO_API_BASE = http:/$()/127.0.0.1:8080
+
+// Optional, untracked: DEVELOPMENT_TEAM, PROHO_API_BASE overrides.
+#include? "Local.xcconfig"

@@ -1,0 +1,29 @@
+/* Generated from android/app/src/main/res/values-en/strings.xml, plus iOS-only keys at the end. Keep keys in step with Android. */
+
+"tagline" = "Communal property management";
+"no_community" = "No community";
+"switch_community" = "Switch community";
+"welcome_title" = "Welcome to ProHo";
+"welcome_body" = "Statements, announcements and messages from your communities will appear here.";
+"login_title" = "Log in";
+"register_title" = "Create account";
+"name_label" = "Name";
+"email_label" = "Email";
+"password_label" = "Password";
+"no_account_prompt" = "No account? Create one";
+"has_account_prompt" = "Already have an account? Log in";
+"error_invalid_credentials" = "Wrong email or password.";
+"error_email_already_registered" = "That email is already registered.";
+"error_invalid_request" = "Check the entered data.";
+"error_unknown" = "Something went wrong.";
+"your_communities_title" = "Your communities";
+"logout_action" = "Log out";
+"loading" = "Loading…";
+"no_communities_yet" = "You don't belong to any community yet.";
+"create_community_action" = "Create community";
+"community_name_label" = "Name";
+"community_key_label" = "Key (unique, lowercase and dashes)";
+"create_action" = "Create";
+"cancel_action" = "Cancel";
+"error_community_key_already_registered" = "A community with that key already exists.";
+"error_network" = "Could not reach the server.";

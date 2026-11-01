@@ -14,7 +14,7 @@ One row per phase from §4 below; the same icons mark each individual step there
 
 | Phase | Status | Where things stand |
 | --- | :-: | --- |
-| 0 — Foundation | ⚠️ | Domain model, accounting-policy docs, the OpenAPI contract, the Kotlin/Spring backend, CI, audit logging and tenant isolation are in place. Web and Android have project shells; **iOS has no project yet**. Deployment infra and secrets management are still documented conventions, not running infrastructure. |
+| 0 — Foundation | ⚠️ | Domain model, accounting-policy docs, the OpenAPI contract, the Kotlin/Spring backend, CI, audit logging and tenant isolation are in place. Web and Android have project shells; **iOS has a skeleton not yet built on a Mac** (`ios/README.md`). Deployment infra and secrets management are still documented conventions, not running infrastructure. |
 | 1 — Identity and community administration | ⚠️ | Registration, login, logout and password reset are built and tested; so are multi-community membership and basic community/building/unit/person/relationship creation, verified end to end on web and Android demos. Still missing: invite-by-email, role administration beyond the founding administrator, member profiles/privacy controls, and real dashboards on any client. |
 | 2 — Accounting MVP | ⬜ | `billing` and `accounting` are empty module stubs — no code yet. Policy decisions P1–P8 in `docs/accounting/README.md` (contingency fund, extraordinary-assessment recognition, etc.) are still provisional, pending review by a Colombian public accountant — 🔴 a real blocker before posting rules can be finalized. |
 | 3 — Social features and offline reading | ⬜ | `communications` doesn't exist yet: no announcements, boards, messaging, or offline caching. |
@@ -282,7 +282,7 @@ The phases can overlap where dependencies permit. Accounting and financial corre
 - ⚠️ Document the journal posting rules for assessments, payments, expenses, credits, and reversals. *(same provisional status)*
 - ✅ Establish the shared REST/OpenAPI contract.
 - ✅ Create the Kotlin/Spring Boot backend and PostgreSQL schema.
-- ⚠️ Set up React/TypeScript, Kotlin/Compose, and Swift/SwiftUI projects. *(web and Android exist; iOS has no project yet)*
+- ⚠️ Set up React/TypeScript, Kotlin/Compose, and Swift/SwiftUI projects. *(web and Android exist; iOS skeleton written, pending first Mac build)*
 - ⚠️ Establish automated builds, tests, migrations, and deployment. *(CI, tests and migrations exist; no deployment pipeline yet)*
 - ⚠️ Define tenant isolation, audit logging, and secrets management. *(isolation and audit logging are built and tested; secrets management is still just an env-var convention)*
 
@@ -296,7 +296,7 @@ Exit criterion: The team can deploy the backend and all three client shells, wit
 - ✅ Owner, tenant, resident, and representative relationships.
 - ⚠️ Membership and role administration. *(founding membership and administrator role work; no invites or role assignment for anyone else yet)*
 - ⬜ Member profiles and privacy controls.
-- ⚠️ Consistent navigation and core member dashboard on all three platforms. *(basic auth/community screens on web and Android; no dashboard; iOS has nothing)*
+- ⚠️ Consistent navigation and core member dashboard on all three platforms. *(basic auth/community screens on web and Android, and coded but unverified on iOS; no dashboard)*
 
 Exit criterion: A resident can switch between communities and view permitted information without duplicating accounts or exposing another community's data.
 
