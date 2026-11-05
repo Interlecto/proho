@@ -313,6 +313,7 @@ Exit criterion: A resident can switch between communities and view permitted inf
 - ⬜ Trial balance, general ledger, income and expense statement, and balance sheet.
 - ⬜ Collection, aging, and member-statement reports.
 - ⬜ CSV/XLSX exports and relevant PDF reports.
+- ⬜ Keep the ledger compatible with Contarte's primitives, re-checking its schema before finalizing ours. *(design inputs in `docs/strategy/contarte-alignment.md` §6; the shared interchange format waits on Contarte's M5)*
 - ⬜ Reconciliation and period-close controls.
 
 Exit criterion: Financial reports reconcile to the ledger, every posted journal entry balances, and corrections preserve a complete audit trail.
@@ -404,6 +405,7 @@ community-platform/
 └── docs/
     ├── architecture/
     ├── accounting/
+    ├── strategy/
     ├── security/
     ├── api/
     └── operations/
@@ -436,6 +438,7 @@ The broad product direction is now defined. A few implementation details still n
 3. Payment connector order: Which provider should be integrated first, based on merchant eligibility, transaction fees, API maturity, and settlement behavior.
 4. Offline retention: How much message history to cache, for how long, and how sensitive local data should be protected on shared or lost devices.
 5. iOS distribution: Whether the first iOS build will be distributed through TestFlight and the App Store, with a corresponding Apple Developer account and signing pipeline.
-6. Contarte compatibility: The accounting module must stay compatible and exchangeable with [Contarte](https://github.com/chlewey/Contarte), the author's personal double-entry bookkeeping Android app. In practice this means the chart of accounts, journal entries and ledger invariants should share a data model (or an exact, lossless mapping between the two) and a common export/import format, so books started in one app can move to the other without reconciliation. Contarte's own CSV import/export (its M5 milestone) is a candidate for that shared format; ProHo's accounting backend should track Contarte's data model as it stabilizes rather than diverge from it.
+6. Contarte compatibility: The accounting module must stay compatible and exchangeable with [Contarte](https://github.com/chlewey/Contarte), the author's double-entry bookkeeping Android app for personal and small-business books. Contarte is upstream for the shared primitives (its ADR 0002): money as integer minor units, the ledger/account/entry/line shape, chart rules, and the posting invariants. ProHo maps to them and keeps its domain rules (vouchers, period locking, funds, subledgers, withholding). Books should move between the apps without reconciliation at the level of balances and reports. Contarte's CSV import/export (its M5 milestone, not yet built) is the candidate shared format. See [docs/strategy/contarte-alignment.md](docs/strategy/contarte-alignment.md) for the mapping and its known gaps.
+7. External ledger access: Whether ProHo will expose a narrow, ledger-only API so an external accountant or statutory auditor can work on a community's books from a Contarte client, without using ProHo's product. Contarte's post-v1 strategy is waiting on this answer. Nothing is scheduled; the conditions and open questions are in [docs/strategy/contarte-alignment.md](docs/strategy/contarte-alignment.md).
 
 The most consequential next step is to define the residential domain model and accounting posting rules together. That prevents the fee-management module from evolving into a standalone receivables system that later needs to be retrofitted into the general ledger.

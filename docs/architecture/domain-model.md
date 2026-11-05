@@ -165,6 +165,10 @@ Visibility tiers inherited from legacy ProHo (see `docs/legacy-salvage.md`):
 **public**, **community** (any active member), **privileged** (council,
 administration, accountant, auditor).
 
+An external accountant who should see only the books fits none of these roles
+exactly: `auditor` and `accountant` both reach beyond the ledger. A ledger-only
+grant is proposed but not decided; see §11.
+
 ## 4. Property structure (`properties`)
 
 ### Community
@@ -338,8 +342,12 @@ conversations and messages are detailed when Phase 3 starts.
 
 - **Identifiers:** UUIDv7 for every entity. Human-facing numbers (receipts,
   vouchers) come from gapless per-community sequences.
-- **Money:** `BigDecimal` / `numeric(19,2)` with the community currency. No
-  floating point anywhere, including clients.
+- **Money:** integer minor units (`bigint` / `Long`) plus the currency code,
+  the representation shared with Contarte (see
+  [`docs/strategy/contarte-alignment.md`](../strategy/contarte-alignment.md)).
+  `BigDecimal` only at the edges: input, display and calculations such as
+  coefficient allocation. No floating point anywhere, including clients.
+  Non-money quantities (coefficients, shares, areas) stay `numeric`.
 - **Dates:** accounting and due dates are local dates in the community time
   zone; timestamps are UTC instants.
 - **Audit:** every command that changes state writes an AuditEvent (actor
@@ -503,3 +511,7 @@ Detailed in the security architecture; the domain consequences are:
    certificates and *paz y salvo*), or optional?
 5. **Free-plan aggregate use:** which anonymized aggregates may the platform
    use (e.g. fee benchmarks by city and size), and is opting out possible?
+6. **Ledger-only access:** should an external accountant or auditor get a
+   grant limited to the books of one community, for example from a Contarte
+   client? See
+   [`docs/strategy/contarte-alignment.md`](../strategy/contarte-alignment.md) §5.

@@ -29,7 +29,7 @@ la especificación funcional detallada del MVP.
 | `api/openapi/`         | Contrato REST/OpenAPI compartido                     |
 | `database/migrations/` | Migraciones de base de datos                         |
 | `infrastructure/`      | Configuración de Docker y despliegue                 |
-| `docs/`                | Arquitectura, contabilidad, seguridad, API, operaciones |
+| `docs/`                | Arquitectura, contabilidad, estrategia, seguridad, API, operaciones |
 | `legacy/`              | Implementación original en PHP de 2016, conservada como referencia |
 
 ## Estado de avance

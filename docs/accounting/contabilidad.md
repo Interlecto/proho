@@ -11,6 +11,7 @@ necesitan esa validación están marcados **[contador]**.
 | [plan-de-cuentas.md](plan-de-cuentas.md)                | Plantilla predeterminada del plan de cuentas                     |
 | [reglas-de-contabilizacion.md](reglas-de-contabilizacion.md) | Asientos contables para cada evento financiero, con un mes resuelto como ejemplo |
 | Este archivo                                            | Marco normativo, períodos, comprobantes, invariantes del libro mayor, decisiones de política contable |
+| [Alineación con Contarte](../strategy/contarte-alignment.md) (en inglés) | Correspondencia con las primitivas de Contarte, brechas conocidas, acceso externo al libro (exploratorio) |
 
 Las entidades de dominio mencionadas aquí (cuenta de cobro, cargo, pago,
 aplicación, reporte de pago) están definidas en
@@ -20,18 +21,33 @@ aplicación, reporte de pago) están definidas en
 **Restricción entre proyectos:** el módulo de contabilidad debe
 mantenerse compatible e intercambiable con
 [Contarte](https://github.com/chlewey/Contarte) (copia local:
-`C:\Temp\Contarte`), la aplicación personal de contabilidad de partida
-doble para Android del autor. El plan de cuentas, los asientos contables
-y los invariantes del libro mayor anteriores deben compartir un modelo de
-datos con Contarte, o tener una correspondencia exacta y sin pérdida de
-información con él, además de un formato común de importación y
-exportación, de modo que un conjunto de libros pueda moverse entre
-ambas aplicaciones sin necesidad de conciliación. Contarte almacena el
-dinero como unidades enteras mínimas por moneda (nunca en coma
-flotante); el libro mayor de ProHo debe seguir la misma representación.
-La exportación/importación CSV que Contarte tiene planeada (su hito M5)
-es una candidata para ese formato común: hay que seguir su modelo de
-datos a medida que se estabilice, en lugar de alejarse de él.
+`C:\Temp\Contarte`), la aplicación de contabilidad de partida doble para
+Android del autor, orientada a libros personales y de pequeños negocios.
+Según el ADR 0002 de Contarte, Contarte es la referencia de las primitivas
+compartidas:
+
+- el dinero como unidades enteras mínimas más un código de moneda, nunca
+  en coma flotante;
+- la estructura libro → cuenta → asiento → línea, con cuentas tipificadas y
+  un lado normal;
+- sus reglas del plan de cuentas;
+- asientos balanceados, asientos contabilizados inmutables y corrección solo
+  mediante reversión.
+
+ProHo se ajusta a estas primitivas en lugar de definir las suyas, y si
+necesita una primitiva que Contarte no tiene, primero se agrega allá. Las
+reglas de dominio de esta carpeta (comprobantes, bloqueo de períodos, fondos,
+auxiliares de facturación, retenciones) permanecen en ProHo. Limitan lo que
+ProHo acepta, sin formar parte del modelo compartido.
+
+Un conjunto de libros debe poder moverse entre ambas aplicaciones sin
+conciliación en cuanto a saldos y reportes. No siempre es posible conservar
+registros idénticos, porque L7 y L8 mantienen las cuentas por cobrar ligadas a
+documentos de facturación. La exportación/importación CSV que Contarte tiene
+planeada (su hito M5) es la candidata para el formato común. Hay que revisar
+el esquema de Contarte antes de finalizar el del libro mayor. La
+correspondencia y sus brechas están en
+[Alineación con Contarte](../strategy/contarte-alignment.md) (en inglés).
 
 ## 1. Marco normativo
 

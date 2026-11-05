@@ -11,6 +11,7 @@ that need that validation are marked **[accountant]**.
 | [chart-of-accounts.md](chart-of-accounts.md)  | Default chart of accounts template              |
 | [posting-rules.md](posting-rules.md)          | Journal entries for every financial event, with a worked month |
 | This file                                     | Framework, periods, vouchers, ledger invariants, policy decisions |
+| [Contarte alignment](../strategy/contarte-alignment.md) | Mapping to Contarte's primitives, known gaps, external ledger access (exploratory) |
 
 The domain entities referred to here (billing account, charge, payment,
 allocation, payment report) are defined in
@@ -18,15 +19,28 @@ allocation, payment report) are defined in
 
 **Cross-project constraint:** the accounting module must stay compatible and
 exchangeable with [Contarte](https://github.com/chlewey/Contarte) (local
-checkout: `C:\Temp\Contarte`), the author's personal double-entry
-bookkeeping Android app. Chart of accounts, journal entries and the ledger
-invariants above should either share a data model with Contarte or have an
-exact, lossless mapping to it, and a common import/export format, so a set
-of books can move between the two apps without reconciliation. Contarte
-stores money as integer minor units per currency (never floating point);
-ProHo's ledger should follow the same representation. Contarte's planned
-CSV export/import (its M5 milestone) is a candidate shared format — track
-its data model as it stabilizes instead of diverging from it.
+checkout: `C:\Temp\Contarte`), the author's double-entry bookkeeping Android
+app for personal and small-business books. Under Contarte's ADR 0002, Contarte
+is upstream for the shared primitives:
+
+- money as integer minor units plus a currency code, never floating point;
+- the ledger → account → journal entry → line shape, with typed accounts and a
+  normal side;
+- its chart rules;
+- balanced entries, immutable posted entries and reversal-only correction.
+
+ProHo maps to these rather than defining its own, and if it needs a primitive
+Contarte lacks, the primitive is added there first. The domain rules in this
+folder (vouchers, period locking, funds, billing subledgers, withholding) stay
+in ProHo. They constrain what ProHo accepts, without becoming part of the
+shared model.
+
+A set of books should move between the two apps without reconciliation at the
+level of balances and reports. Identical records are not always possible, since
+L7 and L8 keep receivables tied to billing documents. Contarte's planned CSV
+export/import (its M5 milestone) is the candidate shared format. Check
+Contarte's schema for drift before finalizing the ledger's. The mapping and its
+gaps are in [Contarte alignment](../strategy/contarte-alignment.md).
 
 ## 1. Framework
 

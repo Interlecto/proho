@@ -29,7 +29,7 @@ functional spec.
 | `api/openapi/`         | Shared REST/OpenAPI contract                      |
 | `database/migrations/` | Database migrations                               |
 | `infrastructure/`      | Docker and deployment configuration               |
-| `docs/`                | Architecture, accounting, security, API, operations |
+| `docs/`                | Architecture, accounting, strategy, security, API, operations |
 | `legacy/`              | Original 2016 PHP implementation, kept for reference |
 
 ## Status
