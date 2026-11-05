@@ -43,9 +43,24 @@ Sources in [Contarte](https://github.com/chlewey/Contarte), read at commit
   (decided 2026-11-05). There is one accounting API definition, not a ProHo API plus
   an adapter for Contarte. ProHo's own web, Android and iOS clients use it too. What
   differs between callers is authorization, not the contract.
-- **The contract is defined in Contarte's ADR 0002**
-  (`docs/decisions/0002-proho-cross-project-accounting.md`), currently a draft v0
-  for review. That ADR is authoritative; this document only records ProHo's side.
+- **The API is centralized in Contarte, in its `docs/api-contract/` folder**, and the
+  two projects share this interface with no shared inner architecture. See section 1.1
+  for how the projects work with that folder.
+
+### 1.1 Working with `docs/api-contract/`
+
+Decided 2026-11-05:
+
+| Document in Contarte's `docs/api-contract/` | For ProHo |
+| ------------------------------------------- | --------- |
+| `proho-requirements.md`                     | The place to write down any concern about the API |
+| `requirements-coverage.md`                  | Read-only: the official response |
+| Everything else, including the specification | Read-only |
+
+**Whatever is agreed in that folder is authoritative, and ProHo can be developed on
+it.** If it differs from this document, the folder wins. Today the specification calls
+itself unratified and the coverage document calls itself analysis, so nothing is agreed
+yet, and `proho-requirements.md` asks how agreement will be marked.
 
 ## 2. Which product serves whom
 
@@ -70,7 +85,7 @@ one. ProHo's ledger is not built yet, so the right-hand side is design, not code
 
 | Contarte                                   | ProHo                                  | Fit |
 | ------------------------------------------ | -------------------------------------- | --- |
-| Ledger: code, name, type, base currency    | One set of books per community         | Direct, as type `NonProfit`. ProHo needs a stable ledger code per community. |
+| Ledger: code, name, type, base currency    | One set of books per community         | Direct, as type `NonProfit`. The ledger code would be `community.key` (up to 64 characters, against Contarte's limit of 20). |
 | Money: `Long` minor units + currency       | Same, after this change                | Direct. Contarte registers COP with 2 fraction digits, so a whole-peso amount is stored × 100. ProHo should use the same digits, even though rounding policy P6 charges whole pesos. |
 | Account: code, name, type, normal side, parent, active | Chart template with PUC-style codes | Direct. PUC codes fit Contarte's code pattern (`[A-Za-z0-9._-]+`, at most 20 characters). |
 | `isPostable`: active leaf account          | L2                                     | Same rule. |
@@ -170,8 +185,8 @@ own books are never withheld on the free plan, so standard exports must remain
 available to an accountant either way.
 
 **Contract.**
-- The accounting module's API is the shared contract defined in ADR 0002 (section
-  1). ProHo is an independent implementation of it.
+- The accounting module's API is the shared contract in Contarte's
+  `docs/api-contract/` (section 1). ProHo is an independent implementation of it.
 - The contract stops at the accounting module. Billing keeps its own ProHo API, and
   billing documents reach the ledger through an application service, in process, as
   [ROADMAP §5](../../ROADMAP.md) requires for payment connectors. They never post
@@ -207,7 +222,7 @@ Each is a design input for Phase 2, not new scope:
 
 **The contract becomes a Phase 2 dependency.** Contarte's roadmap builds its API in
 M9, after M8 picks a sync tier, and M9 has no date. ProHo can't implement its
-accounting API against an unfinished contract, so ADR 0002 has to be reviewed and
+accounting API against an unfinished contract, so the specification has to be
 settled earlier than that sequence implies. Contarte's `server-api.md` already notes
 that a published spec is cheap and could ship early, ahead of any server: the spec
 moves up, and Contarte's server stays in M9. The draft covers online,
@@ -228,18 +243,16 @@ journal and chart exports should keep the columns close enough to adapt.
 2. **Which write scope?** Read-only first, with corrections limited to entries with
    no billing document, seems the safe start. Should correcting a billing entry
    ever be possible from a generic client?
-3. **How does ProHo consume the contract?** ADR 0002 defines it, and an OpenAPI
-   document will be derived from it. Does ProHo's `api/openapi/openapi.yaml` reference
-   that document or vendor a pinned copy? The contract's own open questions (reports,
-   versioning, round-tripping, ledger codes) are listed in the ADR.
+3. **How does ProHo consume the contract?** Does ProHo's `api/openapi/openapi.yaml`
+   reference Contarte's specification or vendor a pinned copy? Concerns about the
+   contract itself go in `proho-requirements.md`, not here.
 4. **Is the reduced meaning of "lossless"** in section 4 acceptable, or does the
    format need extension columns so ProHo's metadata can round-trip through Contarte?
 5. **Dimensions in ProHo.** Are they needed for cost centers or works, or only as an
    export projection of subledger keys?
-6. **Where do ProHo's own operations go?** The ADR draft treats closing periods,
-   mapping roles to accounts, looking up vouchers and importing opening balances as
-   ProHo's use of accounting, so they stay in ProHo's own API. Which ProHo module
-   should own those paths?
+6. **Where do ProHo's own operations go?** Closing periods, mapping roles to accounts,
+   looking up vouchers and importing opening balances are ProHo's use of accounting, so
+   they stay in ProHo's own API. Which ProHo module should own those paths?
 7. **Grant and role.** A new role on a membership, or a separate grant that isn't a
    membership at all? **[accountant]**: does the *revisor fiscal*'s legal role need
    more than ledger scope (minutes, contracts, supporting documents)?
