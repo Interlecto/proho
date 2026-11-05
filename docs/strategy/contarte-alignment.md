@@ -20,6 +20,10 @@ Sources in [Contarte](https://github.com/chlewey/Contarte), read at commit
 
 ## 1. What is already decided
 
+- **From the accounting point of view, ProHo and Contarte are the same.** ProHo is
+  not a general accounting app. It is an app that uses accounting, optimized for its
+  tasks. Its domain rules decide what it accepts and how entries come to exist, but
+  the accounting underneath is shared.
 - **Contarte is upstream for the shared accounting primitives** (ADR 0002): money
   representation, the ledger → account → journal entry → line shape with dimension
   tagging, chart rules, and the posting invariants. If ProHo needs a primitive
@@ -39,6 +43,9 @@ Sources in [Contarte](https://github.com/chlewey/Contarte), read at commit
   (decided 2026-11-05). There is one accounting API definition, not a ProHo API plus
   an adapter for Contarte. ProHo's own web, Android and iOS clients use it too. What
   differs between callers is authorization, not the contract.
+- **The contract is defined in Contarte's ADR 0002**
+  (`docs/decisions/0002-proho-cross-project-accounting.md`), currently a draft v0
+  for review. That ADR is authoritative; this document only records ProHo's side.
 
 ## 2. Which product serves whom
 
@@ -163,8 +170,8 @@ own books are never withheld on the free plan, so standard exports must remain
 available to an accountant either way.
 
 **Contract.**
-- The accounting module's API is the shared contract (section 1), defined against
-  Contarte's primitives under ADR 0002. ProHo is an independent implementation of it.
+- The accounting module's API is the shared contract defined in ADR 0002 (section
+  1). ProHo is an independent implementation of it.
 - The contract stops at the accounting module. Billing keeps its own ProHo API, and
   billing documents reach the ledger through an application service, in process, as
   [ROADMAP §5](../../ROADMAP.md) requires for payment connectors. They never post
@@ -200,12 +207,11 @@ Each is a design input for Phase 2, not new scope:
 
 **The contract becomes a Phase 2 dependency.** Contarte's roadmap builds its API in
 M9, after M8 picks a sync tier, and M9 has no date. ProHo can't implement its
-accounting API against a contract that doesn't exist, so the contract has to be
-written earlier than that sequence implies. Contarte's `server-api.md` already notes
-that a published spec is cheap and could ship early, ahead of any server, which makes
-this feasible: the spec moves up, and Contarte's server can stay in M9. Its first
-version must cover what ProHo needs (online, server-authoritative writes) without
-ruling out what M8 may choose for Contarte's own sync.
+accounting API against an unfinished contract, so ADR 0002 has to be reviewed and
+settled earlier than that sequence implies. Contarte's `server-api.md` already notes
+that a published spec is cheap and could ship early, ahead of any server: the spec
+moves up, and Contarte's server stays in M9. The draft covers online,
+server-authoritative writes without ruling out what M8 may choose for sync.
 
 The interchange format itself waits for Contarte's M5 (estimated around April 2027,
 at its stated pace). ProHo's Phase 2 CSV exports shouldn't wait for it, but the
@@ -222,20 +228,18 @@ journal and chart exports should keep the columns close enough to adapt.
 2. **Which write scope?** Read-only first, with corrections limited to entries with
    no billing document, seems the safe start. Should correcting a billing entry
    ever be possible from a generic client?
-3. **Where does the contract live, and who can change it?** ADR 0002 points to
-   Contarte's repository, with ProHo's `api/openapi/openapi.yaml` referencing or
-   vendoring it. How is it versioned, and how does ProHo pin a version? Its first
-   concrete questions are the wire format for money (integer minor units fit both
-   projects, and floating point is ruled out either way) and whether reports are part
-   of it.
+3. **How does ProHo consume the contract?** ADR 0002 defines it, and an OpenAPI
+   document will be derived from it. Does ProHo's `api/openapi/openapi.yaml` reference
+   that document or vendor a pinned copy? The contract's own open questions (reports,
+   versioning, round-tripping, ledger codes) are listed in the ADR.
 4. **Is the reduced meaning of "lossless"** in section 4 acceptable, or does the
    format need extension columns so ProHo's metadata can round-trip through Contarte?
 5. **Dimensions in ProHo.** Are they needed for cost centers or works, or only as an
    export projection of subledger keys?
-6. **ProHo-only accounting operations.** Closing periods, mapping roles to accounts,
-   looking up vouchers and importing opening balances have no Contarte equivalent.
-   Do they sit beside the contract as a clearly separate ProHo extension, or in a
-   different module's API? The contract itself should stay usable without them.
+6. **Where do ProHo's own operations go?** The ADR draft treats closing periods,
+   mapping roles to accounts, looking up vouchers and importing opening balances as
+   ProHo's use of accounting, so they stay in ProHo's own API. Which ProHo module
+   should own those paths?
 7. **Grant and role.** A new role on a membership, or a separate grant that isn't a
    membership at all? **[accountant]**: does the *revisor fiscal*'s legal role need
    more than ledger scope (minutes, contracts, supporting documents)?
