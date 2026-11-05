@@ -1,0 +1,11 @@
+# Local development only, activated by ./gradlew bootRun. These logins exist
+# only on a developer's own PostgreSQL (backend/README.md).
+spring:
+  datasource:
+    url: ${PROHO_DB_URL:jdbc:postgresql://localhost:5432/proho}
+    username: ${PROHO_DB_USER:proho_app}
+    password: ${PROHO_DB_PASSWORD:proho_app}
+  flyway:
+    url: ${PROHO_DB_URL:jdbc:postgresql://localhost:5432/proho}
+    user: ${PROHO_DB_MIGRATION_USER:proho}
+    password: ${PROHO_DB_MIGRATION_PASSWORD:proho}

@@ -1,11 +1,19 @@
 spring:
   application:
     name: proho
+  # No defaults on purpose: a deployment missing any of these fails at startup
+  # instead of trying a well-known login. Local defaults are in
+  # application-dev.yml, active under ./gradlew bootRun.
   datasource:
-    url: ${PROHO_DB_URL:jdbc:postgresql://localhost:5432/proho}
-    username: ${PROHO_DB_USER:proho}
-    password: ${PROHO_DB_PASSWORD:proho}
+    url: ${PROHO_DB_URL}
+    username: ${PROHO_DB_USER}
+    password: ${PROHO_DB_PASSWORD}
+  # Migrations run as the role that owns the tables, the application as
+  # proho_app, because row-level security doesn't apply to a table's owner.
   flyway:
+    url: ${PROHO_DB_URL}
+    user: ${PROHO_DB_MIGRATION_USER}
+    password: ${PROHO_DB_MIGRATION_PASSWORD}
     locations: classpath:db/migration
 
 proho:

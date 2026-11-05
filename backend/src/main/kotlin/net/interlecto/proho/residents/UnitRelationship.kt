@@ -10,6 +10,7 @@ import java.util.UUID
 @Table("unit_relationship")
 data class UnitRelationship(
     @Id val id: UUID,
+    val communityId: UUID,
     val unitId: UUID,
     val personId: UUID,
     val role: String,

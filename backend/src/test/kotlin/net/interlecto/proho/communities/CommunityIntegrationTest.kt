@@ -4,6 +4,7 @@ import net.interlecto.proho.EmbeddedPostgres
 import net.interlecto.proho.identity.LoginRequest
 import net.interlecto.proho.identity.LoginResponse
 import net.interlecto.proho.identity.RegisterAccountRequest
+import net.interlecto.proho.tenancy.asCommunity
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -64,10 +65,12 @@ class CommunityIntegrationTest {
 
         assertThat(community.key).isEqualTo("los-robles-1")
 
-        val membership = memberships.findAll().single { it.communityId == community.id }
-        assertThat(membership.status).isEqualTo(MembershipStatus.ACTIVE)
-        assertThat(roleAssignments.findByMembershipIdAndRoleAndValidToIsNull(membership.id, Role.ADMINISTRATOR))
-            .isNotNull()
+        asCommunity(community.id) {
+            val membership = memberships.findAll().single()
+            assertThat(membership.status).isEqualTo(MembershipStatus.ACTIVE)
+            assertThat(roleAssignments.findByMembershipIdAndRoleAndValidToIsNull(membership.id, Role.ADMINISTRATOR))
+                .isNotNull()
+        }
     }
 
     @Test

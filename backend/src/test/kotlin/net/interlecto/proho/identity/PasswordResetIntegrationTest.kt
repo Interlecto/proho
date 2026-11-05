@@ -4,10 +4,13 @@ import net.interlecto.proho.EmbeddedPostgres
 import net.interlecto.proho.shared.Uuid7
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.resttestclient.TestRestTemplate
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.system.CapturedOutput
+import org.springframework.boot.test.system.OutputCaptureExtension
 import org.springframework.data.jdbc.core.JdbcAggregateOperations
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
@@ -19,6 +22,7 @@ import java.time.Instant
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureTestRestTemplate
+@ExtendWith(OutputCaptureExtension::class)
 class PasswordResetIntegrationTest {
     companion object {
         @JvmStatic
@@ -75,6 +79,15 @@ class PasswordResetIntegrationTest {
             )
 
         assertThat(response.statusCode).isEqualTo(HttpStatus.ACCEPTED)
+    }
+
+    @Test
+    fun `a reset token never reaches the logs outside the dev profile`(output: CapturedOutput) {
+        registerAccount("reset-no-log@example.com")
+
+        val rawToken = passwordResetService.request("reset-no-log@example.com")!!
+
+        assertThat(output.all).contains("Password reset requested").doesNotContain(rawToken)
     }
 
     @Test

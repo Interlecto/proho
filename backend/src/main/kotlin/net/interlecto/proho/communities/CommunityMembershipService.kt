@@ -1,5 +1,6 @@
 package net.interlecto.proho.communities
 
+import net.interlecto.proho.shared.TenantBinder
 import org.springframework.stereotype.Service
 import java.util.UUID
 
@@ -12,11 +13,15 @@ class RoleNotHeldException(val communityId: UUID, val role: Role) : RuntimeExcep
  * before touching a community's data. Checked fresh per request, not
  * cached on the bearer-token principal, so a suspension or role change
  * takes effect immediately -- same principle as a revoked session.
+ *
+ * Passing the check is also what binds the request to the community for
+ * row-level security: code that skips it sees none of that community's rows.
  */
 @Service
 class CommunityMembershipService(
     private val memberships: MembershipRepository,
     private val roleAssignments: RoleAssignmentRepository,
+    private val tenantBinder: TenantBinder,
 ) {
     fun requireActiveMembership(
         accountId: UUID,
@@ -27,6 +32,7 @@ class CommunityMembershipService(
         if (membership == null || membership.status != MembershipStatus.ACTIVE) {
             throw MembershipNotActiveException(communityId)
         }
+        tenantBinder.bindCommunity(communityId)
         return membership
     }
 

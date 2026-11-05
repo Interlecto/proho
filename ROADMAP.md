@@ -284,7 +284,7 @@ The phases can overlap where dependencies permit. Accounting and financial corre
 - ✅ Create the Kotlin/Spring Boot backend and PostgreSQL schema.
 - ⚠️ Set up React/TypeScript, Kotlin/Compose, and Swift/SwiftUI projects. *(web and Android exist; iOS has no project yet)*
 - ⚠️ Establish automated builds, tests, migrations, and deployment. *(CI, tests and migrations exist; no deployment pipeline yet)*
-- ⚠️ Define tenant isolation, audit logging, and secrets management. *(isolation and audit logging are built and tested; secrets management is still just an env-var convention)*
+- ⚠️ Define tenant isolation, audit logging, and secrets management. *(isolation is built and tested: service checks, composite foreign keys and row-level security, see `docs/security/tenant-isolation.md`. Audit events are recorded and append-only for the application, but `request_id` is never populated and nothing reads the log yet. Secrets management is still just an env-var convention)*
 
 Exit criterion: The team can deploy the backend and all three client shells, with a reviewed domain model and documented accounting invariants.
 
@@ -334,7 +334,7 @@ Exit criterion: Members can use core communication features from any client and 
 
 - ⬜ Import members, units, and opening financial balances.
 - ⬜ Validate financial totals against independently prepared records.
-- ⬜ Test authorization and cross-tenant isolation. *(isolation itself is already enforced and covered by backend tests; this is the later, independent pilot-readiness pass)*
+- ⬜ Test authorization and cross-tenant isolation. *(`CrossCommunityIsolationIntegrationTest` and `RowLevelSecurityIntegrationTest` cover this in the backend; this is the later, independent pilot-readiness pass)*
 - ⬜ Verify duplicate payment prevention and transaction rollback.
 - ⬜ Test offline behavior and synchronization after reconnecting.
 - ⬜ Test database backups and restoration.

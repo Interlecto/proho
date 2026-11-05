@@ -2,6 +2,9 @@ package net.interlecto.proho.communities
 
 import net.interlecto.proho.audit.AuditEventRecorder
 import net.interlecto.proho.shared.Uuid7
+import net.interlecto.proho.shared.TenantBinder
+import org.springframework.dao.DataAccessException
+import org.springframework.dao.DuplicateKeyException
 import org.springframework.data.jdbc.core.JdbcAggregateOperations
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -32,7 +35,7 @@ class UnsupportedCommunityKindException(val kind: String) : RuntimeException("Un
 
 @Service
 class CommunityService(
-    private val communities: CommunityRepository,
+    private val tenantBinder: TenantBinder,
     private val jdbcAggregateOperations: JdbcAggregateOperations,
     private val auditEventRecorder: AuditEventRecorder,
 ) {
@@ -44,14 +47,17 @@ class CommunityService(
         if (command.kind !in SUPPORTED_KINDS) {
             throw UnsupportedCommunityKindException(command.kind)
         }
-        if (communities.existsByKey(command.key)) {
-            throw CommunityKeyAlreadyRegisteredException(command.key)
-        }
+
+        // Row-level security only lets a community be created while it's the
+        // bound one. It also hides other communities' keys from any lookup, so
+        // the unique index is what detects a key that's already taken.
+        val communityId = Uuid7.generate()
+        tenantBinder.bindCommunity(communityId)
 
         val community =
-            jdbcAggregateOperations.insert(
+            insertCommunity(
                 Community(
-                    id = Uuid7.generate(),
+                    id = communityId,
                     key = command.key,
                     name = command.name,
                     legalName = command.legalName,
@@ -87,6 +93,7 @@ class CommunityService(
             RoleAssignment(
                 id = Uuid7.generate(),
                 membershipId = membership.id,
+                communityId = community.id,
                 role = Role.ADMINISTRATOR,
                 validFrom = LocalDate.now(),
                 validTo = null,
@@ -114,4 +121,15 @@ class CommunityService(
 
         return community
     }
+
+    private fun insertCommunity(community: Community): Community =
+        try {
+            jdbcAggregateOperations.insert(community)
+        } catch (e: DataAccessException) {
+            // Spring Data JDBC wraps the driver's error in its own exception.
+            if (generateSequence<Throwable>(e) { it.cause }.any { it is DuplicateKeyException }) {
+                throw CommunityKeyAlreadyRegisteredException(community.key)
+            }
+            throw e
+        }
 }
