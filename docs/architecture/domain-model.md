@@ -166,8 +166,8 @@ Visibility tiers inherited from legacy ProHo (see `docs/legacy-salvage.md`):
 administration, accountant, auditor).
 
 An external accountant who should see only the books fits none of these roles
-exactly: `auditor` and `accountant` both reach beyond the ledger. A ledger-only
-grant is proposed but not decided; see §11.
+exactly: `auditor` and `accountant` both reach beyond the ledger. ProHo will
+offer ledger-only access through AAA agreements; its form is still open, see §11.
 
 ## 4. Property structure (`properties`)
 
@@ -511,7 +511,7 @@ Detailed in the security architecture; the domain consequences are:
    certificates and *paz y salvo*), or optional?
 5. **Free-plan aggregate use:** which anonymized aggregates may the platform
    use (e.g. fee benchmarks by city and size), and is opting out possible?
-6. **Ledger-only access:** should an external accountant or auditor get a
-   grant limited to the books of one community, for example from a Contarte
-   client? See
+6. **Ledger-only access:** external accountants and auditors will get access
+   limited to the books of one community, through AAA agreements. Is that a new
+   role on a membership, or a separate grant that isn't a membership? See
    [`docs/strategy/contarte-alignment.md`](../strategy/contarte-alignment.md) §5.

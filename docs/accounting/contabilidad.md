@@ -11,7 +11,7 @@ necesitan esa validación están marcados **[contador]**.
 | [plan-de-cuentas.md](plan-de-cuentas.md)                | Plantilla predeterminada del plan de cuentas                     |
 | [reglas-de-contabilizacion.md](reglas-de-contabilizacion.md) | Asientos contables para cada evento financiero, con un mes resuelto como ejemplo |
 | Este archivo                                            | Marco normativo, períodos, comprobantes, invariantes del libro mayor, decisiones de política contable |
-| [Alineación con Contarte](../strategy/contarte-alignment.md) (en inglés) | Correspondencia con las primitivas de Contarte, brechas conocidas, acceso externo al libro (exploratorio) |
+| [Alineación con Contarte](../strategy/contarte-alignment.md) (en inglés) | Correspondencia con las primitivas de Contarte, brechas conocidas, API externa del libro y acuerdos AAA |
 
 Las entidades de dominio mencionadas aquí (cuenta de cobro, cargo, pago,
 aplicación, reporte de pago) están definidas en

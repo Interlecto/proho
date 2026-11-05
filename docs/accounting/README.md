@@ -11,7 +11,7 @@ that need that validation are marked **[accountant]**.
 | [chart-of-accounts.md](chart-of-accounts.md)  | Default chart of accounts template              |
 | [posting-rules.md](posting-rules.md)          | Journal entries for every financial event, with a worked month |
 | This file                                     | Framework, periods, vouchers, ledger invariants, policy decisions |
-| [Contarte alignment](../strategy/contarte-alignment.md) | Mapping to Contarte's primitives, known gaps, external ledger access (exploratory) |
+| [Contarte alignment](../strategy/contarte-alignment.md) | Mapping to Contarte's primitives, known gaps, external ledger API and AAA agreements |
 
 The domain entities referred to here (billing account, charge, payment,
 allocation, payment report) are defined in

@@ -1,13 +1,14 @@
 # Alignment with Contarte's strategy
 
-Status: **exploratory**, like the documents it responds to. Section 1 lists what
-is already decided; everything else is a proposal or an open question, and none
-of it commits ProHo to a phase or a date.
+Status: **exploratory**, like the documents it responds to, apart from section 1,
+which lists what is decided. Everything else is a proposal or an open question, and
+nothing here commits ProHo to a phase or a date.
 
 This is ProHo's side of a conversation that Contarte's post-v1 strategy documents
 started. They explicitly ask that a future session check ProHo's own docs before
-assuming what ProHo would expose or require, and they note that nothing ProHo has
-stated confirms it will build such an API. This document is that check.
+assuming what ProHo would expose or require, and they note that nothing ProHo had
+stated confirmed it would build such an API. This document is that check, and
+section 1 now gives that confirmation.
 
 Sources in [Contarte](https://github.com/chlewey/Contarte), read at commit
 `07f45b2` (M0–M4 done, M5 next):
@@ -30,6 +31,10 @@ Sources in [Contarte](https://github.com/chlewey/Contarte), read at commit
   ([domain model §8](../architecture/domain-model.md)). The domain model previously
   said `numeric(19,2)`, which contradicted this contract. No ledger table exists
   yet, so the correction costs nothing today.
+- **ProHo will expose a ledger API to Contarte clients, through AAA agreements**
+  (decided 2026-11-05). Access is governed by an agreement covering authentication,
+  authorization and accounting, and there is no access without one. The terms and
+  the timing are still open (sections 5 and 7).
 
 ## 2. Which product serves whom
 
@@ -109,9 +114,16 @@ hold. These are worth feeding back to Contarte before its M9 work starts.
    So a set of books moves without reconciliation at the level of **balances and
    reports**. ProHo's documents should promise that, not identical records.
 
-## 5. If ProHo exposes a ledger API to Contarte clients
+## 5. The ledger API and its AAA agreements
 
-Nothing here is scheduled. These are the conditions that fit ProHo's existing rules.
+The decision is made (section 1) but not scheduled. An AAA agreement has to settle
+three things. The right-hand column is a proposal that fits ProHo's existing rules.
+
+| Part           | Question                       | Proposed answer |
+| -------------- | ------------------------------ | --------------- |
+| Authentication | Who is calling?                | A ProHo platform account, used through a credential the Contarte client can hold. |
+| Authorization  | What may they do, and where?   | A ledger-only grant bound to one community, effective-dated, in read or read-and-correct form. |
+| Accounting     | What is recorded of what they did? | An AuditEvent for every write, as for any other command. "Accounting" here means this record of activity, not bookkeeping. |
 
 **Access model.** Contarte's documents say the accountant "does not need to be a
 ProHo user." ProHo's model has one account per human, and a membership currently
@@ -147,8 +159,8 @@ available to an accountant either way.
   independent implementation of it: a separate, narrow surface, not its internal
   billing or accounting endpoints.
 - A second implementation existing early is what Contarte's documents call the
-  forcing function for spec-first, so ProHo's interest in this should be stated
-  before M9 begins.
+  forcing function for spec-first. ProHo's commitment now makes that real, so
+  Contarte's spec-first question should be settled with it in mind before M9 begins.
 - Contarte's hosting-portability question doesn't bind ProHo. It stays a centralized
   multi-tenant service with no self-hosting goal.
 
@@ -177,9 +189,12 @@ journal and chart exports should keep the columns close enough to adapt.
 
 ## 7. Open questions
 
-1. **Does ProHo intend to expose this API at all?** This is the question Contarte's
-   documents are waiting on, and the answer shapes its spec-first decision. Paid
-   entitlement, or also available on the free plan?
+1. **What is an AAA agreement, concretely?** Who are its parties (the community, the
+   accountant, the platform), and is there one per community? Who approves it on the
+   community's side: the administrator, or the assembly? Does it need to be a legal
+   document as well as a configuration record? **[legal]**: the community is the data
+   controller under Ley 1581 de 2012, so the agreement must rest on its authority.
+   Is it a paid entitlement, or also available on the free plan?
 2. **Which write scope?** Read-only first, with corrections limited to entries with
    no billing document, seems the safe start. Should correcting a billing entry
    ever be possible from a generic client?
