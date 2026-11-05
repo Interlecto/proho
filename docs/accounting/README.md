@@ -39,8 +39,9 @@ A set of books should move between the two apps without reconciliation at the
 level of balances and reports. Identical records are not always possible, since
 L7 and L8 keep receivables tied to billing documents. Contarte's planned CSV
 export/import (its M5 milestone) is the candidate shared format. Check
-Contarte's schema for drift before finalizing the ledger's. The mapping and its
-gaps are in [Contarte alignment](../strategy/contarte-alignment.md).
+Contarte's schema for drift before finalizing the ledger's. The module's API is
+the same contract as the Contarte API. The mapping and its gaps are in
+[Contarte alignment](../strategy/contarte-alignment.md).
 
 ## 1. Framework
 

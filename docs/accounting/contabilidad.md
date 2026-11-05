@@ -45,8 +45,9 @@ conciliación en cuanto a saldos y reportes. No siempre es posible conservar
 registros idénticos, porque L7 y L8 mantienen las cuentas por cobrar ligadas a
 documentos de facturación. La exportación/importación CSV que Contarte tiene
 planeada (su hito M5) es la candidata para el formato común. Hay que revisar
-el esquema de Contarte antes de finalizar el del libro mayor. La
-correspondencia y sus brechas están en
+el esquema de Contarte antes de finalizar el del libro mayor. La API del
+módulo es el mismo contrato que la API de Contarte. La correspondencia y sus
+brechas están en
 [Alineación con Contarte](../strategy/contarte-alignment.md) (en inglés).
 
 ## 1. Marco normativo
