@@ -1,6 +1,48 @@
+import { useEffect, useState } from "react";
 import "./App.css";
+import AuthScreen from "./AuthScreen";
+import CommunitiesScreen from "./CommunitiesScreen";
+import { me, logout as apiLogout, type Account } from "./api";
+
+const TOKEN_STORAGE_KEY = "proho.token";
 
 export default function App() {
+  const [token, setToken] = useState<string | null>(() =>
+    localStorage.getItem(TOKEN_STORAGE_KEY),
+  );
+  const [account, setAccount] = useState<Account | null>(null);
+  const [checkingSession, setCheckingSession] = useState(true);
+
+  useEffect(() => {
+    if (!token) {
+      setCheckingSession(false);
+      return;
+    }
+    me(token)
+      .then(setAccount)
+      .catch(() => {
+        localStorage.removeItem(TOKEN_STORAGE_KEY);
+        setToken(null);
+      })
+      .finally(() => setCheckingSession(false));
+  }, [token]);
+
+  function handleLoggedIn(newToken: string) {
+    localStorage.setItem(TOKEN_STORAGE_KEY, newToken);
+    setToken(newToken);
+  }
+
+  function handleLogout() {
+    if (token) {
+      apiLogout(token).catch(() => {
+        // Best effort; the token is being discarded locally regardless.
+      });
+    }
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
+    setToken(null);
+    setAccount(null);
+  }
+
   return (
     <div className="app">
       <header className="top-bar">
@@ -19,14 +61,16 @@ export default function App() {
           <span className="tagline">Administración de propiedad horizontal</span>
         </div>
       </header>
-      <main className="content">
-        {/* Placeholder until memberships come from the API (Phase 1). */}
-        <span className="chip">Sin comunidad</span>
-        <h1>Bienvenido a ProHo</h1>
-        <p>
-          Aquí verá los estados de cuenta, anuncios y mensajes de sus
-          comunidades.
-        </p>
+      <main>
+        {checkingSession ? (
+          <div className="content">
+            <p>Cargando…</p>
+          </div>
+        ) : token && account ? (
+          <CommunitiesScreen token={token} account={account} onLogout={handleLogout} />
+        ) : (
+          <AuthScreen onLoggedIn={handleLoggedIn} />
+        )}
       </main>
     </div>
   );

@@ -1,5 +1,7 @@
 # Accounting
 
+*[Leer en español](contabilidad.md)*
+
 Status: **provisional** (Phase 0). Must be validated by a Colombian
 public accountant (*contador público*) before Phase 2 is implemented. Points
 that need that validation are marked **[accountant]**.
@@ -13,6 +15,18 @@ that need that validation are marked **[accountant]**.
 The domain entities referred to here (billing account, charge, payment,
 allocation, payment report) are defined in
 [`docs/architecture/domain-model.md`](../architecture/domain-model.md).
+
+**Cross-project constraint:** the accounting module must stay compatible and
+exchangeable with [Contarte](https://github.com/chlewey/Contarte) (local
+checkout: `C:\Temp\Contarte`), the author's personal double-entry
+bookkeeping Android app. Chart of accounts, journal entries and the ledger
+invariants above should either share a data model with Contarte or have an
+exact, lossless mapping to it, and a common import/export format, so a set
+of books can move between the two apps without reconciliation. Contarte
+stores money as integer minor units per currency (never floating point);
+ProHo's ledger should follow the same representation. Contarte's planned
+CSV export/import (its M5 milestone) is a candidate shared format — track
+its data model as it stabilizes instead of diverging from it.
 
 ## 1. Framework
 

@@ -6,6 +6,21 @@ The most important change is the accounting requirement: the MVP will already in
 
 The platform will have three clients sharing one centralized backend: web, Android, and native iOS.
 
+## Status at a glance
+
+✅ done &nbsp;&nbsp; ⚠️ in progress &nbsp;&nbsp; 🔴 blocked &nbsp;&nbsp; ⬜ not started
+
+One row per phase from §4 below; the same icons mark each individual step there, next to the full bullet lists and exit criteria.
+
+| Phase | Status | Where things stand |
+| --- | :-: | --- |
+| 0 — Foundation | ⚠️ | Domain model, accounting-policy docs, the OpenAPI contract, the Kotlin/Spring backend, CI, audit logging and tenant isolation are in place. Web and Android have project shells; **iOS has no project yet**. Deployment infra and secrets management are still documented conventions, not running infrastructure. |
+| 1 — Identity and community administration | ⚠️ | Registration, login, logout and password reset are built and tested; so are multi-community membership and basic community/building/unit/person/relationship creation, verified end to end on web and Android demos. Still missing: invite-by-email, role administration beyond the founding administrator, member profiles/privacy controls, and real dashboards on any client. |
+| 2 — Accounting MVP | ⬜ | `billing` and `accounting` are empty module stubs — no code yet. Policy decisions P1–P8 in `docs/accounting/README.md` (contingency fund, extraordinary-assessment recognition, etc.) are still provisional, pending review by a Colombian public accountant — 🔴 a real blocker before posting rules can be finalized. |
+| 3 — Social features and offline reading | ⬜ | `communications` doesn't exist yet: no announcements, boards, messaging, or offline caching. |
+| 4 — Pilot and production readiness | ⬜ | No data-import tooling, no production deployment, no pilot community. Depends on Phases 2–3 landing first. |
+| 5 — First release | ⬜ | Google sign-in and payment connectors are explicitly deferred; the identity schema is already designed so a Google identity can be added later without rework. |
+
 ## 1. Confirmed product decisions
 
 | Area              | MVP                                         | First release                                                  |
@@ -262,87 +277,87 @@ The phases can overlap where dependencies permit. Accounting and financial corre
 
 ### Phase 0 — Foundation
 
-- Define residential-community entities and relationships.
-- Establish accounting policies and chart-of-accounts configuration.
-- Document the journal posting rules for assessments, payments, expenses, credits, and reversals.
-- Establish the shared REST/OpenAPI contract.
-- Create the Kotlin/Spring Boot backend and PostgreSQL schema.
-- Set up React/TypeScript, Kotlin/Compose, and Swift/SwiftUI projects.
-- Establish automated builds, tests, migrations, and deployment.
-- Define tenant isolation, audit logging, and secrets management.
+- ✅ Define residential-community entities and relationships.
+- ⚠️ Establish accounting policies and chart-of-accounts configuration. *(drafted in `docs/accounting/`, still provisional pending accountant review)*
+- ⚠️ Document the journal posting rules for assessments, payments, expenses, credits, and reversals. *(same provisional status)*
+- ✅ Establish the shared REST/OpenAPI contract.
+- ✅ Create the Kotlin/Spring Boot backend and PostgreSQL schema.
+- ⚠️ Set up React/TypeScript, Kotlin/Compose, and Swift/SwiftUI projects. *(web and Android exist; iOS has no project yet)*
+- ⚠️ Establish automated builds, tests, migrations, and deployment. *(CI, tests and migrations exist; no deployment pipeline yet)*
+- ⚠️ Define tenant isolation, audit logging, and secrets management. *(isolation is built and tested: service checks, composite foreign keys and row-level security, see `docs/security/tenant-isolation.md`. Audit events are recorded and append-only for the application, but `request_id` is never populated and nothing reads the log yet. Secrets management is still just an env-var convention)*
 
 Exit criterion: The team can deploy the backend and all three client shells, with a reviewed domain model and documented accounting invariants.
 
 ### Phase 1 — Identity and community administration
 
-- Email/password authentication and account recovery.
-- One account associated with multiple communities.
-- Community, building, unit, and resident management.
-- Owner, tenant, resident, and representative relationships.
-- Membership and role administration.
-- Member profiles and privacy controls.
-- Consistent navigation and core member dashboard on all three platforms.
+- ✅ Email/password authentication and account recovery.
+- ✅ One account associated with multiple communities.
+- ⚠️ Community, building, unit, and resident management. *(create and list are built and tested; no edit/archive/delete yet)*
+- ✅ Owner, tenant, resident, and representative relationships.
+- ⚠️ Membership and role administration. *(founding membership and administrator role work; no invites or role assignment for anyone else yet)*
+- ⬜ Member profiles and privacy controls.
+- ⚠️ Consistent navigation and core member dashboard on all three platforms. *(basic auth/community screens on web and Android; no dashboard; iOS has nothing)*
 
 Exit criterion: A resident can switch between communities and view permitted information without duplicating accounts or exposing another community's data.
 
 ### Phase 2 — Accounting MVP
 
-- Chart of accounts and accounting-period configuration.
-- Ordinary recurring and extraordinary assessments.
-- Posting engine with balanced journal entries.
-- Receivables by responsible party and residential unit.
-- Manual payment entry, allocation, and receipt generation.
-- Resident-reported payments with treasurer confirmation.
-- Expense and supplier records.
-- Credits, refunds, reversals, and opening balances.
-- Trial balance, general ledger, income and expense statement, and balance sheet.
-- Collection, aging, and member-statement reports.
-- CSV/XLSX exports and relevant PDF reports.
-- Reconciliation and period-close controls.
+- 🔴 Chart of accounts and accounting-period configuration. *(blocked on the contingency-fund classification, policy P1, pending accountant review)*
+- 🔴 Ordinary recurring and extraordinary assessments. *(blocked on the extraordinary-assessment recognition policy, P2, pending accountant review)*
+- ⬜ Posting engine with balanced journal entries.
+- ⬜ Receivables by responsible party and residential unit.
+- ⬜ Manual payment entry, allocation, and receipt generation.
+- ⬜ Resident-reported payments with treasurer confirmation.
+- ⬜ Expense and supplier records.
+- ⬜ Credits, refunds, reversals, and opening balances.
+- ⬜ Trial balance, general ledger, income and expense statement, and balance sheet.
+- ⬜ Collection, aging, and member-statement reports.
+- ⬜ CSV/XLSX exports and relevant PDF reports.
+- ⬜ Reconciliation and period-close controls.
 
 Exit criterion: Financial reports reconcile to the ledger, every posted journal entry balances, and corrections preserve a complete audit trail.
 
 ### Phase 3 — Social features and offline reading
 
-- Official announcements and distribution lists.
-- Moderated and unmoderated discussion boards, using the publishing workflow in §3.5.
-- Direct messaging and conversation history.
-- In-app and email notifications.
-- Android push notifications and iOS push notifications.
-- Local caching of news and direct messages on both mobile platforms.
-- Cache expiry, logout cleanup, and synchronization recovery.
-- Member reporting and moderation tools.
+- ⬜ Official announcements and distribution lists.
+- ⬜ Moderated and unmoderated discussion boards, using the publishing workflow in §3.5.
+- ⬜ Direct messaging and conversation history.
+- ⬜ In-app and email notifications.
+- ⬜ Android push notifications and iOS push notifications.
+- ⬜ Local caching of news and direct messages on both mobile platforms.
+- ⬜ Cache expiry, logout cleanup, and synchronization recovery.
+- ⬜ Member reporting and moderation tools.
 
 Exit criterion: Members can use core communication features from any client and read previously synchronized messages and news when offline on mobile.
 
 ### Phase 4 — Pilot and production readiness
 
-- Import members, units, and opening financial balances.
-- Validate financial totals against independently prepared records.
-- Test authorization and cross-tenant isolation.
-- Verify duplicate payment prevention and transaction rollback.
-- Test offline behavior and synchronization after reconnecting.
-- Test database backups and restoration.
-- Establish monitoring, incident procedures, and operational documentation.
-- Deploy the production API behind `https://api.ilecto.net/proho/` and point
+- ⬜ Import members, units, and opening financial balances.
+- ⬜ Validate financial totals against independently prepared records.
+- ⬜ Test authorization and cross-tenant isolation. *(`CrossCommunityIsolationIntegrationTest` and `RowLevelSecurityIntegrationTest` cover this in the backend; this is the later, independent pilot-readiness pass)*
+- ⬜ Verify duplicate payment prevention and transaction rollback.
+- ⬜ Test offline behavior and synchronization after reconnecting.
+- ⬜ Test database backups and restoration.
+- ⬜ Establish monitoring, incident procedures, and operational documentation.
+- ⬜ Deploy the production API behind `https://api.ilecto.net/proho/` and point
   the web, Android and iOS clients at it. The static landing page at
   `https://proho.ilecto.app/` (`landing/`, Cloudflare Pages) can go live
   earlier, independently of this; see
   [docs/infrastructure.md](docs/infrastructure.md).
-- Pilot with one or more residential communities.
+- ⬜ Pilot with one or more residential communities.
 
 Exit criterion: The platform can operate a pilot community without manual database repairs, and financial records can be independently reconciled.
 
 ### Phase 5 — First release
 
-- Add Google sign-in through a standard identity-provider integration.
-- Introduce the payment-provider adapter interface.
-- Implement the first available electronic payment connector.
-- Add the remaining connectors according to verified provider eligibility and API availability.
-- Implement provider webhooks, refunds, reconciliation, and settlement reporting.
-- Improve incremental offline synchronization and conflict handling.
-- Expand mobile administrative functions.
-- Add further accounting and residential-management workflows based on pilot feedback.
+- ⬜ Add Google sign-in through a standard identity-provider integration. *(the identity schema is already designed so this can be added without reworking existing accounts)*
+- ⬜ Introduce the payment-provider adapter interface.
+- ⬜ Implement the first available electronic payment connector.
+- ⬜ Add the remaining connectors according to verified provider eligibility and API availability.
+- ⬜ Implement provider webhooks, refunds, reconciliation, and settlement reporting.
+- ⬜ Improve incremental offline synchronization and conflict handling.
+- ⬜ Expand mobile administrative functions.
+- ⬜ Add further accounting and residential-management workflows based on pilot feedback.
 
 Exit criterion: Electronic payments can be initiated, verified, recorded in the ledger, and reconciled with provider records without bypassing accounting controls.
 
@@ -421,5 +436,6 @@ The broad product direction is now defined. A few implementation details still n
 3. Payment connector order: Which provider should be integrated first, based on merchant eligibility, transaction fees, API maturity, and settlement behavior.
 4. Offline retention: How much message history to cache, for how long, and how sensitive local data should be protected on shared or lost devices.
 5. iOS distribution: Whether the first iOS build will be distributed through TestFlight and the App Store, with a corresponding Apple Developer account and signing pipeline.
+6. Contarte compatibility: The accounting module must stay compatible and exchangeable with [Contarte](https://github.com/chlewey/Contarte), the author's personal double-entry bookkeeping Android app. In practice this means the chart of accounts, journal entries and ledger invariants should share a data model (or an exact, lossless mapping between the two) and a common export/import format, so books started in one app can move to the other without reconciliation. Contarte's own CSV import/export (its M5 milestone) is a candidate for that shared format; ProHo's accounting backend should track Contarte's data model as it stabilizes rather than diverge from it.
 
 The most consequential next step is to define the residential domain model and accounting posting rules together. That prevents the fee-management module from evolving into a standalone receivables system that later needs to be retrofitted into the general ledger.

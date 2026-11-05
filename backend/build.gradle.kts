@@ -25,6 +25,13 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-flyway")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    // Stateless bearer-token authentication: see identity/SecurityConfig.kt.
+    // The filter chain is fully custom (no form login, no httpBasic, CSRF
+    // disabled — there is no cookie-based credential for CSRF to exploit);
+    // spring-security-crypto (PasswordEncoder/BCrypt) was the only piece
+    // needed before this module existed.
+    implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.modulith:spring-modulith-starter-core")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("tools.jackson.module:jackson-module-kotlin")
@@ -58,4 +65,12 @@ tasks.processResources {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+// bootRun is the local development entry point; the packaged jar has no
+// profile and requires its database settings from the environment.
+tasks.bootRun {
+    if (System.getenv("SPRING_PROFILES_ACTIVE") == null) {
+        systemProperty("spring.profiles.active", "dev")
+    }
 }

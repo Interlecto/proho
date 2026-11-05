@@ -1,5 +1,7 @@
 # Default chart of accounts
 
+*[Leer en español](plan-de-cuentas.md)*
+
 A template for Colombian residential communities, with PUC-style codes. Each
 community gets a copy it can rename, extend and renumber. **[accountant]**:
 the codes and the treatment of funds (classes 28 and 33) must be validated.

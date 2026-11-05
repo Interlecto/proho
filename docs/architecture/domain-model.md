@@ -13,7 +13,8 @@ The demo community in [`database/seed/demo-community.json`](../../database/seed/
 
 1. **The community is the tenant.** Every business record belongs to exactly
    one community, except the platform account. No query, report or cache may
-   combine records from two communities.
+   combine records from two communities. Enforced down to the database: see
+   [`docs/security/tenant-isolation.md`](../security/tenant-isolation.md).
 2. **Account, person and membership are three different things.**
    - An **account** is a login: one per human, platform-wide.
    - A **person** is a community's own record of a natural or legal person
@@ -127,6 +128,20 @@ At most one non-ended membership per (account, community). Joining is by
 invitation: an administrator invites an email, optionally pre-linked to a
 person record; the invitee registers or signs in and accepts.
 
+### Session / Token (`identity`)
+
+`AccountSession` (bearer tokens for API access) and `PasswordResetToken`
+(single-use recovery tokens) each store only a SHA-256 hash of a
+high-entropy random token, plus `account_id`, timing fields, and a
+revoked/used marker — never the raw token. `Credential` stays folded into
+`Account.password_hash` for now rather than becoming its own table: with
+exactly one credential type in use, a separate table has no current
+consumer. When a second credential type (a linked Google identity, Phase
+5) is added, `password_hash` can be migrated out of `Account` into a
+`Credential` row in one bounded migration, without touching
+`Session/Token` — sessions are already keyed by `account_id` alone,
+independent of how the account authenticated.
+
 ### Roles (`communities`)
 
 Permissions come from two sources:
@@ -203,6 +218,17 @@ A **coefficient schedule** is a named, effective-dated set of coefficients:
 
 Assessments use the schedule version in force on their issue date.
 
+**Implementation note (first `properties` slice):** `CoefficientSchedule`
+and `UnitCoefficient` are not built yet, and `plan` on `Community` stays a
+plain string column rather than an effective-dated table against a
+`plans`/entitlements module — neither `billing`/`accounting` nor any
+entitlement check exists yet to consume them. Revisit when `billing`
+lands. The `properties`/`residents` `package-info.java` files were
+written ahead of this with `allowedDependencies` on a `plans` module and
+without `identity`; both were corrected (dropped the unused `plans`
+dependency, added `identity` for `@AuthenticationPrincipal`) when this
+slice actually needed to compile.
+
 ## 5. People and relationships (`residents`)
 
 ### Person
@@ -220,7 +246,8 @@ Assessments use the schedule version in force on their issue date.
 
 | Field        | Notes                                                       |
 | ------------ | ----------------------------------------------------------- |
-| unit_id, person_id |                                                       |
+| community_id |                                                             |
+| unit_id, person_id | Both must belong to `community_id`                    |
 | role         | `owner`, `tenant`, `resident`, `household_member`, `representative` |
 | share        | Ownership share for co-owners (percentage); owners only     |
 | valid_from, valid_to |                                                     |
@@ -228,6 +255,15 @@ Assessments use the schedule version in force on their issue date.
 One person can hold several roles on the same unit (Esteban is owner and
 resident of 105). A unit can be owned by someone who does not live there
 (Hernán, 212) and lived in by someone who owns nothing (Claudia, 212).
+
+**Implementation note (first `residents` slice):** invariant #5 (co-owner
+shares *in force* sum to 100) is enforced here only as "reject an owner
+relationship whose share would push the active sum over 100" — not as an
+atomic "set all co-owners to exactly 100" operation. A unit can therefore
+sit under-owned (e.g. one 60% owner recorded, the rest not yet entered)
+indefinitely; nothing currently requires reaching exactly 100. Revisit
+once a workflow needs the stronger guarantee (e.g. closing an ownership
+transfer).
 
 ## 6. Billing (`billing`)
 
