@@ -34,6 +34,44 @@ tenant-scoped tables need the same keys and RLS policy as the existing ones, and
 code running outside a request (scheduled jobs) must bind a community
 explicitly or it sees no rows.
 
+## Accounting and Contarte
+
+The accounting module must stay compatible and exchangeable with
+[Contarte](https://github.com/chlewey/Contarte) (local checkout:
+`C:\Temp\Contarte`), the same author's double-entry bookkeeping app, so books
+can move between the two. From the accounting point of view they are the same:
+ProHo is not a general accounting app but an app that uses accounting, optimized
+for its tasks. Frame differences as ProHo's domain use of a shared accounting,
+not as a second accounting model.
+
+- Contarte is upstream for the shared primitives (its ADR 0002,
+  `docs/decisions/0002-proho-cross-project-accounting.md`); ProHo-specific domain
+  rules stay in ProHo. If ProHo needs a primitive Contarte lacks, add it in
+  Contarte first.
+- Money is integer minor units plus a currency code, never floating point.
+- ProHo's accounting API is the same contract as the Contarte API, for ProHo's
+  own clients too, and it is centralized in the Contarte repo. Don't design a
+  separate ProHo accounting API or an adapter. Billing keeps its own API.
+- Any ProHo community ledger acts as an accounting server from Contarte's point
+  of view. ProHo will expose a ledger API to Contarte clients through AAA
+  (authentication, authorization, accounting) agreements. This is not scheduled,
+  and the agreement's contents, approver and write scope are still open.
+- Before working on the ledger, chart of accounts, journal entries, import/export
+  or any external API, re-read Contarte's schema and status, and ProHo's
+  `docs/strategy/contarte-alignment.md` (branch `develop/contarte-strategy-docs`
+  until it merges).
+
+### The contract folder, Contarte's `docs/api-contract/`
+
+- Write any ProHo concern about the API in `proho-requirements.md`, and nowhere
+  else in that folder.
+- Treat every other document there as read-only, even to fix something.
+  `requirements-coverage.md` is the official response.
+- What is agreed there is authoritative, and ProHo can build on it. If ProHo's own
+  docs differ, the folder wins. Check what is actually agreed, item by item, in
+  `requirements-coverage.md`: agreeing to a requirement doesn't settle its
+  wire-level shape, and the specification itself may still be an unratified draft.
+
 ## Commands
 
 | Area | Command (run in the folder) |
