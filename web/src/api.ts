@@ -35,6 +35,111 @@ export interface Community {
   address: string | null;
 }
 
+export interface MyMembership {
+  membershipId: string;
+  personId: string | null;
+  roles: string[];
+}
+
+export interface Member {
+  membershipId: string;
+  displayName: string;
+  email: string;
+  personId: string | null;
+  status: string;
+  roles: string[];
+}
+
+export interface Invitation {
+  id: string;
+  email: string;
+  personId: string | null;
+  createdAt: string;
+  expiresAt: string;
+  token: string | null;
+}
+
+export interface InvitationPreview {
+  communityName: string;
+  email: string;
+  matchesAccount: boolean;
+}
+
+export interface AuditEvent {
+  id: string;
+  occurredAt: string;
+  entityType: string;
+  entityId: string;
+  action: string;
+  summary: string | null;
+  actorName: string | null;
+  requestId: string | null;
+}
+
+export type Visibility = "privileged" | "community";
+
+export interface ProfileInput {
+  email: string | null;
+  phone: string | null;
+  nameVisibility: Visibility;
+  emailVisibility: Visibility;
+  phoneVisibility: Visibility;
+  unitsVisibility: Visibility;
+}
+
+export interface Building {
+  id: string;
+  communityId: string;
+  name: string;
+  archivedAt: string | null;
+}
+
+export interface UnitInput {
+  number: string;
+  kind: string;
+  buildingId: string | null;
+  floor: string | null;
+  areaM2: number | null;
+  registryId: string | null;
+}
+
+export interface PropertyUnit extends UnitInput {
+  id: string;
+  communityId: string;
+  archivedAt: string | null;
+}
+
+export interface PersonInput {
+  kind: string;
+  givenName: string | null;
+  surname: string | null;
+  legalName: string | null;
+  idType: string | null;
+  idNumber: string | null;
+  email: string | null;
+  phone: string | null;
+}
+
+export interface Person extends PersonInput {
+  id: string;
+  communityId: string;
+  nameVisibility: Visibility;
+  emailVisibility: Visibility;
+  phoneVisibility: Visibility;
+  unitsVisibility: Visibility;
+  archivedAt: string | null;
+}
+
+export interface UnitRelationship {
+  id: string;
+  unitId: string;
+  personId: string;
+  role: string;
+  share: number | null;
+  validFrom: string;
+  validTo: string | null;
+}
+
 interface LoginResponse {
   token: string;
   expiresAt: string;
@@ -106,5 +211,250 @@ export function createCommunity(
     "/communities",
     { method: "POST", body: JSON.stringify(input) },
     token,
+  );
+}
+
+function send<T>(token: string, method: string, path: string, body?: unknown): Promise<T> {
+  return request<T>(
+    path,
+    { method, body: body === undefined ? undefined : JSON.stringify(body) },
+    token,
+  );
+}
+
+export function updateMe(token: string, displayName: string, locale: string): Promise<Account> {
+  return send<Account>(token, "PUT", "/me", { displayName, locale });
+}
+
+export function getProfile(token: string, communityId: string): Promise<Person> {
+  return request<Person>(`/communities/${communityId}/profile`, {}, token);
+}
+
+export function updateProfile(token: string, communityId: string, input: ProfileInput): Promise<Person> {
+  return send<Person>(token, "PUT", `/communities/${communityId}/profile`, input);
+}
+
+export function listMembers(token: string, communityId: string): Promise<Member[]> {
+  return request<Member[]>(`/communities/${communityId}/memberships`, {}, token);
+}
+
+export function linkMemberPerson(
+  token: string,
+  communityId: string,
+  membershipId: string,
+  personId: string | null,
+): Promise<void> {
+  return send<void>(token, "PUT", `/communities/${communityId}/memberships/${membershipId}/person`, { personId });
+}
+
+export function createInvitation(
+  token: string,
+  communityId: string,
+  email: string,
+  personId: string | null,
+): Promise<Invitation> {
+  return send<Invitation>(token, "POST", `/communities/${communityId}/invitations`, { email, personId });
+}
+
+export function listInvitations(token: string, communityId: string): Promise<Invitation[]> {
+  return request<Invitation[]>(`/communities/${communityId}/invitations`, {}, token);
+}
+
+export function revokeInvitation(token: string, communityId: string, invitationId: string): Promise<void> {
+  return send<void>(token, "POST", `/communities/${communityId}/invitations/${invitationId}/revoke`);
+}
+
+export function previewInvitation(token: string, invitationToken: string): Promise<InvitationPreview> {
+  return send<InvitationPreview>(token, "POST", "/invitations/preview", { token: invitationToken });
+}
+
+export function acceptInvitation(token: string, invitationToken: string): Promise<unknown> {
+  return send(token, "POST", "/invitations/accept", { token: invitationToken });
+}
+
+export function assignRole(token: string, communityId: string, membershipId: string, role: string): Promise<Member> {
+  return send<Member>(token, "POST", `/communities/${communityId}/memberships/${membershipId}/roles`, { role });
+}
+
+export function endRole(token: string, communityId: string, membershipId: string, role: string): Promise<Member> {
+  return send<Member>(token, "POST", `/communities/${communityId}/memberships/${membershipId}/roles/${role}/end`);
+}
+
+export function changeMemberStatus(
+  token: string,
+  communityId: string,
+  membershipId: string,
+  action: "suspend" | "reactivate" | "remove",
+): Promise<unknown> {
+  return send(token, "POST", `/communities/${communityId}/memberships/${membershipId}/${action}`);
+}
+
+export function leaveCommunity(token: string, communityId: string): Promise<void> {
+  return send<void>(token, "POST", `/communities/${communityId}/membership/leave`);
+}
+
+export function listAuditEvents(
+  token: string,
+  communityId: string,
+  before: string | null,
+): Promise<AuditEvent[]> {
+  const page = before ? `&before=${before}` : "";
+  return request<AuditEvent[]>(`/communities/${communityId}/audit-events?limit=50${page}`, {}, token);
+}
+
+export function getCommunity(token: string, communityId: string): Promise<Community> {
+  return request<Community>(`/communities/${communityId}`, {}, token);
+}
+
+export function updateCommunity(
+  token: string,
+  communityId: string,
+  input: { name: string; legalName: string | null; taxId: string | null; address: string | null },
+): Promise<Community> {
+  return send<Community>(token, "PUT", `/communities/${communityId}`, input);
+}
+
+export function getMyMembership(token: string, communityId: string): Promise<MyMembership> {
+  return request<MyMembership>(`/communities/${communityId}/membership`, {}, token);
+}
+
+export function listBuildings(
+  token: string,
+  communityId: string,
+  includeArchived: boolean,
+): Promise<Building[]> {
+  return request<Building[]>(
+    `/communities/${communityId}/buildings?includeArchived=${includeArchived}`,
+    {},
+    token,
+  );
+}
+
+export function createBuilding(token: string, communityId: string, name: string): Promise<Building> {
+  return send<Building>(token, "POST", `/communities/${communityId}/buildings`, { name });
+}
+
+export function updateBuilding(
+  token: string,
+  communityId: string,
+  buildingId: string,
+  name: string,
+): Promise<Building> {
+  return send<Building>(token, "PUT", `/communities/${communityId}/buildings/${buildingId}`, { name });
+}
+
+export function listUnits(
+  token: string,
+  communityId: string,
+  includeArchived: boolean,
+): Promise<PropertyUnit[]> {
+  return request<PropertyUnit[]>(
+    `/communities/${communityId}/units?includeArchived=${includeArchived}`,
+    {},
+    token,
+  );
+}
+
+export function createUnit(token: string, communityId: string, input: UnitInput): Promise<PropertyUnit> {
+  return send<PropertyUnit>(token, "POST", `/communities/${communityId}/units`, input);
+}
+
+export function updateUnit(
+  token: string,
+  communityId: string,
+  unitId: string,
+  input: UnitInput,
+): Promise<PropertyUnit> {
+  return send<PropertyUnit>(token, "PUT", `/communities/${communityId}/units/${unitId}`, input);
+}
+
+export function listPeople(
+  token: string,
+  communityId: string,
+  includeArchived: boolean,
+): Promise<Person[]> {
+  return request<Person[]>(
+    `/communities/${communityId}/people?includeArchived=${includeArchived}`,
+    {},
+    token,
+  );
+}
+
+export function createPerson(token: string, communityId: string, input: PersonInput): Promise<Person> {
+  return send<Person>(token, "POST", `/communities/${communityId}/people`, input);
+}
+
+export function updatePerson(
+  token: string,
+  communityId: string,
+  personId: string,
+  input: PersonInput,
+): Promise<Person> {
+  return send<Person>(token, "PUT", `/communities/${communityId}/people/${personId}`, input);
+}
+
+type Archivable = "buildings" | "units" | "people";
+
+export function archive(
+  token: string,
+  communityId: string,
+  collection: Archivable,
+  id: string,
+): Promise<unknown> {
+  return send(token, "POST", `/communities/${communityId}/${collection}/${id}/archive`);
+}
+
+export function restore(
+  token: string,
+  communityId: string,
+  collection: Archivable,
+  id: string,
+): Promise<unknown> {
+  return send(token, "POST", `/communities/${communityId}/${collection}/${id}/restore`);
+}
+
+export function listUnitRelationships(
+  token: string,
+  communityId: string,
+  unitId: string,
+): Promise<UnitRelationship[]> {
+  return request<UnitRelationship[]>(`/communities/${communityId}/units/${unitId}/relationships`, {}, token);
+}
+
+export function listPersonRelationships(
+  token: string,
+  communityId: string,
+  personId: string,
+): Promise<UnitRelationship[]> {
+  return request<UnitRelationship[]>(`/communities/${communityId}/people/${personId}/relationships`, {}, token);
+}
+
+export function createRelationship(
+  token: string,
+  communityId: string,
+  unitId: string,
+  input: {
+    personId: string;
+    role: string;
+    share: number | null;
+    validFrom: string | null;
+    validTo: string | null;
+  },
+): Promise<UnitRelationship> {
+  return send<UnitRelationship>(token, "POST", `/communities/${communityId}/units/${unitId}/relationships`, input);
+}
+
+export function endRelationship(
+  token: string,
+  communityId: string,
+  unitId: string,
+  relationshipId: string,
+  validTo: string | null,
+): Promise<UnitRelationship> {
+  return send<UnitRelationship>(
+    token,
+    "POST",
+    `/communities/${communityId}/units/${unitId}/relationships/${relationshipId}/end`,
+    { validTo },
   );
 }

@@ -2,9 +2,12 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import AuthScreen from "./AuthScreen";
 import CommunitiesScreen from "./CommunitiesScreen";
+import { captureInvitationToken, hasInvitationToken } from "./InvitationBanner";
 import { me, logout as apiLogout, type Account } from "./api";
 
 const TOKEN_STORAGE_KEY = "proho.token";
+
+captureInvitationToken();
 
 export default function App() {
   const [token, setToken] = useState<string | null>(() =>
@@ -67,9 +70,21 @@ export default function App() {
             <p>Cargando…</p>
           </div>
         ) : token && account ? (
-          <CommunitiesScreen token={token} account={account} onLogout={handleLogout} />
+          <CommunitiesScreen
+            token={token}
+            account={account}
+            onAccountChanged={setAccount}
+            onLogout={handleLogout}
+          />
         ) : (
-          <AuthScreen onLoggedIn={handleLoggedIn} />
+          <>
+            {hasInvitationToken() && (
+              <div className="content notice-top">
+                <p>Tiene una invitación. Inicie sesión o cree una cuenta con el correo al que se la enviaron.</p>
+              </div>
+            )}
+            <AuthScreen onLoggedIn={handleLoggedIn} />
+          </>
         )}
       </main>
     </div>

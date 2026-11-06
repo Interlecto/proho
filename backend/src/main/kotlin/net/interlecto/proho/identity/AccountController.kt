@@ -11,6 +11,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
@@ -29,6 +30,13 @@ data class RegisterAccountRequest(
     val locale: String? = null,
 )
 
+data class UpdateAccountRequest(
+    @field:NotBlank @field:Size(max = 200)
+    val displayName: String,
+    @field:NotBlank @field:Size(max = 10)
+    val locale: String,
+)
+
 data class AccountResponse(
     val id: UUID,
     val email: String,
@@ -41,7 +49,10 @@ data class AccountResponse(
 internal fun Account.toResponse() = AccountResponse(id, email, displayName, locale, status.value)
 
 @RestController
-class AccountController(private val registrationService: AccountRegistrationService) {
+class AccountController(
+    private val registrationService: AccountRegistrationService,
+    private val profileService: AccountProfileService,
+) {
     @PostMapping("/accounts")
     @ResponseStatus(HttpStatus.CREATED)
     fun register(
@@ -74,6 +85,12 @@ class AccountController(private val registrationService: AccountRegistrationServ
             locale = account.locale,
             status = account.status.value,
         )
+
+    @PutMapping("/me")
+    fun updateMe(
+        @Valid @RequestBody request: UpdateAccountRequest,
+        @AuthenticationPrincipal account: AuthenticatedAccount,
+    ): AccountResponse = profileService.update(account.accountId, request.displayName, request.locale).toResponse()
 
     @ExceptionHandler(EmailAlreadyRegisteredException::class)
     fun handleDuplicateEmail(): ResponseEntity<Map<String, String>> =

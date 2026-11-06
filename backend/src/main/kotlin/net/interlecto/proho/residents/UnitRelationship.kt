@@ -18,4 +18,15 @@ data class UnitRelationship(
     val validFrom: LocalDate,
     val validTo: LocalDate?,
     val createdAt: Instant,
-)
+) {
+    /** Both ends of the period are inclusive: a relationship ending June 30 still holds that day. */
+    fun inForceOn(day: LocalDate): Boolean = validFrom <= day && (validTo == null || validTo >= day)
+
+    fun overlaps(
+        from: LocalDate,
+        to: LocalDate?,
+    ): Boolean = (to == null || validFrom <= to) && (validTo == null || validTo >= from)
+
+    /** Still running after [day], or not started yet. An end date of [day] itself counts as finished. */
+    fun openAfter(day: LocalDate): Boolean = validTo == null || validTo > day
+}

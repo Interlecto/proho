@@ -19,34 +19,48 @@ not started yet).
 2. **Bootstrap.** `GET /communities` comes back empty for a new account.
    Prompt to **create a community** (`POST /communities` — the caller
    becomes its administrator immediately, founding membership + role
-   assignment in one transaction) or wait for an invite. Invites are
-   **not built yet** (no endpoint exists — same reasoning `identity`
-   already used to defer its own "send an email" work), so "join an
-   existing community" isn't a real path until that lands.
+   assignment in one transaction) or open an invitation link, which
+   previews the community and joins it (`POST /invitations/preview`,
+   `/accept`). There's no email yet, so an administrator shares the link.
 3. **Community switcher.** `GET /communities` → a persistent picker,
    since one account can hold several memberships (`domain-model.md` §1).
 4. **Community home**, gated by the caller's role. Only `administrator`
-   exists functionally today (granted automatically to whoever created
-   the community) — there's no invite-and-assign-role flow yet, so every
-   other assigned role (`accountant`, `treasurer`, …) is unreachable
-   through the UI until invites exist.
-   - **Any active member:** directory (people), units list, unit detail
-     (shows its relationships).
-   - **Administrator only:** create building/unit, create person, assign
-     a unit relationship (owner/tenant/resident/representative — owner
-     shares are capped at 100% by the API, `409 owner_share_exceeds_100`
-     if exceeded).
+   changes what the screens offer so far, and privileged roles see more
+   people's details (`docs/security/privacy.md`).
+   `GET /communities/{id}/membership` returns the caller's roles.
+   - **Any active member:** units list and unit detail; a directory of the
+     people who chose to share their name, and of people on their own units,
+     limited as in `docs/security/privacy.md`; and their own account and
+     profile, where they choose what to share.
+   - **Administrator only:** create, edit, archive and restore buildings,
+     units and people; see archived records; edit the community's details;
+     add a unit relationship (owner shares can't pass 100% on any day,
+     `409 owner_share_exceeds_100`) and end one; invite members, assign and
+     end their roles, link them to a person, suspend and remove them.
+5. **Nothing is deleted.** Archiving hides a record from the normal lists
+   and stops it being linked to. It's blocked while the record is in use
+   (`building_in_use`, `unit_in_use`, `person_in_use`): archive a building's
+   units first, and end a unit's or person's relationships first. Ended
+   relationships stay as history.
 
 ## 2. Screens by client
 
 **Desktop web** — full admin surface, dense tables:
 - Login / Register / Forgot password
 - Community switcher + "Create community" form
-- Buildings: list, create
-- Units: list (filter by building), create, detail (its relationships)
-- People: list, create, detail
-- Unit relationship assignment form, on the unit detail screen
-- Account: `/me` profile, logout
+- Community details: view, edit
+- Buildings: list, create, edit, archive, restore
+- Units: list (filter by building), create, edit, archive, restore, detail
+  (its relationships)
+- People: list, create, edit, archive, restore, detail (their relationships)
+- Add and end unit relationships, on the unit detail screen
+- Members: list, roles, link to a person, suspend, reactivate, remove
+- Invitations: create and share a link, list, revoke; accept from the link
+- My profile: account name and language, contact details, sharing choices,
+  leave the community
+- Logout
+
+All of the above is built, in `web/src/CommunityScreen.tsx`.
 
 **Mobile web** — the same React app as desktop, at a responsive
 breakpoint, not a separate codebase. Member-first view by default
@@ -67,9 +81,7 @@ single-column stacked forms instead of table-embedded ones.
 
 ## 3. Explicitly out of scope until the backend catches up
 
-- Invite-by-email / accept-invite screens — no endpoint yet.
-- Role management UI beyond the implicit founding administrator — no
-  "assign/revoke role" endpoint yet, only at community-creation time.
+- Sending invitations by email — no notifications module yet.
 - Dashboard numbers, statements, payments, assessments — `billing`/
   `accounting` don't exist yet.
 - Announcements/boards/messaging — `communications` doesn't exist yet.
@@ -79,8 +91,8 @@ single-column stacked forms instead of table-embedded ones.
 
 ## 4. First demo slice
 
-Enough to prove the workflow end to end, not the full screen list above:
-register → log in → create a community → see it in the switcher. Web
+The first slice proved the workflow end to end: register → log in → create
+a community → see it in the switcher. That's still all Android has. Web
 first (`web/`, against `http://localhost:8080`), then Android
 (`android/`, against `127.0.0.1:8080` via `adb reverse tcp:8080 tcp:8080`
 — works for a physical device over USB and for the emulator alike).

@@ -10,6 +10,16 @@ interface MembershipRepository : CrudRepository<Membership, UUID> {
         status: MembershipStatus,
     ): Membership?
 
+    fun findByCommunityIdAndStatusNot(
+        communityId: UUID,
+        status: MembershipStatus,
+    ): List<Membership>
+
+    fun existsByPersonIdAndStatusNot(
+        personId: UUID,
+        status: MembershipStatus,
+    ): Boolean
+
     fun findByAccountIdAndStatusNot(
         accountId: UUID,
         status: MembershipStatus,

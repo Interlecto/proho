@@ -1,16 +1,25 @@
 import { useEffect, useState, type FormEvent } from "react";
+import CommunityScreen from "./CommunityScreen";
+import InvitationBanner from "./InvitationBanner";
 import { ApiError, createCommunity, listCommunities, type Account, type Community } from "./api";
 
 interface CommunitiesScreenProps {
   token: string;
   account: Account;
+  onAccountChanged: (account: Account) => void;
   onLogout: () => void;
 }
 
-export default function CommunitiesScreen({ token, account, onLogout }: CommunitiesScreenProps) {
+export default function CommunitiesScreen({
+  token,
+  account,
+  onAccountChanged,
+  onLogout,
+}: CommunitiesScreenProps) {
   const [communities, setCommunities] = useState<Community[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   async function refresh() {
     try {
@@ -25,6 +34,21 @@ export default function CommunitiesScreen({ token, account, onLogout }: Communit
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
+  if (selectedId) {
+    return (
+      <CommunityScreen
+        token={token}
+        communityId={selectedId}
+        account={account}
+        onAccountChanged={onAccountChanged}
+        onBack={() => {
+          setSelectedId(null);
+          refresh();
+        }}
+      />
+    );
+  }
+
   return (
     <div className="content">
       <div className="top-row">
@@ -33,6 +57,7 @@ export default function CommunitiesScreen({ token, account, onLogout }: Communit
           Cerrar sesión
         </button>
       </div>
+      <InvitationBanner token={token} onJoined={refresh} />
       <h1>Sus comunidades</h1>
       {error && <p className="form-error">{error}</p>}
       {communities === null && <p>Cargando…</p>}
@@ -43,7 +68,9 @@ export default function CommunitiesScreen({ token, account, onLogout }: Communit
         <ul className="community-list">
           {communities.map((community) => (
             <li key={community.id} className="community-item">
-              <strong>{community.name}</strong>
+              <button type="button" className="link strong" onClick={() => setSelectedId(community.id)}>
+                {community.name}
+              </button>
               <span className="community-key">{community.key}</span>
             </li>
           ))}
@@ -112,7 +139,7 @@ function CreateCommunityForm({
           value={key}
           onChange={(e) => setKey(e.target.value.toLowerCase())}
           required
-          pattern="[a-z0-9-]+"
+          pattern="[a-z0-9\-]+"
           maxLength={64}
         />
       </label>

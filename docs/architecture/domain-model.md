@@ -128,6 +128,16 @@ At most one non-ended membership per (account, community). Joining is by
 invitation: an administrator invites an email, optionally pre-linked to a
 person record; the invitee registers or signs in and accepts.
 
+**Implementation note:** an invitation is its own table, because the invitee may
+have no account yet and a membership requires one, so the `invited` status is
+unused. Accepting needs the token and an account with the invited email, and
+expires after 7 days. The new member has no roles. A community always keeps an
+active administrator.
+
+Email verification isn't built, so the rule above that an email is verified
+before joining doesn't hold yet. Until a notifications module sends invitations,
+the administrator shares the link by hand and is who vouches for the person.
+
 ### Session / Token (`identity`)
 
 `AccountSession` (bearer tokens for API access) and `PasswordResetToken`
@@ -164,7 +174,7 @@ statements and community content, without anyone assigning them.
 
 Visibility tiers inherited from legacy ProHo (see `docs/legacy-salvage.md`):
 **public**, **community** (any active member), **privileged** (council,
-administration, accountant, auditor).
+administration, treasurer, accountant, auditor).
 
 ## 4. Property structure (`properties`)
 
@@ -229,6 +239,16 @@ without `identity`; both were corrected (dropped the unused `plans`
 dependency, added `identity` for `@AuthenticationPrincipal`) when this
 slice actually needed to compile.
 
+**Archiving:** buildings, units and people have an `archived_at` instead of
+ever being deleted. An archived record leaves the normal lists and can't be
+edited or linked to, and an archived unit keeps its number reserved. A building
+can't be archived while it has active units. A unit can't be archived while a
+module says it's in use (`UnitArchiveGuard`): `residents` does while it has an
+open relationship, and `billing` will have to as well.
+
+A community's key, kind, country, currency and time zone can't be edited, and
+neither can its plan, which belongs to entitlements.
+
 ## 5. People and relationships (`residents`)
 
 ### Person
@@ -239,8 +259,8 @@ slice actually needed to compile.
 | kind           | `natural`, `legal` (owners can be companies)              |
 | given_name, surname / legal_name |                                         |
 | id_type, id_number | `CC`, `CE`, `NIT`, `PA`, `TI`; unique per community when present |
-| emails, phones | Private by default                                        |
-| privacy        | Per-field visibility chosen by the person when they have an account |
+| emails, phones | Private by default. One of each for now                   |
+| privacy        | Per-field visibility chosen by the person when they have an account: see [`docs/security/privacy.md`](../security/privacy.md) |
 
 ### UnitRelationship
 
@@ -256,10 +276,16 @@ One person can hold several roles on the same unit (Esteban is owner and
 resident of 105). A unit can be owned by someone who does not live there
 (Hernán, 212) and lived in by someone who owns nothing (Claudia, 212).
 
+**Periods:** `valid_from` and `valid_to` are both inclusive, and "today" is
+in the community's time zone. A relationship is ended, never edited or deleted,
+and an end date can only move earlier: moving it later could overfill a period
+already given to the next owner. A person can't be archived while they have an
+open relationship.
+
 **Implementation note (first `residents` slice):** invariant #5 (co-owner
 shares *in force* sum to 100) is enforced here only as "reject an owner
-relationship whose share would push the active sum over 100" — not as an
-atomic "set all co-owners to exactly 100" operation. A unit can therefore
+relationship whose share would push the sum over 100 on any day of its
+period" — not as an atomic "set all co-owners to exactly 100" operation. A unit can therefore
 sit under-owned (e.g. one 60% owner recorded, the rest not yet entered)
 indefinitely; nothing currently requires reaching exactly 100. Revisit
 once a workflow needs the stronger guarantee (e.g. closing an ownership
@@ -346,7 +372,9 @@ conversations and messages are detailed when Phase 3 starts.
   zone; timestamps are UTC instants.
 - **Audit:** every command that changes state writes an AuditEvent (actor
   account, membership, community, entity, action, before/after summary, time,
-  request id) in the same transaction.
+  request id) in the same transaction. The summary is a short label, not a full
+  before and after, and never holds a person's details. Administrators and
+  auditors read a community's log at `GET /communities/{id}/audit-events`.
 - **Soft vs hard deletion:** financial records are never deleted. Personal
   data can be anonymized on request where law allows (Ley 1581 de 2012,
   habeas data), keeping the financial history consistent.
@@ -505,3 +533,14 @@ Detailed in the security architecture; the domain consequences are:
    certificates and *paz y salvo*), or optional?
 5. **Free-plan aggregate use:** which anonymized aggregates may the platform
    use (e.g. fee benchmarks by city and size), and is opting out possible?
+6. **Unit numbers across towers:** §4 says a number is unique within the
+   community "and building, if any", but the database enforces the community
+   only. A complex where Torre 1 and Torre 2 both have a 101 must write
+   `T1-101`. Is that acceptable, or should the number be unique per building?
+7. **Member directory default:** other members see nobody until each person
+   opts in, so a directory starts empty (`docs/security/privacy.md`). Is that
+   right for the pilot community, and does Ley 1581 or Ley 675 require anything
+   else, such as owners being able to see each other?
+8. **Closing a community:** a community can't be archived or closed yet. What
+   happens to its access and data, and for how long must its books stay
+   available? Decide before `billing` and `accounting` hold real records.

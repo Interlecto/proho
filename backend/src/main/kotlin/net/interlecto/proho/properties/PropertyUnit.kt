@@ -19,4 +19,5 @@ data class PropertyUnit(
     val areaM2: BigDecimal?,
     val registryId: String?,
     val createdAt: Instant,
+    val archivedAt: Instant? = null,
 )

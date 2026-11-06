@@ -16,4 +16,11 @@ data class Person(
     val idType: String?,
     val idNumber: String?,
     val createdAt: Instant,
+    val email: String? = null,
+    val phone: String? = null,
+    val nameVisibility: String = VISIBILITY_PRIVILEGED,
+    val emailVisibility: String = VISIBILITY_PRIVILEGED,
+    val phoneVisibility: String = VISIBILITY_PRIVILEGED,
+    val unitsVisibility: String = VISIBILITY_PRIVILEGED,
+    val archivedAt: Instant? = null,
 )

@@ -14,8 +14,8 @@ One row per phase from §4 below; the same icons mark each individual step there
 
 | Phase | Status | Where things stand |
 | --- | :-: | --- |
-| 0 — Foundation | ⚠️ | Domain model, accounting-policy docs, the OpenAPI contract, the Kotlin/Spring backend, CI, audit logging and tenant isolation are in place. Web and Android have project shells; **iOS has no project yet**. Deployment infra and secrets management are still documented conventions, not running infrastructure. |
-| 1 — Identity and community administration | ⚠️ | Registration, login, logout and password reset are built and tested; so are multi-community membership and basic community/building/unit/person/relationship creation, verified end to end on web and Android demos. Still missing: invite-by-email, role administration beyond the founding administrator, member profiles/privacy controls, and real dashboards on any client. |
+| 0 — Foundation | ⚠️ | Domain model, accounting-policy docs, the OpenAPI contract, the Kotlin/Spring backend, CI, tenant isolation and audit logging are in place. Web and Android have project shells; **the iOS shell is on an unmerged branch, `develop/ios-shell`**. Deployment infra and secrets management are still documented conventions, not running infrastructure. |
+| 1 — Identity and community administration | ⚠️ | Registration, login, logout and password reset are built and tested; so are multi-community membership, invitations and role administration, community, building, unit, person and relationship management, and member profiles with privacy controls, with screens on web. Android only has sign-in and the community list. Still missing: email delivery and verification, and real dashboards on any client. |
 | 2 — Accounting MVP | ⬜ | `billing` and `accounting` are empty module stubs — no code yet. Policy decisions P1–P8 in `docs/accounting/README.md` (contingency fund, extraordinary-assessment recognition, etc.) are still provisional, pending review by a Colombian public accountant — 🔴 a real blocker before posting rules can be finalized. |
 | 3 — Social features and offline reading | ⬜ | `communications` doesn't exist yet: no announcements, boards, messaging, or offline caching. |
 | 4 — Pilot and production readiness | ⬜ | No data-import tooling, no production deployment, no pilot community. Depends on Phases 2–3 landing first. |
@@ -282,9 +282,11 @@ The phases can overlap where dependencies permit. Accounting and financial corre
 - ⚠️ Document the journal posting rules for assessments, payments, expenses, credits, and reversals. *(same provisional status)*
 - ✅ Establish the shared REST/OpenAPI contract.
 - ✅ Create the Kotlin/Spring Boot backend and PostgreSQL schema.
-- ⚠️ Set up React/TypeScript, Kotlin/Compose, and Swift/SwiftUI projects. *(web and Android exist; iOS has no project yet)*
+- ⚠️ Set up React/TypeScript, Kotlin/Compose, and Swift/SwiftUI projects. *(web and Android are on `master`; the iOS scaffold is on `develop/ios-shell`, not merged and with no CI job)*
 - ⚠️ Establish automated builds, tests, migrations, and deployment. *(CI, tests and migrations exist; no deployment pipeline yet)*
-- ⚠️ Define tenant isolation, audit logging, and secrets management. *(isolation is built and tested: service checks, composite foreign keys and row-level security, see `docs/security/tenant-isolation.md`. Audit events are recorded and append-only for the application, but `request_id` is never populated and nothing reads the log yet. Secrets management is still just an env-var convention)*
+- ✅ Define and enforce tenant isolation. *(service checks, composite foreign keys and row-level security, see `docs/security/tenant-isolation.md`)*
+- ✅ Define audit logging. *(events are append-only for the application and carry a request id, and administrators and auditors can read a community's log. Reads of personal data aren't logged, see `docs/security/privacy.md`)*
+- ⚠️ Define secrets management. *(still just an env-var convention)*
 
 Exit criterion: The team can deploy the backend and all three client shells, with a reviewed domain model and documented accounting invariants.
 
@@ -292,11 +294,11 @@ Exit criterion: The team can deploy the backend and all three client shells, wit
 
 - ✅ Email/password authentication and account recovery.
 - ✅ One account associated with multiple communities.
-- ⚠️ Community, building, unit, and resident management. *(create and list are built and tested; no edit/archive/delete yet)*
+- ✅ Community, building, unit, and resident management. *(create, edit, archive and restore, and ending relationships, in the backend and on web. Records are archived, never deleted. Android and iOS screens belong to the navigation step below. Closing a whole community is not built: it needs a decision on keeping its books, see `domain-model.md` §11)*
 - ✅ Owner, tenant, resident, and representative relationships.
-- ⚠️ Membership and role administration. *(founding membership and administrator role work; no invites or role assignment for anyone else yet)*
-- ⬜ Member profiles and privacy controls.
-- ⚠️ Consistent navigation and core member dashboard on all three platforms. *(basic auth/community screens on web and Android; no dashboard; iOS has nothing)*
+- ✅ Membership and role administration. *(invitations, assigning and ending roles, suspending and removing members, and leaving, in the backend and on web. Invitation links are shared by hand until a notifications module sends email)*
+- ✅ Member profiles and privacy controls. *(in the backend and on web, see `docs/security/privacy.md`. Provisional pending legal review. Still to build: encrypted personal data, and recording consent and honoring data requests under Ley 1581)*
+- ⚠️ Consistent navigation and core member dashboard on all three platforms. *(web has community management; Android has only auth and the community list; no dashboard anywhere; iOS's scaffold is unmerged)*
 
 Exit criterion: A resident can switch between communities and view permitted information without duplicating accounts or exposing another community's data.
 
