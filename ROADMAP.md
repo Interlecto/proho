@@ -14,8 +14,8 @@ One row per phase from §4 below; the same icons mark each individual step there
 
 | Phase | Status | Where things stand |
 | --- | :-: | --- |
-| 0 — Foundation | ⚠️ | Domain model, accounting-policy docs, the OpenAPI contract, the Kotlin/Spring backend, CI, tenant isolation and audit logging are in place. Web and Android have project shells; **the iOS shell is on an unmerged branch, `develop/ios-shell`**. Deployment infra and secrets management are still documented conventions, not running infrastructure. |
-| 1 — Identity and community administration | ⚠️ | Registration, login, logout and password reset are built and tested; so are multi-community membership, invitations and role administration, community, building, unit, person and relationship management, and member profiles with privacy controls, with screens on web. Android only has sign-in and the community list. Still missing: email delivery and verification, and real dashboards on any client. |
+| 0 — Foundation | ⚠️ | Domain model, accounting-policy docs, the OpenAPI contract, the Kotlin/Spring backend, CI, tenant isolation and audit logging are in place. Web, Android and iOS have project shells. The iOS shell is on `develop/ios-shell` and has never been run, see `ios/README.md`. Deployment infra and secrets management are still documented conventions, not running infrastructure. |
+| 1 — Identity and community administration | ⚠️ | Registration, login, logout and password reset are built and tested; so are multi-community membership, invitations and role administration, community, building, unit, person and relationship management, and member profiles with privacy controls, with screens on web. Android and iOS only have sign-in and the community list, and iOS has never been run. Still missing: email delivery and verification, and real dashboards on any client. |
 | 2 — Accounting MVP | ⬜ | `billing` and `accounting` are empty module stubs — no code yet. Policy decisions P1–P8 in `docs/accounting/README.md` (contingency fund, extraordinary-assessment recognition, etc.) are still provisional, pending review by a Colombian public accountant — 🔴 a real blocker before posting rules can be finalized. |
 | 3 — Social features and offline reading | ⬜ | `communications` doesn't exist yet: no announcements, boards, messaging, or offline caching. |
 | 4 — Pilot and production readiness | ⬜ | No data-import tooling, no production deployment, no pilot community. Depends on Phases 2–3 landing first. |
@@ -282,8 +282,8 @@ The phases can overlap where dependencies permit. Accounting and financial corre
 - ⚠️ Document the journal posting rules for assessments, payments, expenses, credits, and reversals. *(same provisional status)*
 - ✅ Establish the shared REST/OpenAPI contract.
 - ✅ Create the Kotlin/Spring Boot backend and PostgreSQL schema.
-- ⚠️ Set up React/TypeScript, Kotlin/Compose, and Swift/SwiftUI projects. *(web and Android are on `master`; the iOS scaffold is on `develop/ios-shell`, not merged and with no CI job)*
-- ⚠️ Establish automated builds, tests, migrations, and deployment. *(CI, tests and migrations exist; no deployment pipeline yet)*
+- ✅ Set up React/TypeScript, Kotlin/Compose, and Swift/SwiftUI projects. *(the iOS skeleton is on `develop/ios-shell`, at parity with Android. CI compiles it and runs `ProHoKit`'s unit tests, but the app has never been run, see `ios/README.md`)*
+- ⚠️ Establish automated builds, tests, migrations, and deployment. *(CI, tests and migrations exist; no deployment pipeline yet. Hosting options are proposed in `docs/operations/hosting-options.md`, on `develop/hosting-options`, not decided)*
 - ✅ Define and enforce tenant isolation. *(service checks, composite foreign keys and row-level security, see `docs/security/tenant-isolation.md`)*
 - ✅ Define audit logging. *(events are append-only for the application and carry a request id, and administrators and auditors can read a community's log. Reads of personal data aren't logged, see `docs/security/privacy.md`)*
 - ⚠️ Define secrets management. *(still just an env-var convention)*
@@ -298,7 +298,7 @@ Exit criterion: The team can deploy the backend and all three client shells, wit
 - ✅ Owner, tenant, resident, and representative relationships.
 - ✅ Membership and role administration. *(invitations, assigning and ending roles, suspending and removing members, and leaving, in the backend and on web. Invitation links are shared by hand until a notifications module sends email)*
 - ✅ Member profiles and privacy controls. *(in the backend and on web, see `docs/security/privacy.md`. Provisional pending legal review. Still to build: encrypted personal data, and recording consent and honoring data requests under Ley 1581)*
-- ⚠️ Consistent navigation and core member dashboard on all three platforms. *(web has community management; Android has only auth and the community list; no dashboard anywhere; iOS's scaffold is unmerged)*
+- ⚠️ Consistent navigation and core member dashboard on all three platforms. *(web has community management; Android has only auth and the community list; iOS matches Android but has never been run; no dashboard anywhere)*
 
 Exit criterion: A resident can switch between communities and view permitted information without duplicating accounts or exposing another community's data.
 
@@ -315,6 +315,8 @@ Exit criterion: A resident can switch between communities and view permitted inf
 - ⬜ Trial balance, general ledger, income and expense statement, and balance sheet.
 - ⬜ Collection, aging, and member-statement reports.
 - ⬜ CSV/XLSX exports and relevant PDF reports.
+- ⚠️ Settle the accounting API contract, ahead of implementing it. *(in Contarte's `docs/api-contract/`: what is agreed there is authoritative for this module, and ProHo's concerns go in its `proho-requirements.md`. Requirements are being marked agreed one by one in its `requirements-coverage.md`, but the specification is still an unratified draft; see `docs/strategy/contarte-alignment.md` §1.1)*
+- ⬜ Keep the ledger compatible with Contarte's primitives, re-checking its schema before finalizing ours. *(design inputs in the same section; Contarte's M5 CSV format, now built, is the candidate interchange format)*
 - ⬜ Reconciliation and period-close controls.
 
 Exit criterion: Financial reports reconcile to the ledger, every posted journal entry balances, and corrections preserve a complete audit trail.
@@ -406,6 +408,7 @@ community-platform/
 └── docs/
     ├── architecture/
     ├── accounting/
+    ├── strategy/
     ├── security/
     ├── api/
     └── operations/
@@ -438,6 +441,7 @@ The broad product direction is now defined. A few implementation details still n
 3. Payment connector order: Which provider should be integrated first, based on merchant eligibility, transaction fees, API maturity, and settlement behavior.
 4. Offline retention: How much message history to cache, for how long, and how sensitive local data should be protected on shared or lost devices.
 5. iOS distribution: Whether the first iOS build will be distributed through TestFlight and the App Store, with a corresponding Apple Developer account and signing pipeline.
-6. Contarte compatibility: The accounting module must stay compatible and exchangeable with [Contarte](https://github.com/chlewey/Contarte), the author's personal double-entry bookkeeping Android app. In practice this means the chart of accounts, journal entries and ledger invariants should share a data model (or an exact, lossless mapping between the two) and a common export/import format, so books started in one app can move to the other without reconciliation. Contarte's own CSV import/export (its M5 milestone) is a candidate for that shared format; ProHo's accounting backend should track Contarte's data model as it stabilizes rather than diverge from it.
+6. Contarte compatibility: The accounting module must stay compatible and exchangeable with [Contarte](https://github.com/chlewey/Contarte), the author's double-entry bookkeeping Android app for personal and small-business books. From the accounting point of view the two are the same: ProHo is not a general accounting app, but an app that uses accounting, optimized for its tasks. Contarte is upstream for the shared primitives (its ADR 0002): money as integer minor units, the ledger/account/entry/line shape, chart rules, and the posting invariants. ProHo maps to them and keeps its domain rules (vouchers, period locking, funds, subledgers, withholding). Books should move between the apps without reconciliation at the level of balances and reports. Contarte's CSV import/export (its M5 milestone, now built) is the candidate shared format. See [docs/strategy/contarte-alignment.md](docs/strategy/contarte-alignment.md) for the mapping and its known gaps.
+7. External ledger access: ProHo will expose a narrow, ledger-only API so an external accountant or statutory auditor can work on a community's books from a Contarte client, without using ProHo's product. This is the accounting module's own API, the same contract as the Contarte API, defined in Contarte's `docs/api-contract/`, not a separate surface. External access is granted through AAA (authentication, authorization, accounting) agreements. It is not scheduled yet, and what an agreement contains, who approves it, and the write scope are still to be decided; see [docs/strategy/contarte-alignment.md](docs/strategy/contarte-alignment.md).
 
 The most consequential next step is to define the residential domain model and accounting posting rules together. That prevents the fee-management module from evolving into a standalone receivables system that later needs to be retrofitted into the general ledger.
