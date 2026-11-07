@@ -14,7 +14,7 @@ One row per phase from §4 below; the same icons mark each individual step there
 
 | Phase | Status | Where things stand |
 | --- | :-: | --- |
-| 0 — Foundation | ⚠️ | Domain model, accounting-policy docs, the OpenAPI contract, the Kotlin/Spring backend, CI, tenant isolation and audit logging are in place. Web, Android and iOS have project shells. The iOS shell is on `develop/ios-shell` and has never been run, see `ios/README.md`. Deployment infra and secrets management are still documented conventions, not running infrastructure. |
+| 0 — Foundation | ⚠️ | Domain model, accounting-policy docs, the OpenAPI contract, the Kotlin/Spring backend, CI, tenant isolation, audit logging and secrets management are in place. Web, Android and iOS have project shells. The iOS shell is on `develop/ios-shell` and has never been run, see `ios/README.md`. Deployment infra isn't running yet. |
 | 1 — Identity and community administration | ⚠️ | Registration, login, logout and password reset are built and tested; so are multi-community membership, invitations and role administration, community, building, unit, person and relationship management, and member profiles with privacy controls, with screens on web. Android and iOS only have sign-in and the community list, and iOS has never been run. Still missing: email delivery and verification, and real dashboards on any client. |
 | 2 — Accounting MVP | ⬜ | `billing` and `accounting` are empty module stubs — no code yet. Policy decisions P1–P8 in `docs/accounting/README.md` (contingency fund, extraordinary-assessment recognition, etc.) are still provisional, pending review by a Colombian public accountant — 🔴 a real blocker before posting rules can be finalized. |
 | 3 — Social features and offline reading | ⬜ | `communications` doesn't exist yet: no announcements, boards, messaging, or offline caching. |
@@ -286,7 +286,7 @@ The phases can overlap where dependencies permit. Accounting and financial corre
 - ⚠️ Establish automated builds, tests, migrations, and deployment. *(CI, tests and migrations exist; no deployment pipeline yet. Hosting options are proposed in `docs/operations/hosting-options.md`, on `develop/hosting-options`, not decided)*
 - ✅ Define and enforce tenant isolation. *(service checks, composite foreign keys and row-level security, see `docs/security/tenant-isolation.md`)*
 - ✅ Define audit logging. *(events are append-only for the application and carry a request id, and administrators and auditors can read a community's log. Reads of personal data aren't logged, see `docs/security/privacy.md`)*
-- ⚠️ Define secrets management. *(still just an env-var convention)*
+- ✅ Define secrets management. *(on `develop/secrets-management`: rules, inventory, rotation and leak response in `docs/security/secrets.md`; CI scans the whole history with gitleaks; the backend refuses development database passwords. Where production secrets are stored is provisional until hosting is decided)*
 
 Exit criterion: The team can deploy the backend and all three client shells, with a reviewed domain model and documented accounting invariants.
 
