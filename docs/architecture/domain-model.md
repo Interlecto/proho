@@ -13,7 +13,8 @@ The demo community in [`database/seed/demo-community.json`](../../database/seed/
 
 1. **The community is the tenant.** Every business record belongs to exactly
    one community, except the platform account. No query, report or cache may
-   combine records from two communities.
+   combine records from two communities. Enforced down to the database: see
+   [`docs/security/tenant-isolation.md`](../security/tenant-isolation.md).
 2. **Account, person and membership are three different things.**
    - An **account** is a login: one per human, platform-wide.
    - A **person** is a community's own record of a natural or legal person
@@ -245,7 +246,8 @@ slice actually needed to compile.
 
 | Field        | Notes                                                       |
 | ------------ | ----------------------------------------------------------- |
-| unit_id, person_id |                                                       |
+| community_id |                                                             |
+| unit_id, person_id | Both must belong to `community_id`                    |
 | role         | `owner`, `tenant`, `resident`, `household_member`, `representative` |
 | share        | Ownership share for co-owners (percentage); owners only     |
 | valid_from, valid_to |                                                     |

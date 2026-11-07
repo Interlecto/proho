@@ -136,6 +136,7 @@ class ResidentService(
             jdbcAggregateOperations.insert(
                 UnitRelationship(
                     id = Uuid7.generate(),
+                    communityId = communityId,
                     unitId = unitId,
                     personId = personId,
                     role = role,

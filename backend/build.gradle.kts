@@ -66,3 +66,11 @@ tasks.processResources {
 tasks.test {
     useJUnitPlatform()
 }
+
+// bootRun is the local development entry point; the packaged jar has no
+// profile and requires its database settings from the environment.
+tasks.bootRun {
+    if (System.getenv("SPRING_PROFILES_ACTIVE") == null) {
+        systemProperty("spring.profiles.active", "dev")
+    }
+}

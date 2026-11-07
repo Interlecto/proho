@@ -11,6 +11,7 @@ import net.interlecto.proho.identity.RegisterAccountRequest
 import net.interlecto.proho.properties.CreateUnitRequest
 import net.interlecto.proho.properties.UnitResponse
 import net.interlecto.proho.shared.Uuid7
+import net.interlecto.proho.tenancy.asCommunity
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -55,20 +56,23 @@ class ResidentIntegrationTest {
         token: String,
         communityId: UUID,
     ) {
-        jdbcAggregateOperations.insert(
-            Membership(
-                id = Uuid7.generate(),
-                accountId = accountId(token),
-                communityId = communityId,
-                personId = null,
-                status = MembershipStatus.ACTIVE,
-                invitedBy = null,
-                invitedAt = null,
-                joinedAt = Instant.now(),
-                endedAt = null,
-                createdAt = Instant.now(),
-            ),
-        )
+        val memberAccountId = accountId(token)
+        asCommunity(communityId) {
+            jdbcAggregateOperations.insert(
+                Membership(
+                    id = Uuid7.generate(),
+                    accountId = memberAccountId,
+                    communityId = communityId,
+                    personId = null,
+                    status = MembershipStatus.ACTIVE,
+                    invitedBy = null,
+                    invitedAt = null,
+                    joinedAt = Instant.now(),
+                    endedAt = null,
+                    createdAt = Instant.now(),
+                ),
+            )
+        }
     }
 
     private fun registerAndLogin(email: String): String {

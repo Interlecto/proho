@@ -18,6 +18,8 @@ class UnitNumberAlreadyRegisteredException(val number: String) : RuntimeExceptio
 
 class UnsupportedUnitKindException(val kind: String) : RuntimeException("Unsupported unit kind")
 
+class BuildingNotInCommunityException(val buildingId: UUID) : RuntimeException("Building does not belong to this community")
+
 @Service
 class PropertyService(
     private val buildings: BuildingRepository,
@@ -71,6 +73,12 @@ class PropertyService(
         val membership = membershipService.requireRole(accountId, communityId, Role.ADMINISTRATOR)
         if (kind !in SUPPORTED_UNIT_KINDS) {
             throw UnsupportedUnitKindException(kind)
+        }
+        if (buildingId != null) {
+            val building = buildings.findById(buildingId).orElse(null)
+            if (building == null || building.communityId != communityId) {
+                throw BuildingNotInCommunityException(buildingId)
+            }
         }
         if (units.existsByCommunityIdAndNumber(communityId, number)) {
             throw UnitNumberAlreadyRegisteredException(number)

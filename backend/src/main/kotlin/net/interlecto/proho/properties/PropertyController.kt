@@ -115,6 +115,10 @@ class PropertyController(
     fun handleUnsupportedUnitKind(): ResponseEntity<Map<String, String>> =
         ResponseEntity.badRequest().body(mapOf("error" to "unsupported_unit_kind"))
 
+    @ExceptionHandler(BuildingNotInCommunityException::class)
+    fun handleCrossCommunityReference(): ResponseEntity<Map<String, String>> =
+        ResponseEntity.badRequest().body(mapOf("error" to "not_found_in_community"))
+
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleInvalidRequest(): ResponseEntity<Map<String, String>> =
         ResponseEntity.badRequest().body(mapOf("error" to "invalid_request"))

@@ -2,7 +2,6 @@ package net.interlecto.proho.identity
 
 import net.interlecto.proho.audit.AuditEventRecorder
 import net.interlecto.proho.shared.Uuid7
-import org.slf4j.LoggerFactory
 import org.springframework.data.jdbc.core.JdbcAggregateOperations
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -18,15 +17,14 @@ class PasswordResetService(
     private val passwordEncoder: PasswordEncoder,
     private val auditEventRecorder: AuditEventRecorder,
     private val authProperties: AuthProperties,
+    private val notifier: PasswordResetNotifier,
 ) {
-    private val log = LoggerFactory.getLogger(PasswordResetService::class.java)
     private val eligibleStatuses =
         setOf(AccountStatus.PENDING_VERIFICATION, AccountStatus.ACTIVE, AccountStatus.LOCKED)
 
     /**
-     * Returns the raw token (never exposed over HTTP — callers log it or,
-     * once a notifications module exists, email it) or null when the email
-     * doesn't match an eligible account. The caller must respond the same
+     * Hands the raw token to the notifier and returns it, or returns null when
+     * the email doesn't match an eligible account. Never exposed over HTTP. The caller must respond the same
      * way (202, no body) either way, so this isn't an enumeration oracle.
      */
     @Transactional
@@ -54,10 +52,7 @@ class PasswordResetService(
             actorAccountId = account.id,
         )
 
-        // TODO(notifications): send this token by email once a notifications
-        // module exists, instead of logging it. See
-        // AccountRegistrationService's equivalent deferred-email comment.
-        log.info("TODO(notifications): password reset token for account {}: {}", account.id, rawToken)
+        notifier.passwordResetRequested(account.id, rawToken)
 
         return rawToken
     }

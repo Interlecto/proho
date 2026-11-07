@@ -10,6 +10,7 @@ import java.util.UUID
 data class RoleAssignment(
     @Id val id: UUID,
     val membershipId: UUID,
+    val communityId: UUID,
     val role: Role,
     val validFrom: LocalDate,
     val validTo: LocalDate?,
