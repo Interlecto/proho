@@ -30,8 +30,9 @@ one for the other.
    row-level security ([tenant-isolation.md](tenant-isolation.md)), and a CI
    deploy key can only deploy.
 6. **One master copy.** Every production secret's master copy lives in
-   Interlecto's password manager (tool to be chosen). Servers and CI hold copies.
-   Whoever creates or rotates a secret updates the master copy first.
+   Interlecto's password manager, Bitwarden ([below](#password-manager)).
+   Servers and CI hold copies. Whoever creates or rotates a secret updates the
+   master copy first.
 7. **Never logged.** Secrets don't go into logs, error messages, audit events
    or support tickets. Error messages name the variable, never the value.
 8. **Every new secret gets a row** in the inventory below, in the same pull
@@ -75,6 +76,33 @@ Add the row for real when the secret starts being used.
 | Email provider API key | Notifications module | Host environment file |
 | Payment provider keys and webhook signing secrets | Payments (Phase 2/3) | Host environment file. The most sensitive in this list; see rotation below |
 | Key for encrypting personal data | When encryption of personal data is built ([privacy.md](privacy.md), on `develop/community-management`) | Kept apart from database backups, or a backup holds both the data and its key |
+
+## Password manager
+
+Decided 2026-11-07: **Bitwarden, the cloud service, for now**, in an
+organization account for Interlecto. It's open source and needs no operations
+from us. Its data can move to a self-hosted Bitwarden or to Vaultwarden later,
+with the same apps, if the project decides to run its own.
+
+- **What goes in:** the master copy of every secret marked "Password manager"
+  in the inventory, and of every production and CI secret. Not development
+  defaults or test fixtures.
+- **Organization, not personal vaults.** Project secrets live in the
+  organization's collections, so access survives someone leaving and can be
+  granted per collection: for example one for production, one for app-store
+  signing. Store each item under the inventory's name for it, such as
+  `PROHO_DB_PASSWORD (production)`.
+- **Two-step login is required** for every member, and the account's recovery
+  code is kept offline, apart from the vault.
+- **Least access.** Give members only the collections they need. When someone
+  leaves, remove them from the organization and rotate what they could see
+  (see [Rotation](#rotation)).
+- **Export now and then.** An encrypted export, kept offline, covers losing
+  access to the service.
+- **Machines don't read it yet.** CI uses GitHub Actions secrets and the server
+  its environment file, both copied by hand from the vault. Once there's more
+  than one server, Bitwarden Secrets Manager can hand secrets to machines
+  directly.
 
 ## Where secrets live
 
