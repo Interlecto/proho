@@ -1,4 +1,4 @@
-package net.interlecto.proho.ui.screens
+package app.ilecto.proho.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -22,9 +22,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import net.interlecto.proho.R
-import net.interlecto.proho.net.ApiClient
-import net.interlecto.proho.net.ApiException
+import app.ilecto.proho.R
+import app.ilecto.proho.net.ApiClient
+import app.ilecto.proho.net.ApiException
 
 private enum class AuthMode { LOGIN, REGISTER }
 

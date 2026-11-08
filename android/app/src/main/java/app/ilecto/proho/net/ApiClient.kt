@@ -1,4 +1,4 @@
-package net.interlecto.proho.net
+package app.ilecto.proho.net
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

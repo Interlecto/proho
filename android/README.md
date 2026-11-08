@@ -1,5 +1,5 @@
 # Android client
 
-Kotlin + Jetpack Compose. Application ID `net.interlecto.proho`.
+Kotlin + Jetpack Compose. Application ID `app.ilecto.proho`.
 
 Scaffolded in `develop/android-shell`.

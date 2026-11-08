@@ -54,7 +54,7 @@ Node 24. Match those versions locally.
   ([docs/development.md](docs/development.md)).
 - Documentation is bilingual: keep `README.md` and `LEEME.md` in step.
 - Debug builds use the shared keystore `android/keystore/debug.keystore`
-  (application ID `net.interlecto.proho.debug`). Never commit a release key.
+  (application ID `app.ilecto.proho.debug`). Never commit a release key.
 - Prefer small, scoped changes; this is a rewrite, so update the docs that
   describe a module when you implement it.
 

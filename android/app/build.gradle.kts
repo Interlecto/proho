@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "net.interlecto.proho"
+    namespace = "app.ilecto.proho"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "net.interlecto.proho"
+        applicationId = "app.ilecto.proho"
         minSdk = 30
         targetSdk = 36
         versionCode = 1
