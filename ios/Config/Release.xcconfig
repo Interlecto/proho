@@ -1,6 +1,6 @@
 #include "Base.xcconfig"
 
-PRODUCT_BUNDLE_IDENTIFIER = net.interlecto.proho
+PRODUCT_BUNDLE_IDENTIFIER = app.ilecto.proho
 PROHO_DISPLAY_NAME = ProHo
 
 // docs/infrastructure.md -- not deployed yet.

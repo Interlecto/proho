@@ -1,7 +1,7 @@
 #include "Base.xcconfig"
 
 // Installs next to a release build, like Android's .debug suffix.
-PRODUCT_BUNDLE_IDENTIFIER = net.interlecto.proho.debug
+PRODUCT_BUNDLE_IDENTIFIER = app.ilecto.proho.debug
 PROHO_DISPLAY_NAME = ProHo (dev)
 
 // The simulator shares the Mac's network, so 127.0.0.1 is the Mac's

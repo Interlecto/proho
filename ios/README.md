@@ -1,14 +1,24 @@
 # iOS client
 
-Native Swift + SwiftUI, iOS 17+. Bundle ID `net.interlecto.proho`
-(`net.interlecto.proho.debug`, shown as "ProHo (dev)", for Debug builds, so
+Native Swift + SwiftUI, iOS 17+. Bundle ID `app.ilecto.proho`
+(`app.ilecto.proho.debug`, shown as "ProHo (dev)", for Debug builds, so
 both can be installed side by side like on Android).
 
-Status: **skeleton.** `ProHoKit` builds and its tests pass on Windows (Swift
-6.4.2). The SwiftUI app target was written without Xcode and has not been
-compiled yet. CI's macOS job (`.github/workflows/ci.yml`, job `ios`) and the
-first Mac session (checklist below) are the first real compile of the app
-target.
+Status: **skeleton, untested.** The client is kept in step with Android (same
+screens, API calls and strings), but none of this development has been tested
+yet:
+
+- The app has never been run: not on a simulator, not on a device, and not
+  against a backend. Nobody has checked a screen, a string or a flow.
+- The only checks so far are automatic, on the skeleton's first commit
+  (`0fbc1d5`, CI run of 2026-11-01): `ProHoKit`'s 10 unit tests passed on
+  Linux and macOS, and the app target compiled for the simulator on the
+  macOS job (`xcodebuild build`, no signing). Compiling is not testing.
+- Later changes, such as the bundle ID moving to `app.ilecto.proho`, have not
+  been built or tested here. CI will compile them when the branch is pushed.
+
+The first real test is the first Mac session (checklist below). Until then,
+treat the app as unverified.
 
 ## Layout
 
@@ -181,7 +191,7 @@ demo slice from `client-screens.md` §4 runs on all three clients.
 Answers `ROADMAP.md` open question 5:
 
 - Apple Developer Program membership for Interlecto, App Store Connect
-  record for `net.interlecto.proho`.
+  record for `app.ilecto.proho`.
 - TestFlight builds from CI: signing via App Store Connect API key in CI
   secrets (fastlane `match`, or Xcode Cloud). As with Android, no signing
   material in the repo.
