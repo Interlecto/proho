@@ -6,7 +6,7 @@ is not — see [ROADMAP.md](../ROADMAP.md) for when that's scheduled.
 | Domain                        | Purpose                                              | Source                      |
 | ------------------------------ | ----------------------------------------------------- | ---------------------------- |
 | `https://proho.ilecto.app/`    | Public, unauthenticated landing page for ProHo        | [`landing/`](../landing/) in this repo, deployed as the `proho-site` Cloudflare Worker |
-| `https://api.ilecto.net/proho/` | Production API base path for the backend              | `backend/`, once deployed    |
+| `https://api.ilecto.net/proho/` | Production API base path for the backend              | `backend/`, once deployed ([operations/deployment.md](operations/deployment.md)) |
 | `https://ilecto.app/`          | Interlecto project hub (links to ProHo, Novenario, …) | Separate project ([Interlecto/ilecto](https://github.com/Interlecto/ilecto)), not part of this repo |
 
 Notes:

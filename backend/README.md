@@ -48,6 +48,10 @@ real deployment.
 Migrations are in `database/migrations/` at the repository root and are
 packaged into the jar.
 
+The production image is built by `Dockerfile`, from the repository root
+(`docker build -f backend/Dockerfile .`). How it's deployed is in
+[docs/operations/deployment.md](../docs/operations/deployment.md).
+
 ## Local PostgreSQL (Windows, no admin terminal)
 
 No local Postgres and no Docker Desktop? This gets `bootRun` working against

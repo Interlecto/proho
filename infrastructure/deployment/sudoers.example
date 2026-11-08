@@ -1,0 +1,3 @@
+# /etc/sudoers.d/proho-deploy (mode 0440; check with visudo -cf): the deploy
+# user may run proho-deploy as root and nothing else.
+proho-deploy ALL=(root) NOPASSWD: /usr/local/sbin/proho-deploy
