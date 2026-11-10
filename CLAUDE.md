@@ -6,6 +6,8 @@ Management and social platform for *propiedad horizontal* (Colombian Ley 675 de
 (foundation); the README's Status section says which modules exist. Check it
 rather than assuming, since it moves quickly.
 
+Rules shared by all Interlecto projects (branches, debug keystore, deployment, Google Play, visual identity, how to continue from another machine or account) are in the hub's [CLAUDE.md](https://github.com/Interlecto/ilecto/blob/master/CLAUDE.md). Where they differ, this file wins.
+
 ## Where things live
 
 - `backend/` — Kotlin + Spring Boot modular monolith (Spring Modulith). Each
