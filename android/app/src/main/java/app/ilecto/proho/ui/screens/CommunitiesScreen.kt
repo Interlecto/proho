@@ -1,5 +1,6 @@
 package app.ilecto.proho.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,6 +36,7 @@ import app.ilecto.proho.net.CommunityDto
 fun CommunitiesScreen(
     token: String,
     account: AccountDto,
+    onOpen: (communityId: String) -> Unit,
     onLogout: () -> Unit,
 ) {
     var communities by remember { mutableStateOf<List<CommunityDto>?>(null) }
@@ -70,7 +72,7 @@ fun CommunitiesScreen(
             else ->
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(communities!!) { community ->
-                        Card(modifier = Modifier.fillMaxWidth()) {
+                        Card(modifier = Modifier.fillMaxWidth().clickable { onOpen(community.id) }) {
                             Column(modifier = Modifier.padding(12.dp)) {
                                 Text(community.name, style = MaterialTheme.typography.titleMedium)
                                 Text(community.key, style = MaterialTheme.typography.bodySmall)

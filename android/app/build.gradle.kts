@@ -69,5 +69,6 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.kotlinx.coroutines.android)
     testImplementation(libs.junit)
+    testImplementation(libs.org.json)
     debugImplementation(libs.androidx.ui.tooling)
 }

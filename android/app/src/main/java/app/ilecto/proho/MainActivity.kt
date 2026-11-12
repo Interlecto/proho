@@ -15,8 +15,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -25,6 +27,7 @@ import app.ilecto.proho.net.AccountDto
 import app.ilecto.proho.net.ApiClient
 import app.ilecto.proho.ui.screens.AuthScreen
 import app.ilecto.proho.ui.screens.CommunitiesScreen
+import app.ilecto.proho.ui.screens.CommunityScreen
 import app.ilecto.proho.ui.theme.ProHoTheme
 
 class MainActivity : ComponentActivity() {
@@ -47,6 +50,7 @@ fun ProHoApp() {
     var token by remember { mutableStateOf<String?>(null) }
     var account by remember { mutableStateOf<AccountDto?>(null) }
     var checkingSession by remember { mutableStateOf(false) }
+    var communityId by rememberSaveable { mutableStateOf<String?>(null) }
 
     LaunchedEffect(token) {
         val currentToken = token
@@ -58,8 +62,30 @@ fun ProHoApp() {
         account = runCatching { ApiClient.me(currentToken) }.getOrNull()
         if (account == null) {
             token = null
+            communityId = null
         }
         checkingSession = false
+    }
+
+    val signedInToken = token
+    val signedInAccount = account
+    val openCommunity = communityId
+    if (signedInToken != null && signedInAccount != null && openCommunity != null) {
+        // A community has its own top and bottom bars (ui/navigation/Section.kt).
+        key(openCommunity) {
+            CommunityScreen(
+                token = signedInToken,
+                account = signedInAccount,
+                communityId = openCommunity,
+                onSwitch = { communityId = it },
+                onLeave = { communityId = null },
+                onLogout = {
+                    communityId = null
+                    token = null
+                },
+            )
+        }
+        return
     }
 
     Scaffold(
@@ -90,6 +116,7 @@ fun ProHoApp() {
                     CommunitiesScreen(
                         token = currentToken,
                         account = currentAccount,
+                        onOpen = { communityId = it },
                         onLogout = { token = null },
                     )
                 else -> AuthScreen(onLoggedIn = { newToken -> token = newToken })
