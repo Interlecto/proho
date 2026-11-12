@@ -1,0 +1,9 @@
+#include "Base.xcconfig"
+
+PRODUCT_BUNDLE_IDENTIFIER = app.ilecto.proho
+PROHO_DISPLAY_NAME = ProHo
+
+// docs/infrastructure.md -- not deployed yet.
+PROHO_API_BASE = https:/$()/api.ilecto.net/proho
+
+#include? "Local.xcconfig"

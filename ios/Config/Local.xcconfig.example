@@ -1,0 +1,8 @@
+// Copy to Local.xcconfig (git-ignored) on each Mac.
+
+// Your Apple Developer team ID (Xcode > Settings > Accounts), needed to run
+// on a physical device.
+DEVELOPMENT_TEAM = ABCDE12345
+
+// Point a physical device at the backend running on this Mac.
+// PROHO_API_BASE = http:/$()/my-mac.local:8080

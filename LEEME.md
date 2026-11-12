@@ -53,7 +53,11 @@ son usables:
 - **Web y Android** — esqueletos de aplicación (`web/`, `android/`) con la
   identidad visual del proyecto ([`brand/`](brand/README.md)) aplicada, sin
   funcionalidades aún.
-- **iOS** — sin iniciar; solo README de marcador de posición.
+- **iOS** — esqueleto del proyecto (`ios/`): un paquete `ProHoKit`
+  independiente de la plataforma (cliente de la API, con pruebas unitarias)
+  y una app SwiftUI con las mismas pantallas de demostración que Android.
+  Escrito sin Xcode y aún no compilado en un Mac; ver
+  [ios/README.md](ios/README.md) para la configuración y el plan de desarrollo.
 - **Página pública** — en línea en [proho.ilecto.app](https://proho.ilecto.app/)
   (`landing/`), independiente del resto de la plataforma.
 - **Base de datos** — dos migraciones (base del tenant, identidad) y un

@@ -77,7 +77,8 @@ single-column stacked forms instead of table-embedded ones.
 - Admin-only, trimmed: create unit, create person, assign relationship
 - Profile / logout
 
-**iOS** — not started; same screen set as Android once a project exists.
+**iOS** — same screen set as Android. A skeleton with the first demo
+slice exists (`ios/`), not yet verified on a Mac; plan in `ios/README.md`.
 
 ## 3. Explicitly out of scope until the backend catches up
 
