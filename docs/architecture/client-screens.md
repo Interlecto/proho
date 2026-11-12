@@ -24,7 +24,10 @@ not started yet).
    `/accept`). There's no email yet, so an administrator shares the link.
 3. **Community switcher.** `GET /communities` → a persistent picker,
    since one account can hold several memberships (`domain-model.md` §1).
-4. **Community home**, gated by the caller's role. Only `administrator`
+4. **Community home**, gated by the caller's role, with the same
+   navigation on every client (§2). `GET /communities/{id}/home` gives
+   the dashboard in one call: the community, the caller's roles, their own
+   units today, and counts for administrators. Only `administrator`
    changes what the screens offer so far, and privileged roles see more
    people's details (`docs/security/privacy.md`).
    `GET /communities/{id}/membership` returns the caller's roles.
@@ -43,7 +46,23 @@ not started yet).
    units first, and end a unit's or person's relationships first. Ended
    relationships stay as history.
 
-## 2. Screens by client
+## 2. Navigation, and screens by client
+
+Every client shows the same sections, in the same order:
+
+| Section | Who | What |
+| ------- | --- | ---- |
+| **Inicio** | Every member | The dashboard from `GET /home`: roles, my units, and, for administrators, counts of units, people, buildings and members (with suspended members and pending invitations). Balances and announcements join it when billing and communications exist. |
+| **Unidades** | Every member | Units, then a unit's relationships. Administrators add units and relationships. |
+| **Directorio** | Every member | The people the caller may see (`docs/security/privacy.md`). Administrators add people. |
+| **Mi perfil** | Every member | Account, the caller's own record and what they share, leaving the community, logging out. |
+| *Administración:* Miembros, Edificios, Comunidad, Historial | Administrators; Historial also auditors | Web only. On the phones, Inicio says these are on the web. |
+
+A community switcher is always in the top bar. The web shows the sections
+in a sidebar on wide screens and a bottom bar on phones; Android uses a
+Material 3 navigation bar; iOS a `TabView`. The section lists are in
+`web/src/sections.ts`, `android/.../ui/navigation/Section.kt` and
+`ios/ProHoKit/.../Navigation.swift`.
 
 **Desktop web** — full admin surface, dense tables:
 - Login / Register / Forgot password
@@ -60,31 +79,29 @@ not started yet).
   leave the community
 - Logout
 
-All of the above is built, in `web/src/CommunityScreen.tsx`.
+All of the above is built, in `web/src/CommunityScreen.tsx`, with the
+dashboard in `HomeSection.tsx`.
 
 **Mobile web** — the same React app as desktop, at a responsive
 breakpoint, not a separate codebase. Member-first view by default
 (directory, read-only units); admin create/assign forms render as
 single-column stacked forms instead of table-embedded ones.
 
-**Android** — member-first, native, same role gating as web:
-- Login / Register / Forgot password
-- Community switcher
-- Dashboard (placeholder — no billing data exists yet to show a balance
-  or statement)
-- Directory (people) — read-only list
-- Units — read-only list/detail
-- Admin-only, trimmed: create unit, create person, assign relationship
-- Profile / logout
+**Android** — member-first, native, same role gating as web. Built:
+- Login / Register (forgot password still to do)
+- Community list, and the switcher in the top bar
+- Inicio, Unidades (list → detail), Directorio, Mi perfil
+- Admin-only, trimmed: create unit, create person, add a relationship
+- Profile shows the caller's record; what they share is edited on the web
 
-**iOS** — same screen set as Android. A skeleton with the first demo
-slice exists (`ios/`), not yet verified on a Mac; plan in `ios/README.md`.
+**iOS** — the same screen set as Android, in `ios/`. Written and compiled by
+CI, never run (`ios/README.md`).
 
 ## 3. Explicitly out of scope until the backend catches up
 
 - Sending invitations by email — no notifications module yet.
-- Dashboard numbers, statements, payments, assessments — `billing`/
-  `accounting` don't exist yet.
+- Balances, statements, payments, assessments on the dashboard —
+  `billing`/`accounting` don't exist yet.
 - Announcements/boards/messaging — `communications` doesn't exist yet.
 - Offline caching behavior on mobile — nothing worth caching yet beyond
   the directory/units lists, and even those are small enough that
@@ -93,7 +110,7 @@ slice exists (`ios/`), not yet verified on a Mac; plan in `ios/README.md`.
 ## 4. First demo slice
 
 The first slice proved the workflow end to end: register → log in → create
-a community → see it in the switcher. That's still all Android has. Web
-first (`web/`, against `http://localhost:8080`), then Android
-(`android/`, against `127.0.0.1:8080` via `adb reverse tcp:8080 tcp:8080`
+a community → see it in the switcher. Android and iOS have since grown the
+member screens in §2. Web first (`web/`, against
+`http://localhost:8080`), then Android (`android/`, against `127.0.0.1:8080` via `adb reverse tcp:8080 tcp:8080`
 — works for a physical device over USB and for the emulator alike).
