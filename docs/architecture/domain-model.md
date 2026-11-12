@@ -97,6 +97,7 @@ Modules (backend packages, see roadmap §5) and the entities they own:
 | `payments`       | (Phase 5) PaymentIntent, ProviderEvent                                   |
 | `communications` | Post, Board, Conversation, Message (Phase 3)                             |
 | `audit`          | AuditEvent                                                               |
+| `home`           | None. Reads the others to build the member's dashboard (`GET /communities/{id}/home`) |
 
 ## 3. Identity and membership
 
@@ -417,6 +418,7 @@ enabled per community.
 | Module            | Always on | Needed by                                            |
 | ----------------- | :-------: | ---------------------------------------------------- |
 | `identity`, `communities`, `residents` (people), `audit` | ✓ | everything |
+| `home` (dashboard) | ✓ | All clients' home screen; shows each enabled module's part |
 | `properties`      |           | Communities with private units (PH)                  |
 | `membership`      |           | Communities without units: member categories, dues (later) |
 | `billing`         |           | Charging and collecting                              |

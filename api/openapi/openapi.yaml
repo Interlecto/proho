@@ -371,6 +371,42 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /communities/{communityId}/home:
+    get:
+      summary: The caller's dashboard for a community
+      description: >
+        Everything the home screen shows, in one call, so the web, Android and iOS
+        clients show the same thing. `units` are the caller's own units today,
+        through the person linked to their membership. `administration` is present
+        only for administrators. Balances and announcements join this when billing
+        and communications exist.
+      operationId: getHome
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Home"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   /communities/{communityId}/buildings:
     post:
       summary: Create a building (administrator)
@@ -2541,6 +2577,78 @@ components:
           items:
             type: string
             enum: [administrator, accountant, treasurer, auditor, council_member, moderator, staff]
+
+    Home:
+      type: object
+      required: [community, membershipId, roles, units]
+      properties:
+        community:
+          $ref: "#/components/schemas/Community"
+        membershipId:
+          type: string
+          format: uuid
+        personId:
+          type: string
+          format: uuid
+          nullable: true
+          description: The person record linked to this membership, if any.
+        roles:
+          type: array
+          description: Assigned roles in force. Roles derived from unit relationships are in `units`.
+          items:
+            type: string
+            enum: [administrator, accountant, treasurer, auditor, council_member, moderator, staff]
+        units:
+          type: array
+          description: The caller's units today, sorted by building and number. Empty without a linked person.
+          items:
+            $ref: "#/components/schemas/MyUnit"
+        administration:
+          allOf:
+            - $ref: "#/components/schemas/AdministrationSummary"
+          nullable: true
+          description: Present only for administrators.
+
+    MyUnit:
+      type: object
+      required: [unitId, number, kind, roles]
+      properties:
+        unitId:
+          type: string
+          format: uuid
+        number:
+          type: string
+        kind:
+          type: string
+        building:
+          type: string
+          nullable: true
+          description: The building's name, if the unit is in one.
+        roles:
+          type: array
+          description: The caller's relationships to the unit in force today, each once.
+          items:
+            type: string
+            enum: [owner, tenant, resident, household_member, representative]
+
+    AdministrationSummary:
+      type: object
+      description: Counts of records in use. Archived records, ended memberships and expired invitations aren't counted.
+      required: [buildings, units, people, members, suspendedMembers, pendingInvitations]
+      properties:
+        buildings:
+          type: integer
+        units:
+          type: integer
+        people:
+          type: integer
+        members:
+          type: integer
+          description: Active memberships.
+        suspendedMembers:
+          type: integer
+        pendingInvitations:
+          type: integer
 
     BuildingRequest:
       type: object
