@@ -57,6 +57,50 @@ public struct APIClient: Sendable {
         try await call("POST", "communities", body: CreateCommunityBody(key: key, name: name, kind: kind), token: token)
     }
 
+    // MARK: member screens
+
+    public func home(token: String, communityId: String) async throws -> Home {
+        try await call("GET", "communities/\(communityId)/home", token: token)
+    }
+
+    public func listUnits(token: String, communityId: String) async throws -> [PropertyUnit] {
+        try await call("GET", "communities/\(communityId)/units", token: token)
+    }
+
+    public func listUnitRelationships(token: String, communityId: String, unitId: String) async throws -> [UnitRelationship] {
+        try await call("GET", "communities/\(communityId)/units/\(unitId)/relationships", token: token)
+    }
+
+    public func listPeople(token: String, communityId: String) async throws -> [Person] {
+        try await call("GET", "communities/\(communityId)/people", token: token)
+    }
+
+    /// The caller's own record, or nil when no person is linked to their membership.
+    public func profile(token: String, communityId: String) async throws -> Person? {
+        do {
+            let person: Person = try await call("GET", "communities/\(communityId)/profile", token: token)
+            return person
+        } catch let error as APIError where error.code == "profile_not_linked" {
+            return nil
+        }
+    }
+
+    public func createUnit(token: String, communityId: String, number: String, kind: String) async throws -> PropertyUnit {
+        try await call("POST", "communities/\(communityId)/units",
+                       body: CreateUnitBody(number: number, kind: kind), token: token)
+    }
+
+    public func createPerson(token: String, communityId: String, givenName: String, surname: String) async throws -> Person {
+        try await call("POST", "communities/\(communityId)/people",
+                       body: CreatePersonBody(givenName: givenName, surname: surname), token: token)
+    }
+
+    public func createRelationship(token: String, communityId: String, unitId: String,
+                                   personId: String, role: String) async throws -> UnitRelationship {
+        try await call("POST", "communities/\(communityId)/units/\(unitId)/relationships",
+                       body: CreateRelationshipBody(personId: personId, role: role), token: token)
+    }
+
     // MARK: plumbing
 
     private func call<Response: Decodable>(

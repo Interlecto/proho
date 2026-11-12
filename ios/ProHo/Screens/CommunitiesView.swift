@@ -2,8 +2,7 @@ import SwiftUI
 import ProHoKit
 
 /// The caller's communities, plus "create community". Mirrors
-/// android/.../CommunitiesScreen.kt; this is the seed of the community
-/// switcher in docs/architecture/client-screens.md.
+/// android/.../CommunitiesScreen.kt. Tapping one opens CommunityView.
 struct CommunitiesView: View {
     let token: String
     let account: Account
@@ -24,10 +23,13 @@ struct CommunitiesView: View {
                         Text("no_communities_yet").foregroundStyle(.secondary)
                     }
                     ForEach(communities) { community in
-                        VStack(alignment: .leading) {
-                            Text(community.name).font(.headline)
-                            Text(community.key).font(.caption).foregroundStyle(.secondary)
+                        Button { session.open(community: community.id) } label: {
+                            VStack(alignment: .leading) {
+                                Text(community.name).font(.headline)
+                                Text(community.key).font(.caption).foregroundStyle(.secondary)
+                            }
                         }
+                        .foregroundStyle(.primary)
                     }
                 } else {
                     HStack { ProgressView(); Text("loading") }

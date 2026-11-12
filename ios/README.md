@@ -16,6 +16,11 @@ yet:
   macOS job (`xcodebuild build`, no signing). Compiling is not testing.
 - Later changes, such as the bundle ID moving to `app.ilecto.proho`, have not
   been built or tested here. CI will compile them when the branch is pushed.
+- The member screens (step 3, on `develop/member-navigation`) were written on
+  Windows: tabs, dashboard, units, directory, profile and the trimmed admin
+  forms. Their `ProHoKit` part has unit tests, 19 in all, which passed on
+  Windows on 2026-11-12. The SwiftUI screens have only been compiled by CI,
+  never run.
 
 The first real test is the first Mac session (checklist below). Until then,
 treat the app as unverified.
@@ -128,10 +133,14 @@ Items that could not be verified without Xcode, in order:
 5. The demo slice runs end to end against a local backend: register, land on
    "Sus comunidades", create a community, see it listed, pull to refresh,
    log out. Check that a duplicate key shows the translated error.
-6. Dark mode: the gold accent switches to the lighter shade.
-7. On a physical device with `Local.xcconfig`: signing works and the app
+6. The member screens: open a community, switch to another from the bar,
+   and go through the four tabs as a member and as an administrator (counts
+   on Inicio, the add buttons, a new relationship on a unit). Compare with
+   the web and Android, which show the same sections in the same order.
+7. Dark mode: the gold accent switches to the lighter shade.
+8. On a physical device with `Local.xcconfig`: signing works and the app
    reaches the Mac's backend over `.local`.
-8. Add the `ios` job to the required checks on `master` once it's green.
+9. Add the `ios` job to the required checks on `master` once it's green.
 
 ## Development plan
 
@@ -169,18 +178,21 @@ demo slice from `client-screens.md` §4 runs on all three clients.
 - Android currently keeps the token in memory only. Do the same work there
   so the clients stay in step.
 
-### Step 3: Community home (Phase 1 screens)
+### Step 3: Community home (Phase 1 screens), on `develop/member-navigation`
 
-- **W** `APIClient` methods for buildings, units, people and unit
-  relationships (`/communities/{id}/…`, already in the backend), with tests.
-  Add them to `openapi.yaml` at the same time.
-- **M** Community switcher, remembering the last community used per account.
-- **M** A `TabView` home: *Inicio* (placeholder until billing exists),
-  *Directorio* (people), *Unidades* (list → detail with its relationships),
-  *Perfil* (profile and logout).
-- **M** Role gating plus trimmed admin forms (create unit, create person,
-  assign relationship, showing `owner_share_exceeds_100` properly), same
-  scope as Android.
+Written on Windows, never run (checklist item 6).
+
+- ✅ **W** `APIClient` methods for the dashboard (`GET /home`), units, people,
+  unit relationships, the caller's profile, and the trimmed admin actions,
+  with tests. The sections and label keys are in `ProHoKit/Navigation.swift`.
+- ⚠️ **M** Community switcher in the navigation bar. Written; remembering the
+  last community used per account is still to do.
+- ⚠️ **M** A `TabView`: *Inicio* (the dashboard from `GET /home`), *Unidades*
+  (list → detail with its relationships), *Directorio* (people), *Mi perfil*.
+  Written, never run.
+- ⚠️ **M** Role gating plus the trimmed admin forms (create unit, create
+  person, add a relationship, with `owner_share_exceeds_100` shown). Written,
+  never run.
 - **W** Decision point: once `openapi.yaml` covers these endpoints, consider
   generating the `ProHoKit` models with Apple's `swift-openapi-generator`
   instead of hand-writing them, and doing the same for Android/web. This
