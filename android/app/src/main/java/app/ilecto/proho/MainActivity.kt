@@ -1,4 +1,4 @@
-package net.interlecto.proho
+package app.ilecto.proho
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -21,11 +21,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import net.interlecto.proho.net.AccountDto
-import net.interlecto.proho.net.ApiClient
-import net.interlecto.proho.ui.screens.AuthScreen
-import net.interlecto.proho.ui.screens.CommunitiesScreen
-import net.interlecto.proho.ui.theme.ProHoTheme
+import app.ilecto.proho.net.AccountDto
+import app.ilecto.proho.net.ApiClient
+import app.ilecto.proho.ui.screens.AuthScreen
+import app.ilecto.proho.ui.screens.CommunitiesScreen
+import app.ilecto.proho.ui.theme.ProHoTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
