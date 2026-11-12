@@ -37,10 +37,13 @@ export default function CommunitiesScreen({
   if (selectedId) {
     return (
       <CommunityScreen
+        key={selectedId}
         token={token}
         communityId={selectedId}
+        communities={communities ?? []}
         account={account}
         onAccountChanged={onAccountChanged}
+        onSwitch={setSelectedId}
         onBack={() => {
           setSelectedId(null);
           refresh();

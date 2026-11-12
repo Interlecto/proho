@@ -41,6 +41,34 @@ export interface MyMembership {
   roles: string[];
 }
 
+/** One of the caller's own units today (GET /communities/{id}/home). */
+export interface MyUnit {
+  unitId: string;
+  number: string;
+  kind: string;
+  building: string | null;
+  roles: string[];
+}
+
+export interface AdministrationSummary {
+  buildings: number;
+  units: number;
+  people: number;
+  members: number;
+  suspendedMembers: number;
+  pendingInvitations: number;
+}
+
+/** The dashboard: the same data on web, Android and iOS. */
+export interface Home {
+  community: Community;
+  membershipId: string;
+  personId: string | null;
+  roles: string[];
+  units: MyUnit[];
+  administration: AdministrationSummary | null;
+}
+
 export interface Member {
   membershipId: string;
   displayName: string;
@@ -312,6 +340,10 @@ export function updateCommunity(
   input: { name: string; legalName: string | null; taxId: string | null; address: string | null },
 ): Promise<Community> {
   return send<Community>(token, "PUT", `/communities/${communityId}`, input);
+}
+
+export function getHome(token: string, communityId: string): Promise<Home> {
+  return request<Home>(`/communities/${communityId}/home`, {}, token);
 }
 
 export function getMyMembership(token: string, communityId: string): Promise<MyMembership> {

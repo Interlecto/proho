@@ -12,9 +12,8 @@ import {
   createUnit,
   endRelationship,
   endRole,
+  getHome,
   getProfile,
-  getCommunity,
-  getMyMembership,
   leaveCommunity,
   linkMemberPerson,
   listAuditEvents,
@@ -37,6 +36,7 @@ import {
   type AuditEvent,
   type Building,
   type Community,
+  type Home,
   type Invitation,
   type Member,
   type Person,
@@ -46,6 +46,16 @@ import {
   type UnitRelationship,
   type Visibility,
 } from "./api";
+import HomeSection from "./HomeSection";
+import {
+  ADMIN_SECTIONS,
+  MEMBER_SECTIONS,
+  adminSectionsFor,
+  type AdminSection,
+  type MemberSection,
+  type Section,
+} from "./sections";
+import { ASSIGNED_ROLES, ROLES, UNIT_KINDS } from "./labels";
 
 const ERROR_MESSAGES: Record<string, string> = {
   building_in_use: "No se puede archivar: el edificio todavía tiene unidades activas.",
@@ -73,34 +83,7 @@ function errorMessage(err: unknown): string {
   return ERROR_MESSAGES[code] ?? "No se pudo completar la operación.";
 }
 
-const UNIT_KINDS: Record<string, string> = {
-  apartment: "Apartamento",
-  house: "Casa",
-  commercial: "Local comercial",
-  office: "Oficina",
-  parking: "Parqueadero",
-  storage: "Depósito",
-};
-
-const ROLES: Record<string, string> = {
-  owner: "Propietario(a)",
-  tenant: "Arrendatario(a)",
-  resident: "Residente",
-  household_member: "Miembro del hogar",
-  representative: "Representante",
-};
-
 const ID_TYPES = ["CC", "CE", "NIT", "PA", "TI"];
-
-const ASSIGNED_ROLES: Record<string, string> = {
-  administrator: "Administrador(a)",
-  accountant: "Contador(a)",
-  treasurer: "Tesorero(a)",
-  auditor: "Revisor(a) fiscal",
-  council_member: "Miembro del consejo",
-  moderator: "Moderador(a)",
-  staff: "Personal",
-};
 
 function personName(person: Person): string {
   return person.kind === "legal"
@@ -112,18 +95,6 @@ function blankToNull(value: string): string | null {
   return value.trim() === "" ? null : value.trim();
 }
 
-type Tab = "units" | "people" | "buildings" | "details" | "members" | "audit" | "profile";
-
-const TABS: Record<Tab, string> = {
-  units: "Unidades",
-  people: "Personas",
-  buildings: "Edificios",
-  details: "Datos",
-  members: "Miembros",
-  audit: "Historial",
-  profile: "Mi perfil",
-};
-
 interface ScreenProps {
   token: string;
   communityId: string;
@@ -133,95 +104,144 @@ interface ScreenProps {
 export default function CommunityScreen({
   token,
   communityId,
+  communities,
   account,
   onAccountChanged,
+  onSwitch,
   onBack,
 }: {
   token: string;
   communityId: string;
+  communities: Community[];
   account: Account;
   onAccountChanged: (account: Account) => void;
+  onSwitch: (communityId: string) => void;
   onBack: () => void;
 }) {
-  const [community, setCommunity] = useState<Community | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [canReadAudit, setCanReadAudit] = useState(false);
+  const [home, setHome] = useState<Home | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [tab, setTab] = useState<Tab>("units");
+  const [section, setSection] = useState<Section>("home");
 
-  useEffect(() => {
-    Promise.all([getCommunity(token, communityId), getMyMembership(token, communityId)])
-      .then(([loaded, membership]) => {
-        setCommunity(loaded);
-        setIsAdmin(membership.roles.includes("administrator"));
-        setCanReadAudit(membership.roles.includes("administrator") || membership.roles.includes("auditor"));
+  /** Read again after anything that may change the caller's roles or the counts. */
+  const reloadHome = useCallback(() => {
+    getHome(token, communityId)
+      .then((loaded) => {
+        setHome(loaded);
+        setSection((current) =>
+          current in ADMIN_SECTIONS && !adminSectionsFor(loaded.roles).includes(current as AdminSection)
+            ? "home"
+            : current,
+        );
       })
-      .catch((err) => setError(errorMessage(err)));
-  }, [token, communityId]);
-
-  /** The caller may have just changed their own roles, so what they can do is read again. */
-  const reloadSelf = useCallback(() => {
-    getMyMembership(token, communityId)
-      .then((membership) => {
-        const admin = membership.roles.includes("administrator");
-        setIsAdmin(admin);
-        setCanReadAudit(admin || membership.roles.includes("auditor"));
-        setTab((current) => (current === "members" && !admin ? "profile" : current));
-      })
-      .catch(onBack);
+      .catch((err) => {
+        if (err instanceof ApiError && err.code === "membership_not_active") {
+          onBack();
+        } else {
+          setError(errorMessage(err));
+        }
+      });
   }, [token, communityId, onBack]);
 
+  useEffect(reloadHome, [reloadHome]);
+
+  const roles = home?.roles ?? [];
+  const isAdmin = roles.includes("administrator");
+  const adminSections = adminSectionsFor(roles);
+
+  function open(next: Section) {
+    setSection(next);
+    if (next === "home") reloadHome();
+  }
+
   return (
-    <div className="content wide">
+    <div className="content layout">
       <div className="top-row">
-        <button type="button" className="link" onClick={onBack}>
-          ← Sus comunidades
-        </button>
+        <label className="switcher">
+          <span className="visually-hidden">Comunidad</span>
+          <select
+            value={communityId}
+            onChange={(e) => (e.target.value === "" ? onBack() : onSwitch(e.target.value))}
+          >
+            {communities.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+            <option value="">Todas sus comunidades…</option>
+          </select>
+        </label>
       </div>
       {error && <p className="form-error">{error}</p>}
-      {!community && !error && <p>Cargando…</p>}
-      {community && (
-        <>
-          <h1>{community.name}</h1>
-          <nav className="tabs" aria-label="Secciones de la comunidad">
-            {(Object.keys(TABS) as Tab[])
-              .filter((key) => (key !== "members" || isAdmin) && (key !== "audit" || canReadAudit))
-              .map((key) => (
-              <button
-                key={key}
-                type="button"
-                className={key === tab ? "tab active" : "tab"}
-                aria-current={key === tab ? "page" : undefined}
-                onClick={() => setTab(key)}
-              >
-                {TABS[key]}
-              </button>
+      {!home && !error && <p>Cargando…</p>}
+      {home && (
+        <div className="community-layout">
+          <nav className="section-nav" aria-label="Secciones de la comunidad">
+            {(Object.keys(MEMBER_SECTIONS) as MemberSection[]).map((key) => (
+              <SectionLink key={key} current={section} section={key} label={MEMBER_SECTIONS[key]} onOpen={open} />
             ))}
+            {adminSections.length > 0 && (
+              <div className="admin-group">
+                <span className="group-label">Administración</span>
+                {adminSections.map((key) => (
+                  <SectionLink key={key} current={section} section={key} label={ADMIN_SECTIONS[key]} onOpen={open} />
+                ))}
+              </div>
+            )}
           </nav>
-          {tab === "units" && <UnitsTab token={token} communityId={communityId} isAdmin={isAdmin} />}
-          {tab === "people" && <PeopleTab token={token} communityId={communityId} isAdmin={isAdmin} />}
-          {tab === "buildings" && (
-            <BuildingsTab token={token} communityId={communityId} isAdmin={isAdmin} />
-          )}
-          {tab === "members" && (
-            <MembersTab token={token} communityId={communityId} isAdmin={isAdmin} onSelfChanged={reloadSelf} />
-          )}
-          {tab === "audit" && <AuditTab token={token} communityId={communityId} />}
-          {tab === "profile" && (
-            <ProfileTab
-              token={token}
-              communityId={communityId}
-              account={account}
-              onAccountChanged={onAccountChanged}
-              onLeft={onBack}
-            />
-          )}
-          {tab === "details" && (
-            <DetailsTab community={community} token={token} isAdmin={isAdmin} onSaved={setCommunity} />
-          )}
-        </>
+          <div className="section-body">
+            <h1>{section === "home" ? home.community.name : { ...MEMBER_SECTIONS, ...ADMIN_SECTIONS }[section]}</h1>
+            {section === "home" && <HomeSection home={home} adminSections={adminSections} onOpen={open} />}
+            {section === "units" && <UnitsTab token={token} communityId={communityId} isAdmin={isAdmin} />}
+            {section === "people" && <PeopleTab token={token} communityId={communityId} isAdmin={isAdmin} />}
+            {section === "buildings" && <BuildingsTab token={token} communityId={communityId} isAdmin={isAdmin} />}
+            {section === "members" && (
+              <MembersTab token={token} communityId={communityId} isAdmin={isAdmin} onSelfChanged={reloadHome} />
+            )}
+            {section === "audit" && <AuditTab token={token} communityId={communityId} />}
+            {section === "profile" && (
+              <ProfileTab
+                token={token}
+                communityId={communityId}
+                account={account}
+                onAccountChanged={onAccountChanged}
+                onLeft={onBack}
+              />
+            )}
+            {section === "details" && (
+              <DetailsTab
+                community={home.community}
+                token={token}
+                isAdmin={isAdmin}
+                onSaved={(community) => setHome({ ...home, community })}
+              />
+            )}
+          </div>
+        </div>
       )}
     </div>
+  );
+}
+
+function SectionLink({
+  current,
+  section,
+  label,
+  onOpen,
+}: {
+  current: Section;
+  section: Section;
+  label: string;
+  onOpen: (section: Section) => void;
+}) {
+  return (
+    <button
+      type="button"
+      className={section === current ? "section-link active" : "section-link"}
+      aria-current={section === current ? "page" : undefined}
+      onClick={() => onOpen(section)}
+    >
+      {label}
+    </button>
   );
 }
 
