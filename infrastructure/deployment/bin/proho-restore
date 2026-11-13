@@ -1,0 +1,52 @@
+#!/bin/bash
+# Restores a backup into a separate database, to check that backups work or
+# to look at old data. Never touches the live proho database; restoring that
+# is a manual procedure (docs/operations/deployment.md).
+#
+#   proho-restore <backup name, e.g. proho-20261108T083000Z.dump.age> <age identity file> [target database]
+#
+# The identity file is the backup key's private half, from Bitwarden. Keep it
+# on the server only while restoring, then delete it.
+# Installed as /usr/local/sbin/proho-restore.
+set -euo pipefail
+
+name="${1:?backup name}"
+identity="${2:?age identity file}"
+target="${3:-proho_restore_check}"
+
+if [ "$target" = "proho" ]; then
+	echo "Refusing to restore over the live database." >&2
+	exit 2
+fi
+if ! [[ "$target" =~ ^[a-z_][a-z0-9_]*$ ]]; then
+	echo "Database name must be lowercase letters, digits and underscores." >&2
+	exit 2
+fi
+
+set -a
+. /etc/proho/backup.env
+set +a
+export RCLONE_CONFIG_R2_TYPE=s3
+export RCLONE_CONFIG_R2_PROVIDER=Cloudflare
+export RCLONE_CONFIG_R2_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID"
+export RCLONE_CONFIG_R2_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY"
+export RCLONE_CONFIG_R2_ENDPOINT="https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com"
+export RCLONE_CONFIG_R2_NO_CHECK_BUCKET=true
+
+work="$(mktemp -d)"
+trap 'rm -rf "$work"' EXIT
+
+rclone copyto "r2:$R2_BUCKET/daily/$name" "$work/$name"
+
+psql() { proho-compose exec -T postgres psql --username postgres --set ON_ERROR_STOP=1 "$@"; }
+
+psql --dbname postgres --command "DROP DATABASE IF EXISTS \"$target\""
+owner="$(sed -n 's/^PROHO_DB_MIGRATION_USER=//p' /etc/proho/proho.env)"
+psql --dbname postgres --command "CREATE DATABASE \"$target\" OWNER \"${owner:-proho}\""
+age --decrypt --identity "$identity" "$work/$name" \
+	| proho-compose exec -T postgres pg_restore --username postgres --dbname "$target" --exit-on-error
+
+echo "Restored $name into $target. Row counts:"
+psql --dbname "$target" --command \
+	"SELECT 'account' AS t, count(*) FROM account UNION ALL SELECT 'community', count(*) FROM community UNION ALL SELECT 'audit_event', count(*) FROM audit_event"
+echo "Drop it when done: proho-compose exec postgres dropdb -U postgres $target"

@@ -9,3 +9,9 @@ spring:
     url: ${PROHO_DB_URL:jdbc:postgresql://localhost:5432/proho}
     user: ${PROHO_DB_MIGRATION_USER:proho}
     password: ${PROHO_DB_MIGRATION_PASSWORD:proho}
+
+proho:
+  security:
+    # The local logins above are short and well known; see
+    # docs/security/secrets.md. Never set this on a real deployment.
+    allow-development-credentials: true
