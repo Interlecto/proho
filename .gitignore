@@ -34,6 +34,15 @@ local.properties
 keystore.properties
 application-local.yml
 application-local.properties
+# Deployment environment files, e.g. proho.env (docs/security/secrets.md)
+*.env
+!*.env.example
+# Apple signing material and App Store Connect API keys
+*.p8
+*.cer
+*.mobileprovision
+*.pfx
+/ios/Config/Local.xcconfig
 
 # ---------------------------------------------------------------------------
 # Kotlin / Gradle (backend, android, shared JVM modules)

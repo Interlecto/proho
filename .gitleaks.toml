@@ -1,0 +1,18 @@
+# Secret scanning, run by CI (.github/workflows/ci.yml, job "secrets") over
+# the whole history. Uses gitleaks' default rules; see docs/security/secrets.md.
+# Allowlist only what is fake or public on purpose, never a real credential:
+# a real one gets rotated, not allowlisted.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Test fixtures and the shared Android debug key"
+paths = [
+  # Fake passwords and tokens written by tests
+  '''^backend/src/test/''',
+  '''^ios/ProHoKit/Tests/''',
+  '''^android/app/src/test/''',
+  # Committed on purpose, with the well-known passwords "android" (docs/development.md)
+  '''^android/keystore/debug\.keystore$''',
+]
