@@ -9,9 +9,10 @@ React + TypeScript administrative and member interface, built with Vite.
 | `npm run build`   | Type-checks and builds to `dist/`         |
 | `npm run preview` | Serves the production build locally       |
 
-This is a shell: it renders a static placeholder screen and has no routing,
-state management or API client yet. Those are added as the corresponding
-backend modules land (see [ROADMAP.md](../ROADMAP.md) Phase 1 onward).
+It covers sign-in and community, building, unit and people management against
+a backend on `http://localhost:8080`, and has no router or state library yet.
+[docs/architecture/client-screens.md](../docs/architecture/client-screens.md)
+lists the screens.
 
 `public/icon.svg` and the favicons rasterized from it come from
 [`brand/`](../brand/README.md), which documents their provenance and the

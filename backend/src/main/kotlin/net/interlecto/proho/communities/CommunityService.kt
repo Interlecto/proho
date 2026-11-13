@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import java.util.UUID
 
 // MVP ships only one kind; others (ph_mixed, ph_commercial, club, ...) are
@@ -33,11 +34,29 @@ class CommunityKeyAlreadyRegisteredException(val key: String) : RuntimeException
 
 class UnsupportedCommunityKindException(val kind: String) : RuntimeException("Unsupported community kind")
 
+class UnsupportedTimezoneException(val timezone: String) : RuntimeException("Unsupported time zone")
+
+class CommunityNotFoundException(val communityId: UUID) : RuntimeException("Community not found")
+
+/**
+ * What an administrator can change. The key, kind, country, currency and time zone
+ * stay fixed: the key is the community's public identifier, and the rest shape its
+ * modules and its books. The plan belongs to entitlements (domain-model.md §10.3).
+ */
+data class CommunityDetails(
+    val name: String,
+    val legalName: String?,
+    val taxId: String?,
+    val address: String?,
+)
+
 @Service
 class CommunityService(
     private val tenantBinder: TenantBinder,
     private val jdbcAggregateOperations: JdbcAggregateOperations,
     private val auditEventRecorder: AuditEventRecorder,
+    private val communities: CommunityRepository,
+    private val membershipService: CommunityMembershipService,
 ) {
     @Transactional
     fun create(
@@ -46,6 +65,9 @@ class CommunityService(
     ): Community {
         if (command.kind !in SUPPORTED_KINDS) {
             throw UnsupportedCommunityKindException(command.kind)
+        }
+        if (command.timezone !in ZoneId.getAvailableZoneIds()) {
+            throw UnsupportedTimezoneException(command.timezone)
         }
 
         // Row-level security only lets a community be created while it's the
@@ -120,6 +142,42 @@ class CommunityService(
         )
 
         return community
+    }
+
+    fun get(
+        communityId: UUID,
+        accountId: UUID,
+    ): Community {
+        membershipService.requireActiveMembership(accountId, communityId)
+        return communities.findById(communityId).orElseThrow { CommunityNotFoundException(communityId) }
+    }
+
+    @Transactional
+    fun update(
+        communityId: UUID,
+        details: CommunityDetails,
+        accountId: UUID,
+    ): Community {
+        val membership = membershipService.requireRole(accountId, communityId, Role.ADMINISTRATOR)
+        val community = communities.findById(communityId).orElseThrow { CommunityNotFoundException(communityId) }
+        val updated =
+            jdbcAggregateOperations.update(
+                community.copy(
+                    name = details.name,
+                    legalName = details.legalName,
+                    taxId = details.taxId,
+                    address = details.address,
+                ),
+            )
+        auditEventRecorder.record(
+            entityType = "community",
+            entityId = communityId,
+            action = "updated",
+            actorAccountId = accountId,
+            actorMembershipId = membership.id,
+            communityId = communityId,
+        )
+        return updated
     }
 
     private fun insertCommunity(community: Community): Community =

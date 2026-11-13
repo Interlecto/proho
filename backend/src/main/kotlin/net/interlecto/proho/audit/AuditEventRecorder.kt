@@ -1,6 +1,8 @@
 package net.interlecto.proho.audit
 
+import net.interlecto.proho.shared.REQUEST_ID_KEY
 import net.interlecto.proho.shared.Uuid7
+import org.slf4j.MDC
 import org.springframework.data.jdbc.core.JdbcAggregateOperations
 import org.springframework.stereotype.Service
 import java.time.Instant
@@ -36,7 +38,8 @@ class AuditEventRecorder(
                 action = action,
                 summary = summary,
                 occurredAt = Instant.now(),
-                requestId = requestId,
+                // The filter's id, when this runs inside a request.
+                requestId = requestId ?: MDC.get(REQUEST_ID_KEY),
             )
         return jdbcAggregateOperations.insert(event)
     }

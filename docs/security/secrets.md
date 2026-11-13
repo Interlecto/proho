@@ -49,7 +49,7 @@ one for the other.
 | PostgreSQL superuser | Creating roles and databases by hand, never the application | Set when installing PostgreSQL | Not needed | Password manager. With the containerized database, also `/etc/proho/postgres.env` until the database is created, then removed. Never in the backend's environment |
 
 The backend has no other secrets today. Sessions and password resets (and
-invitations, on `develop/community-management`) use random tokens that are
+invitations) use random tokens that are
 stored hashed, not signed with a key, so there is no signing key to protect. A token is still sensitive while it's
 valid. The `dev` profile logs password-reset tokens because there's no email
 yet, which is one reason it must never be active on a real deployment.
@@ -77,7 +77,7 @@ Add the row for real when the secret starts being used.
 | Cloudflare API token | If the landing page is deployed from CI rather than by hand | CI secret, scoped to the one Worker |
 | Email provider API key | Notifications module | Host environment file |
 | Payment provider keys and webhook signing secrets | Payments (Phase 2/3) | Host environment file. The most sensitive in this list; see rotation below |
-| Key for encrypting personal data | When encryption of personal data is built ([privacy.md](privacy.md), on `develop/community-management`) | Kept apart from database backups, or a backup holds both the data and its key |
+| Key for encrypting personal data | When encryption of personal data is built ([privacy.md](privacy.md)) | Kept apart from database backups, or a backup holds both the data and its key |
 
 ## Password manager
 

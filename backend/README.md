@@ -108,8 +108,10 @@ Postgres.
   from a non-null id it didn't generate itself).
 - **audit** — no API of its own. `AuditEventRecorder.record(...)` is how
   every other module writes an `AuditEvent` (see
-  `docs/architecture/domain-model.md` §8); call it, don't use
-  `AuditEventRepository` directly outside this module.
+  `docs/architecture/domain-model.md` §8); call it, and read through
+  `AuditEventReader`, rather than using `AuditEventRepository` directly
+  outside this module. `RequestIdFilter` gives each request the id its
+  events and log lines share, and returns it as `X-Request-Id`.
 
 See [`api/openapi/openapi.yaml`](../api/openapi/openapi.yaml) for the
 request/response contract.

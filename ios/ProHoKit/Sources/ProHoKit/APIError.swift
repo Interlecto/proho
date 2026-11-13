@@ -27,6 +27,11 @@ public enum APIError: Error, Equatable, Sendable {
         case "invalid_request", "unsupported_community_kind": return "error_invalid_request"
         case "community_key_already_registered": return "error_community_key_already_registered"
         case "network_error": return "error_network"
+        case "unit_number_already_registered": return "error_unit_number_already_registered"
+        case "person_id_already_registered": return "error_person_id_already_registered"
+        case "owner_share_exceeds_100": return "error_owner_share_exceeds_100"
+        case "role_not_held": return "error_role_not_held"
+        case "membership_not_active": return "error_membership_not_active"
         default: return "error_unknown"
         }
     }

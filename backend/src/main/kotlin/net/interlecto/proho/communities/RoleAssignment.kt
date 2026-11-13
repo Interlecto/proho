@@ -20,14 +20,17 @@ data class RoleAssignment(
 // Assigned roles only (domain-model.md §3 "Roles"). Derived roles
 // (owner/tenant/resident, computed from UnitRelationship) are never stored
 // here.
-enum class Role(val value: String) {
-    ADMINISTRATOR("administrator"),
-    ACCOUNTANT("accountant"),
-    TREASURER("treasurer"),
-    AUDITOR("auditor"),
-    COUNCIL_MEMBER("council_member"),
-    MODERATOR("moderator"),
-    STAFF("staff"),
+//
+// `privileged` is the visibility tier in domain-model.md §3, and `seesDocuments`
+// the smaller group that may read identity documents (docs/security/privacy.md).
+enum class Role(val value: String, val privileged: Boolean, val seesDocuments: Boolean) {
+    ADMINISTRATOR("administrator", privileged = true, seesDocuments = true),
+    ACCOUNTANT("accountant", privileged = true, seesDocuments = true),
+    TREASURER("treasurer", privileged = true, seesDocuments = false),
+    AUDITOR("auditor", privileged = true, seesDocuments = true),
+    COUNCIL_MEMBER("council_member", privileged = true, seesDocuments = false),
+    MODERATOR("moderator", privileged = false, seesDocuments = false),
+    STAFF("staff", privileged = false, seesDocuments = false),
     ;
 
     companion object {

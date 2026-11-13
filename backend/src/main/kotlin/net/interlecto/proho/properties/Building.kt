@@ -11,4 +11,5 @@ data class Building(
     val communityId: UUID,
     val name: String,
     val createdAt: Instant,
+    val archivedAt: Instant? = null,
 )

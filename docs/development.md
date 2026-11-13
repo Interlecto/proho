@@ -17,7 +17,7 @@ password `android`). Every machine and CI produces identically signed debug
 APKs, so a test device accepts a build from any of them as an update of the
 same app, without uninstalling it and losing its data.
 
-Debug builds use the application ID `net.interlecto.proho.debug` and the label
+Debug builds use the application ID `app.ilecto.proho.debug` and the label
 "ProHo (dev)", so they can be installed next to a release build.
 
 The release key must never be committed. It will be provided to the build

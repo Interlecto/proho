@@ -121,6 +121,36 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+    put:
+      summary: Change the account's display name and language
+      operationId: updateCurrentAccount
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAccountRequest"
+      responses:
+        "200":
+          description: The updated account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
   /auth/password-reset/request:
     post:
@@ -172,7 +202,2007 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /communities:
+    post:
+      summary: Create a community
+      description: >
+        The caller becomes its founding administrator in the same transaction.
+      operationId: createCommunity
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCommunityRequest"
+      responses:
+        "201":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Community"
+        "400":
+          description: >-
+            `invalid_request` or `unsupported_community_kind`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: >-
+            `community_key_already_registered`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    get:
+      summary: The communities where the caller is an active member
+      operationId: listCommunities
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Community"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /communities/{communityId}:
+    get:
+      summary: Read a community
+      operationId: getCommunity
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Community"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held` for an action that needs a role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    put:
+      summary: Edit a community (administrator)
+      description: >
+        Replaces the editable fields. The key, kind, plan, country, currency and time zone stay fixed.
+      operationId: updateCommunity
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCommunityRequest"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Community"
+        "400":
+          description: >-
+            Invalid request (`invalid_request`, or a more specific code)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held` for an action that needs a role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /communities/{communityId}/membership:
+    get:
+      summary: The caller's membership and assigned roles
+      description: >
+        Lets a client show only what the caller can do. Roles derived from unit relationships are not included.
+      operationId: getMyMembership
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MyMembership"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held` for an action that needs a role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /communities/{communityId}/home:
+    get:
+      summary: The caller's dashboard for a community
+      description: >
+        Everything the home screen shows, in one call, so the web, Android and iOS
+        clients show the same thing. `units` are the caller's own units today,
+        through the person linked to their membership. `administration` is present
+        only for administrators. Balances and announcements join this when billing
+        and communications exist.
+      operationId: getHome
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Home"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /communities/{communityId}/buildings:
+    post:
+      summary: Create a building (administrator)
+      operationId: createBuilding
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BuildingRequest"
+      responses:
+        "201":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Building"
+        "400":
+          description: >-
+            Invalid request (`invalid_request`, or a more specific code)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held` for an action that needs a role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    get:
+      summary: List the community's buildings
+      operationId: listBuildings
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+        - $ref: "#/components/parameters/includeArchived"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Building"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held` for an action that needs a role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /communities/{communityId}/buildings/{buildingId}:
+    get:
+      summary: Read a building
+      operationId: getBuilding
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+        - $ref: "#/components/parameters/buildingId"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Building"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held` for an action that needs a role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: >-
+            `not_found_in_community`: an id in the path is not in this community
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    put:
+      summary: Replace a building (administrator)
+      operationId: updateBuilding
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+        - $ref: "#/components/parameters/buildingId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BuildingRequest"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Building"
+        "400":
+          description: >-
+            Invalid request (`invalid_request`, or a more specific code)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held` for an action that needs a role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: >-
+            `not_found_in_community`: an id in the path is not in this community
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: >-
+            `record_archived`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /communities/{communityId}/buildings/{buildingId}/archive:
+    post:
+      summary: Archive a building (administrator)
+      description: >
+        Blocked while it has active units.
+        Idempotent: archiving an archived record, or restoring an active one, changes nothing.
+      operationId: archiveBuilding
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+        - $ref: "#/components/parameters/buildingId"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Building"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held` for an action that needs a role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: >-
+            `not_found_in_community`: an id in the path is not in this community
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: >-
+            `building_in_use`: it still has active units
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /communities/{communityId}/buildings/{buildingId}/restore:
+    post:
+      summary: Restore an archived building (administrator)
+      description: >
+        Idempotent: archiving an archived record, or restoring an active one, changes nothing.
+      operationId: restoreBuilding
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+        - $ref: "#/components/parameters/buildingId"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Building"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held` for an action that needs a role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: >-
+            `not_found_in_community`: an id in the path is not in this community
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /communities/{communityId}/units:
+    post:
+      summary: Create a unit (administrator)
+      operationId: createUnit
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UnitRequest"
+      responses:
+        "201":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unit"
+        "400":
+          description: >-
+            `invalid_request`, `unsupported_unit_kind`, or `not_found_in_community` for a building outside this community
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held` for an action that needs a role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: >-
+            `unit_number_already_registered`, which includes archived units, or `record_archived` for an archived building
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    get:
+      summary: List the community's units
+      operationId: listUnits
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+        - $ref: "#/components/parameters/includeArchived"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Unit"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held` for an action that needs a role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /communities/{communityId}/units/{unitId}:
+    get:
+      summary: Read a unit
+      operationId: getUnit
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+        - $ref: "#/components/parameters/unitId"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unit"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held` for an action that needs a role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: >-
+            `not_found_in_community`: an id in the path is not in this community
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    put:
+      summary: Replace a unit (administrator)
+      operationId: updateUnit
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+        - $ref: "#/components/parameters/unitId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UnitRequest"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unit"
+        "400":
+          description: >-
+            `invalid_request`, `unsupported_unit_kind`, or `not_found_in_community` for a building outside this community
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held` for an action that needs a role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: >-
+            `not_found_in_community`: an id in the path is not in this community
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: >-
+            `unit_number_already_registered`, which includes archived units, or `record_archived`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /communities/{communityId}/units/{unitId}/archive:
+    post:
+      summary: Archive a unit (administrator)
+      description: >
+        Blocked while it has a relationship with no end date, or one ending after today.
+        Idempotent: archiving an archived record, or restoring an active one, changes nothing.
+      operationId: archiveUnit
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+        - $ref: "#/components/parameters/unitId"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unit"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held` for an action that needs a role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: >-
+            `not_found_in_community`: an id in the path is not in this community
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: >-
+            `unit_in_use`: it still has an open relationship
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /communities/{communityId}/units/{unitId}/restore:
+    post:
+      summary: Restore an archived unit (administrator)
+      description: >
+        Idempotent: archiving an archived record, or restoring an active one, changes nothing.
+      operationId: restoreUnit
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+        - $ref: "#/components/parameters/unitId"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unit"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held` for an action that needs a role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: >-
+            `not_found_in_community`: an id in the path is not in this community
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: >-
+            `record_archived`: its building is archived
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /communities/{communityId}/people:
+    post:
+      summary: Create a person (administrator)
+      operationId: createPerson
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PersonRequest"
+      responses:
+        "201":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Person"
+        "400":
+          description: >-
+            Invalid request (`invalid_request`, or a more specific code)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held` for an action that needs a role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: >-
+            `person_id_already_registered`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    get:
+      summary: List the people the caller may see
+      description: >
+        Members see themselves, people on their units, and people who chose to share
+        their name. See docs/security/privacy.md.
+      operationId: listPeople
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+        - $ref: "#/components/parameters/includeArchived"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Person"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held` for an action that needs a role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /communities/{communityId}/people/{personId}:
+    get:
+      summary: Read a person
+      description: >
+        Returns 404 for a person the caller may not see, and null for fields they may
+        not read.
+      operationId: getPerson
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+        - $ref: "#/components/parameters/personId"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Person"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held` for an action that needs a role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: >-
+            `not_found_in_community`: an id in the path is not in this community
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    put:
+      summary: Replace a person (administrator)
+      operationId: updatePerson
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+        - $ref: "#/components/parameters/personId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PersonRequest"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Person"
+        "400":
+          description: >-
+            Invalid request (`invalid_request`, or a more specific code)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held` for an action that needs a role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: >-
+            `not_found_in_community`: an id in the path is not in this community
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: >-
+            `person_id_already_registered` or `record_archived`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /communities/{communityId}/people/{personId}/archive:
+    post:
+      summary: Archive a person (administrator)
+      description: >
+        Blocked while they have a relationship with no end date, or one ending after today.
+        Idempotent: archiving an archived record, or restoring an active one, changes nothing.
+      operationId: archivePerson
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+        - $ref: "#/components/parameters/personId"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Person"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held` for an action that needs a role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: >-
+            `not_found_in_community`: an id in the path is not in this community
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: >-
+            `person_in_use`: they still have an open relationship
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /communities/{communityId}/people/{personId}/restore:
+    post:
+      summary: Restore an archived person (administrator)
+      description: >
+        Idempotent: archiving an archived record, or restoring an active one, changes nothing.
+      operationId: restorePerson
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+        - $ref: "#/components/parameters/personId"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Person"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held` for an action that needs a role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: >-
+            `not_found_in_community`: an id in the path is not in this community
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /communities/{communityId}/people/{personId}/relationships:
+    get:
+      summary: The person's unit relationships the caller may see
+      description: >
+        Ended relationships and owner shares are only for the person and privileged roles.
+      operationId: listPersonRelationships
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+        - $ref: "#/components/parameters/personId"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UnitRelationship"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held` for an action that needs a role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: >-
+            `not_found_in_community`: an id in the path is not in this community
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /communities/{communityId}/units/{unitId}/relationships:
+    post:
+      summary: Add a person to a unit (administrator)
+      operationId: createUnitRelationship
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+        - $ref: "#/components/parameters/unitId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUnitRelationshipRequest"
+      responses:
+        "201":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnitRelationship"
+        "400":
+          description: >-
+            `invalid_request`, or `not_found_in_community` for a person outside this community
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held` for an action that needs a role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: >-
+            `not_found_in_community`: an id in the path is not in this community
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: >-
+            `owner_share_exceeds_100`: owner shares would pass 100 on some day of the period; or `record_archived`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    get:
+      summary: The unit's relationships the caller may see
+      description: >
+        Ended relationships and owner shares are only for the person and privileged roles.
+      operationId: listUnitRelationships
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+        - $ref: "#/components/parameters/unitId"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UnitRelationship"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held` for an action that needs a role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: >-
+            `not_found_in_community`: an id in the path is not in this community
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /communities/{communityId}/units/{unitId}/relationships/{relationshipId}/end:
+    post:
+      summary: End a relationship (administrator)
+      description: >
+        Relationships are ended, never deleted, so history stays a query. The date may be past or future, but not before the
+        start, and not later than an end date already set.
+      operationId: endUnitRelationship
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+        - $ref: "#/components/parameters/unitId"
+        - $ref: "#/components/parameters/relationshipId"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EndUnitRelationshipRequest"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnitRelationship"
+        "400":
+          description: >-
+            Invalid request (`invalid_request`, or a more specific code)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held` for an action that needs a role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: >-
+            `not_found_in_community`: an id in the path is not in this community
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: >-
+            `relationship_already_ended`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /communities/{communityId}/profile:
+    get:
+      summary: The caller's own person record in this community
+      description: >
+        Complete, including the identity document, because it's theirs.
+      operationId: getMyProfile
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Person"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: >-
+            `profile_not_linked`: this membership has no person record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    put:
+      summary: Change the caller's contact details and sharing choices
+      description: >
+        Only the person can change these; see docs/security/privacy.md. Their name
+        and identity document are edited by an administrator.
+      operationId: updateMyProfile
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProfileRequest"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Person"
+        "400":
+          description: >-
+            `invalid_request`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: >-
+            `profile_not_linked`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: >-
+            `record_archived`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /communities/{communityId}/memberships:
+    get:
+      summary: List the community's current members (administrator)
+      operationId: listMembers
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Member"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /communities/{communityId}/memberships/{membershipId}/person:
+    put:
+      summary: Link a member to a person record, or unlink with null (administrator)
+      description: >
+        Gives the member's account the person's whole record, including the identity
+        document. See docs/security/privacy.md.
+      operationId: linkMemberPerson
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+        - $ref: "#/components/parameters/membershipId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LinkPersonRequest"
+      responses:
+        "204":
+          description: Linked or unlinked
+        "400":
+          description: >-
+            `not_found_in_community` for a person outside this community
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: >-
+            `not_found_in_community`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: >-
+            `person_already_linked` or `record_archived`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /communities/{communityId}/invitations:
+    post:
+      summary: Invite an email to the community (administrator)
+      description: >
+        Returns the token once, for the administrator to share until email delivery exists.
+        It can be pre-linked to a person, whose record the account gets on joining.
+        Expires after 7 days.
+      operationId: createInvitation
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateInvitationRequest"
+      responses:
+        "201":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Invitation"
+        "400":
+          description: >-
+            `invalid_request`, or `not_found_in_community` for a person who is archived or elsewhere
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: >-
+            `already_member`, `invitation_pending` or `person_already_linked`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    get:
+      summary: List open invitations, including expired ones (administrator)
+      operationId: listInvitations
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Invitation"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /communities/{communityId}/invitations/{invitationId}/revoke:
+    post:
+      summary: Revoke an invitation (administrator)
+      description: >
+        Idempotent.
+      operationId: revokeInvitation
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+        - $ref: "#/components/parameters/invitationId"
+      responses:
+        "204":
+          description: Success
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: >-
+            `not_found_in_community`, or `invitation_invalid` if it has already been accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /invitations/preview:
+    post:
+      summary: Read an invitation by its token
+      operationId: previewInvitation
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InvitationTokenRequest"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvitationPreview"
+        "400":
+          description: >-
+            `invalid_request`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: >-
+            `invitation_invalid`: unknown, expired, used or revoked, with one error for all of them
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /invitations/accept:
+    post:
+      summary: Join a community with an invitation token
+      description: >
+        The account's email must match the invitation, so a forwarded link is useless to anyone else.
+        The new member has no roles.
+      operationId: acceptInvitation
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InvitationTokenRequest"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AcceptedInvitation"
+        "400":
+          description: >-
+            `invalid_request`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `invitation_email_mismatch`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: >-
+            `invitation_invalid`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: >-
+            `already_member`, which includes a suspended member
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /communities/{communityId}/membership/leave:
+    post:
+      summary: Leave the community
+      description: >
+        Ends the membership and its roles. A suspended member can't leave.
+      operationId: leaveCommunity
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+      responses:
+        "204":
+          description: Success
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: >-
+            `last_administrator`: the community must keep an active administrator
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /communities/{communityId}/memberships/{membershipId}/roles:
+    post:
+      summary: Assign a role (administrator)
+      description: >
+        Applies on the member's next request.
+      operationId: assignRole
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+        - $ref: "#/components/parameters/membershipId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignRoleRequest"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Member"
+        "400":
+          description: >-
+            `invalid_request`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: >-
+            `not_found_in_community`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: >-
+            `role_already_held`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /communities/{communityId}/memberships/{membershipId}/roles/{role}/end:
+    post:
+      summary: End a role (administrator)
+      description: >
+        Applies on the member's next request. The assignment stays as history.
+      operationId: endRole
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+        - $ref: "#/components/parameters/membershipId"
+        - $ref: "#/components/parameters/role"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Member"
+        "400":
+          description: >-
+            `invalid_request`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: >-
+            `not_found_in_community`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: >-
+            `role_not_assigned` or `last_administrator`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /communities/{communityId}/memberships/{membershipId}/suspend:
+    post:
+      summary: Suspend a member (administrator)
+      description: >
+        Blocks all access to the community on their next request. Idempotent.
+      operationId: suspendMember
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+        - $ref: "#/components/parameters/membershipId"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Member"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: >-
+            `not_found_in_community`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: >-
+            `last_administrator`: the community must keep an active administrator
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /communities/{communityId}/memberships/{membershipId}/reactivate:
+    post:
+      summary: Reactivate a suspended member (administrator)
+      description: >
+        Idempotent.
+      operationId: reactivateMember
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+        - $ref: "#/components/parameters/membershipId"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Member"
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: >-
+            `not_found_in_community`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /communities/{communityId}/memberships/{membershipId}/remove:
+    post:
+      summary: Remove a member (administrator)
+      description: >
+        Ends the membership and its roles. They can only return through a new invitation.
+      operationId: removeMember
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+        - $ref: "#/components/parameters/membershipId"
+      responses:
+        "204":
+          description: Success
+        "401":
+          description: >-
+            Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: >-
+            `not_found_in_community`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: >-
+            `last_administrator`: the community must keep an active administrator
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /communities/{communityId}/audit-events:
+    get:
+      summary: The community's audit log, newest first (administrator or auditor)
+      description: >
+        Only this community's events: platform events such as logins aren't included.
+        Every API response carries the id of its request in an X-Request-Id header,
+        which matches the requestId of the events it wrote.
+      operationId: listAuditEvents
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/communityId"
+        - name: before
+          in: query
+          description: The id of the last event of the previous page.
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuditEvent"
+        "401":
+          description: Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: >-
+            `membership_not_active`, or `role_not_held`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
 components:
+  parameters:
+    invitationId:
+      name: invitationId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    role:
+      name: role
+      in: path
+      required: true
+      schema:
+        type: string
+        enum: [administrator, accountant, treasurer, auditor, council_member, moderator, staff]
+    membershipId:
+      name: membershipId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    communityId:
+      name: communityId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    buildingId:
+      name: buildingId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    unitId:
+      name: unitId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    personId:
+      name: personId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    relationshipId:
+      name: relationshipId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    includeArchived:
+      name: includeArchived
+      in: query
+      description: Also return archived records. Requires the administrator role.
+      schema:
+        type: boolean
+        default: false
+
   securitySchemes:
     bearerAuth:
       type: http
@@ -240,7 +2270,7 @@ components:
       properties:
         token:
           type: string
-          description: Opaque bearer token. Send as "Authorization: Bearer <token>".
+          description: 'Opaque bearer token. Send as "Authorization: Bearer <token>".'
         expiresAt:
           type: string
           format: date-time
@@ -267,3 +2297,573 @@ components:
           minLength: 8
           maxLength: 72
           description: Never returned; stored as a password hash.
+
+    CreateCommunityRequest:
+      type: object
+      required: [key, name, kind]
+      properties:
+        key:
+          type: string
+          maxLength: 64
+          pattern: "^[a-z0-9-]+$"
+          description: Unique across the platform. Can't be changed later.
+        name:
+          type: string
+          maxLength: 200
+        legalName:
+          type: string
+          maxLength: 200
+        taxId:
+          type: string
+          maxLength: 32
+        kind:
+          type: string
+          enum: [ph_residential]
+        plan:
+          type: string
+          maxLength: 40
+        country:
+          type: string
+          minLength: 2
+          maxLength: 2
+          default: CO
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+          default: COP
+        timezone:
+          type: string
+          maxLength: 64
+          default: America/Bogota
+          description: An IANA time zone.
+        address:
+          type: string
+
+    UpdateCommunityRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        legalName:
+          type: string
+          maxLength: 200
+        taxId:
+          type: string
+          maxLength: 32
+        address:
+          type: string
+
+    Community:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        key:
+          type: string
+        name:
+          type: string
+        legalName:
+          type: string
+          nullable: true
+        taxId:
+          type: string
+          nullable: true
+        kind:
+          type: string
+        plan:
+          type: string
+          nullable: true
+        country:
+          type: string
+        currency:
+          type: string
+        timezone:
+          type: string
+        address:
+          type: string
+          nullable: true
+
+    UpdateAccountRequest:
+      type: object
+      required: [displayName, locale]
+      properties:
+        displayName:
+          type: string
+          maxLength: 200
+        locale:
+          type: string
+          maxLength: 10
+
+    Visibility:
+      type: string
+      enum: [privileged, community]
+      default: privileged
+      description: >
+        Who else can see this: privileged roles only, or any member of the community.
+        See docs/security/privacy.md.
+
+    UpdateProfileRequest:
+      type: object
+      required: [nameVisibility, emailVisibility, phoneVisibility, unitsVisibility]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 320
+        phone:
+          type: string
+          maxLength: 40
+        nameVisibility:
+          $ref: "#/components/schemas/Visibility"
+        emailVisibility:
+          $ref: "#/components/schemas/Visibility"
+        phoneVisibility:
+          $ref: "#/components/schemas/Visibility"
+        unitsVisibility:
+          $ref: "#/components/schemas/Visibility"
+
+    AuditEvent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        occurredAt:
+          type: string
+          format: date-time
+        entityType:
+          type: string
+        entityId:
+          type: string
+          format: uuid
+        action:
+          type: string
+        summary:
+          type: string
+          nullable: true
+          description: Never holds a person's name, document or contact details.
+        actorName:
+          type: string
+          nullable: true
+        requestId:
+          type: string
+          nullable: true
+
+    CreateInvitationRequest:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 320
+        personId:
+          type: string
+          format: uuid
+
+    Invitation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        personId:
+          type: string
+          format: uuid
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        token:
+          type: string
+          nullable: true
+          description: Only in the response that creates the invitation. Never stored.
+
+    InvitationTokenRequest:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
+          maxLength: 100
+
+    InvitationPreview:
+      type: object
+      properties:
+        communityName:
+          type: string
+        email:
+          type: string
+          format: email
+        matchesAccount:
+          type: boolean
+
+    AcceptedInvitation:
+      type: object
+      properties:
+        communityId:
+          type: string
+          format: uuid
+        membershipId:
+          type: string
+          format: uuid
+        personId:
+          type: string
+          format: uuid
+          nullable: true
+
+    AssignRoleRequest:
+      type: object
+      required: [role]
+      properties:
+        role:
+          type: string
+          enum: [administrator, accountant, treasurer, auditor, council_member, moderator, staff]
+
+    LinkPersonRequest:
+      type: object
+      properties:
+        personId:
+          type: string
+          format: uuid
+          nullable: true
+
+    Member:
+      type: object
+      properties:
+        membershipId:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        email:
+          type: string
+          format: email
+        personId:
+          type: string
+          format: uuid
+          nullable: true
+        status:
+          type: string
+          enum: [invited, active, suspended]
+        roles:
+          type: array
+          items:
+            type: string
+
+    MyMembership:
+      type: object
+      properties:
+        membershipId:
+          type: string
+          format: uuid
+        personId:
+          type: string
+          format: uuid
+          nullable: true
+          description: The person record linked to this membership, if any.
+        roles:
+          type: array
+          items:
+            type: string
+            enum: [administrator, accountant, treasurer, auditor, council_member, moderator, staff]
+
+    Home:
+      type: object
+      required: [community, membershipId, roles, units]
+      properties:
+        community:
+          $ref: "#/components/schemas/Community"
+        membershipId:
+          type: string
+          format: uuid
+        personId:
+          type: string
+          format: uuid
+          nullable: true
+          description: The person record linked to this membership, if any.
+        roles:
+          type: array
+          description: Assigned roles in force. Roles derived from unit relationships are in `units`.
+          items:
+            type: string
+            enum: [administrator, accountant, treasurer, auditor, council_member, moderator, staff]
+        units:
+          type: array
+          description: The caller's units today, sorted by building and number. Empty without a linked person.
+          items:
+            $ref: "#/components/schemas/MyUnit"
+        administration:
+          allOf:
+            - $ref: "#/components/schemas/AdministrationSummary"
+          nullable: true
+          description: Present only for administrators.
+
+    MyUnit:
+      type: object
+      required: [unitId, number, kind, roles]
+      properties:
+        unitId:
+          type: string
+          format: uuid
+        number:
+          type: string
+        kind:
+          type: string
+        building:
+          type: string
+          nullable: true
+          description: The building's name, if the unit is in one.
+        roles:
+          type: array
+          description: The caller's relationships to the unit in force today, each once.
+          items:
+            type: string
+            enum: [owner, tenant, resident, household_member, representative]
+
+    AdministrationSummary:
+      type: object
+      description: Counts of records in use. Archived records, ended memberships and expired invitations aren't counted.
+      required: [buildings, units, people, members, suspendedMembers, pendingInvitations]
+      properties:
+        buildings:
+          type: integer
+        units:
+          type: integer
+        people:
+          type: integer
+        members:
+          type: integer
+          description: Active memberships.
+        suspendedMembers:
+          type: integer
+        pendingInvitations:
+          type: integer
+
+    BuildingRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          maxLength: 200
+
+    Building:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        communityId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        archivedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    UnitRequest:
+      type: object
+      required: [number, kind]
+      properties:
+        number:
+          type: string
+          maxLength: 40
+          description: Unique within the community, including archived units.
+        kind:
+          type: string
+          enum: [apartment, house, commercial, office, parking, storage]
+        buildingId:
+          type: string
+          format: uuid
+        floor:
+          type: string
+          maxLength: 20
+        areaM2:
+          type: number
+          minimum: 0
+          description: At most 8 integer and 2 decimal digits.
+        registryId:
+          type: string
+          maxLength: 60
+
+    Unit:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        communityId:
+          type: string
+          format: uuid
+        buildingId:
+          type: string
+          format: uuid
+          nullable: true
+        number:
+          type: string
+        kind:
+          type: string
+        floor:
+          type: string
+          nullable: true
+        areaM2:
+          type: number
+          nullable: true
+        registryId:
+          type: string
+          nullable: true
+        archivedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    PersonRequest:
+      type: object
+      required: [kind]
+      description: >
+        A natural person needs givenName and surname, and a legal person needs
+        legalName. idType and idNumber go together, and are unique per community.
+      properties:
+        kind:
+          type: string
+          enum: [natural, legal]
+        givenName:
+          type: string
+          maxLength: 120
+        surname:
+          type: string
+          maxLength: 120
+        legalName:
+          type: string
+          maxLength: 200
+        idType:
+          type: string
+          enum: [CC, CE, NIT, PA, TI]
+        idNumber:
+          type: string
+          maxLength: 40
+        email:
+          type: string
+          format: email
+          maxLength: 320
+        phone:
+          type: string
+          maxLength: 40
+
+    Person:
+      type: object
+      description: >
+        Fields the caller may not see are null, so a null doesn't mean the person has
+        no value. See docs/security/privacy.md.
+      properties:
+        id:
+          type: string
+          format: uuid
+        communityId:
+          type: string
+          format: uuid
+        kind:
+          type: string
+        givenName:
+          type: string
+          nullable: true
+        surname:
+          type: string
+          nullable: true
+        legalName:
+          type: string
+          nullable: true
+        idType:
+          type: string
+          nullable: true
+        idNumber:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        nameVisibility:
+          $ref: "#/components/schemas/Visibility"
+        emailVisibility:
+          $ref: "#/components/schemas/Visibility"
+        phoneVisibility:
+          $ref: "#/components/schemas/Visibility"
+        unitsVisibility:
+          $ref: "#/components/schemas/Visibility"
+        archivedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    CreateUnitRelationshipRequest:
+      type: object
+      required: [personId, role]
+      properties:
+        personId:
+          type: string
+          format: uuid
+        role:
+          type: string
+          enum: [owner, tenant, resident, household_member, representative]
+        share:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Owners only, ignored for other roles. At most 4 decimals.
+        validFrom:
+          type: string
+          format: date
+          description: First day in force. Defaults to today in the community's time zone.
+        validTo:
+          type: string
+          format: date
+          description: Last day in force, inclusive.
+
+    EndUnitRelationshipRequest:
+      type: object
+      properties:
+        validTo:
+          type: string
+          format: date
+          description: Last day in force, inclusive. Defaults to today in the community's time zone.
+
+    UnitRelationship:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        unitId:
+          type: string
+          format: uuid
+        personId:
+          type: string
+          format: uuid
+        role:
+          type: string
+        share:
+          type: number
+          nullable: true
+        validFrom:
+          type: string
+          format: date
+        validTo:
+          type: string
+          format: date
+          nullable: true

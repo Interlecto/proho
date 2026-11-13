@@ -16,6 +16,11 @@ spring:
     password: ${PROHO_DB_MIGRATION_PASSWORD}
     locations: classpath:db/migration
 
+# Ties a request's log lines to its audit events (RequestIdFilter).
+logging:
+  pattern:
+    correlation: "[%X{requestId:-}] "
+
 proho:
   auth:
     session-ttl: ${PROHO_SESSION_TTL:30d}

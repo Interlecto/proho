@@ -151,7 +151,7 @@ class CrossCommunityIsolationIntegrationTest {
                 a.adminToken,
                 String::class.java,
             )
-        assertThat(otherUnit.statusCode).isEqualTo(HttpStatus.BAD_REQUEST)
+        assertThat(otherUnit.statusCode).isEqualTo(HttpStatus.NOT_FOUND)
         assertThat(otherUnit.body).contains("not_found_in_community")
 
         val otherPerson =
@@ -176,7 +176,7 @@ class CrossCommunityIsolationIntegrationTest {
 
         val response = get("/communities/${a.id}/units/${b.unitId}/relationships", a.adminToken)
 
-        assertThat(response.statusCode).isEqualTo(HttpStatus.BAD_REQUEST)
+        assertThat(response.statusCode).isEqualTo(HttpStatus.NOT_FOUND)
         assertThat(response.body).doesNotContain(b.personId.toString())
     }
 

@@ -8,4 +8,6 @@ interface RoleAssignmentRepository : CrudRepository<RoleAssignment, UUID> {
         membershipId: UUID,
         role: Role,
     ): RoleAssignment?
+
+    fun findByMembershipIdAndValidToIsNull(membershipId: UUID): List<RoleAssignment>
 }

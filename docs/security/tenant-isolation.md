@@ -14,6 +14,9 @@ RLS and the foreign keys are backstops, not replacements for the checks. Without
 the checks a caller gets an empty list or a database error instead of a clean
 response. Foreign keys are needed as well because their checks ignore RLS.
 
+Who can see what inside one community is a separate matter: see
+[privacy.md](privacy.md).
+
 ## How a request gets its tenant
 
 1. `BearerTokenAuthenticationFilter` authenticates the request and sets the
@@ -73,6 +76,10 @@ fails with "permission denied" on first use.
 - **Tables outside RLS:** `account`, `account_session` and
   `password_reset_token` belong to a login rather than a community, and are read
   before anyone is authenticated.
+- **`app_find_invitation`:** accepting an invitation starts with no community
+  bound, so this function runs as the table's owner to get past row-level security.
+  It only returns the usable invitation matching a token's hash, and can't list
+  anything. Treat any other `security definer` function as a hole in isolation.
 - **SQL injection:** a successful injection could call `set_config` and change
   the context. Queries are parameterized, and RLS doesn't defend against this.
 - **Community keys:** the key's global uniqueness reveals whether a key is taken,
@@ -82,5 +89,5 @@ fails with "permission denied" on first use.
   hand that session to another request, so any deployment has to pool in session
   mode or inside the application, as HikariCP does today.
 - **Platform audit events:** events with no community (login, registration) are
-  readable whichever community is bound. Nothing reads the log yet, but an endpoint
-  that does must leave them out of a community's view.
+  readable whichever community is bound. `AuditEventReader` leaves them out of a
+  community's view, so read the log through it.

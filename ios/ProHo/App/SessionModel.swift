@@ -11,6 +11,8 @@ final class SessionModel {
     let api: APIClient
     private(set) var token: String?
     private(set) var account: Account?
+    /// The community being shown, or nil for the list of communities.
+    private(set) var communityId: String?
 
     init(api: APIClient) {
         self.api = api
@@ -23,10 +25,20 @@ final class SessionModel {
         account = result.account
     }
 
+    func open(community id: String) {
+        communityId = id
+    }
+
+    /// Back to the list of communities.
+    func leaveCommunity() {
+        communityId = nil
+    }
+
     func logOut() {
         let oldToken = token
         token = nil
         account = nil
+        communityId = nil
         if let oldToken {
             // Best effort: the session is gone locally whether or not the
             // server hears about it.

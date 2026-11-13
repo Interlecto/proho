@@ -1,4 +1,4 @@
-package net.interlecto.proho.ui.theme
+package app.ilecto.proho.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
