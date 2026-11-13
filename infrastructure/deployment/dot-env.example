@@ -1,0 +1,5 @@
+# /opt/proho/.env — non-secret settings Compose reads for compose.yaml.
+# deploy.sh writes PROHO_IMAGE_TAG; set the rest by hand.
+PROHO_API_HOST=api.ilecto.net
+ACME_EMAIL=<address that receives certificate notices>
+PROHO_IMAGE_TAG=

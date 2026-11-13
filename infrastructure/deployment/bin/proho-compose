@@ -1,0 +1,13 @@
+#!/bin/bash
+# Docker Compose for the ProHo stack, with the server's layout filled in
+# (docs/operations/deployment.md). Use it for anything by hand, e.g.
+#   proho-compose ps
+#   proho-compose logs -f backend
+# Installed as /usr/local/sbin/proho-compose.
+set -euo pipefail
+PROHO_HOME="${PROHO_HOME:-/opt/proho}"
+exec docker compose \
+	--project-name proho \
+	--env-file "$PROHO_HOME/.env" \
+	--file "$PROHO_HOME/repo/infrastructure/deployment/compose.yaml" \
+	"$@"

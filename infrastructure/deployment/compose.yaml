@@ -1,0 +1,72 @@
+# Production stack for one server: Caddy in front, the backend, PostgreSQL.
+# Secrets come from root-owned files in /etc/proho, never from this file or
+# the repository (docs/security/secrets.md). Set up and operated as described
+# in docs/operations/deployment.md; deploy.sh normally runs it.
+#
+# Only Caddy publishes ports. The backend and the database are reachable only
+# on the internal network.
+
+name: proho
+
+services:
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      PROHO_API_HOST: ${PROHO_API_HOST:-api.ilecto.net}
+      ACME_EMAIL: ${ACME_EMAIL:?ACME_EMAIL must be set in /opt/proho/.env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [edge]
+    depends_on: [backend]
+
+  backend:
+    image: ghcr.io/interlecto/proho-backend:${PROHO_IMAGE_TAG:?PROHO_IMAGE_TAG must be set}
+    restart: unless-stopped
+    env_file: /etc/proho/proho.env
+    environment:
+      # Caddy strips /proho before proxying and sends X-Forwarded-Prefix, so
+      # the backend serves from / and still builds correct public URLs.
+      SERVER_FORWARD_HEADERS_STRATEGY: framework
+    networks: [edge, data]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:17
+    restart: unless-stopped
+    # postgres.env holds the superuser password, read only when the data
+    # directory is first created. proho.env gives the init script the two
+    # roles' passwords.
+    env_file:
+      - /etc/proho/postgres.env
+      - /etc/proho/proho.env
+    environment:
+      POSTGRES_DB: proho
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d:ro
+    networks: [data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d proho"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+networks:
+  edge: {}
+  # No route out: the database talks only to the backend.
+  data:
+    internal: true
+
+volumes:
+  pgdata: {}
+  caddy_data: {}
+  caddy_config: {}

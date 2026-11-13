@@ -46,7 +46,7 @@ one for the other.
 | ------ | ------- | ----------------- | -- | ---------- |
 | `PROHO_DB_PASSWORD`, role `proho_app` | Backend at runtime | Default `proho_app` from `application-dev.yml` | Not needed: tests start an embedded PostgreSQL with throwaway logins | Environment file on the host (below) |
 | `PROHO_DB_MIGRATION_PASSWORD`, the table owner | Flyway at startup | Default `proho` from `application-dev.yml` | Not needed | Environment file on the host |
-| PostgreSQL superuser | Creating roles and databases by hand, never the application | Set when installing PostgreSQL | Not needed | Password manager only. Not on the application host's environment |
+| PostgreSQL superuser | Creating roles and databases by hand, never the application | Set when installing PostgreSQL | Not needed | Password manager. With the containerized database, also `/etc/proho/postgres.env` until the database is created, then removed. Never in the backend's environment |
 
 The backend has no other secrets today. Sessions and password resets (and
 invitations, on `develop/community-management`) use random tokens that are
@@ -70,8 +70,10 @@ Add the row for real when the secret starts being used.
 | ------ | ---- | ------------------ |
 | Android upload key (Play App Signing) and its passwords | First Play Store build | Password manager; CI secrets as base64 for release builds. Google holds the app signing key. |
 | App Store Connect API key (`.p8`) and distribution certificate | First TestFlight build | Password manager and CI secrets, or Xcode Cloud |
-| Deploy key (SSH) for the server | First deployment pipeline | CI secret, in a `production` environment that needs approval |
-| Object storage keys (Cloudflare R2) for files and backups | File storage and backups | Host environment file; backups get a separate, write-only key |
+| Deploy key (SSH) for the server, `PROHO_DEPLOY_SSH_KEY`, and the server's host key, `PROHO_DEPLOY_KNOWN_HOSTS` | First deployment (`.github/workflows/deploy.yml`) | Password manager; CI secret in the `production` environment, which needs approval. The server only lets the key run `proho-deploy` ([deployment.md](../operations/deployment.md)) |
+| Object storage keys (Cloudflare R2) for files | File storage | Host environment file |
+| R2 token for backups (`R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`) | Nightly backups (`proho-backup`) | `/etc/proho/backup.env`, master copy in the password manager. R2 has no write-only token, so it's "Object Read & Write" on the backup bucket only, and the bucket's lock rule keeps recent backups from being deleted |
+| Backup encryption key (age), private half | Restoring a backup | Password manager only, never on the server except while restoring. The public half, in `backup.env`, isn't secret |
 | Cloudflare API token | If the landing page is deployed from CI rather than by hand | CI secret, scoped to the one Worker |
 | Email provider API key | Notifications module | Host environment file |
 | Payment provider keys and webhook signing secrets | Payments (Phase 2/3) | Host environment file. The most sensitive in this list; see rotation below |
@@ -115,7 +117,8 @@ with the same apps, if the project decides to run its own.
   can't read them. Pull requests from forks get no secrets.
 - **Production (provisional, for the VPS option):** one environment file per
   service, such as `/etc/proho/proho.env`, owned by root with mode `0600`, passed
-  to the container with Docker Compose's `env_file`. Never in the image, the
+  to the container with Docker Compose's `env_file`
+  ([deployment.md](../operations/deployment.md)). Never in the image, the
   Compose file or the repository. On a managed platform, its secret store
   replaces the file.
 
