@@ -1,0 +1,10 @@
+# Nightly database backup to R2 (bin/proho-backup). Installed in
+# /etc/systemd/system with proho-backup.timer.
+[Unit]
+Description=Back up the ProHo database to R2
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/proho-backup

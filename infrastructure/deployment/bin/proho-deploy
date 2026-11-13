@@ -1,0 +1,96 @@
+#!/bin/bash
+# Deploys one commit of master: backs up the database, checks out the commit's
+# deployment files, pulls its backend image and restarts the stack. If the new
+# backend doesn't become ready, goes back to the previous commit and image.
+#
+#   proho-deploy <40-character commit SHA>
+#
+# CI calls it through a deploy key whose authorized_keys entry forces this
+# command (docs/operations/deployment.md), so the key can do nothing else.
+# Installed as /usr/local/sbin/proho-deploy; reinstall it when it changes.
+set -euo pipefail
+
+if [ "$(id -u)" -ne 0 ]; then
+	# Through the forced command, the client's command line (the commit) is
+	# in SSH_ORIGINAL_COMMAND. sudo is allowed for this script only.
+	exec sudo -n /usr/local/sbin/proho-deploy "${SSH_ORIGINAL_COMMAND:-${1:-}}"
+fi
+
+commit="${1:-}"
+if ! [[ "$commit" =~ ^[0-9a-f]{40}$ ]]; then
+	echo "usage: proho-deploy <40-character commit SHA>" >&2
+	exit 2
+fi
+
+PROHO_HOME="${PROHO_HOME:-/opt/proho}"
+repo="$PROHO_HOME/repo"
+env_file="$PROHO_HOME/.env"
+
+exec 9>"$PROHO_HOME/deploy.lock"
+flock --nonblock 9 || { echo "Another deployment is running." >&2; exit 1; }
+
+log() { echo "[proho-deploy] $*"; }
+
+git -C "$repo" fetch --quiet origin master
+if ! git -C "$repo" merge-base --is-ancestor "$commit" origin/master; then
+	echo "$commit is not on master; only master is deployed." >&2
+	exit 1
+fi
+
+previous_commit="$(git -C "$repo" rev-parse HEAD)"
+previous_tag="$(sed -n 's/^PROHO_IMAGE_TAG=//p' "$env_file")"
+
+set_tag() {
+	if grep -q '^PROHO_IMAGE_TAG=' "$env_file"; then
+		sed -i "s/^PROHO_IMAGE_TAG=.*/PROHO_IMAGE_TAG=$1/" "$env_file"
+	else
+		echo "PROHO_IMAGE_TAG=$1" >>"$env_file"
+	fi
+}
+
+wait_until_ready() {
+	for _ in $(seq 1 40); do
+		if proho-compose exec -T caddy wget -q -O /dev/null http://backend:8080/actuator/health/readiness 2>/dev/null; then
+			return 0
+		fi
+		sleep 3
+	done
+	return 1
+}
+
+# Migrations run when the new backend starts, so back up first. Skipped on
+# the very first deployment, when there's no database yet.
+if [ -n "$previous_tag" ] && [ -n "$(proho-compose ps --quiet postgres 2>/dev/null)" ]; then
+	log "Backing up the database"
+	proho-backup
+fi
+
+log "Deploying $commit (was ${previous_tag:-nothing})"
+git -C "$repo" checkout --quiet --detach "$commit"
+set_tag "$commit"
+proho-compose pull --quiet
+proho-compose up --detach --remove-orphans
+
+if wait_until_ready; then
+	log "Backend ready. Deployed $commit."
+	exit 0
+fi
+
+log "Backend not ready after two minutes. Last log lines:"
+proho-compose logs --tail 50 backend || true
+
+if [ -z "$previous_tag" ]; then
+	log "No previous version to go back to."
+	exit 1
+fi
+
+log "Going back to $previous_tag"
+git -C "$repo" checkout --quiet --detach "$previous_commit"
+set_tag "$previous_tag"
+proho-compose up --detach --remove-orphans
+if wait_until_ready; then
+	log "Previous version is running again. Migrations the failed version applied stay applied."
+else
+	log "The previous version isn't ready either. Restore from backup: docs/operations/deployment.md."
+fi
+exit 1

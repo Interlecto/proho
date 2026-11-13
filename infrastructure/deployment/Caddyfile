@@ -1,0 +1,41 @@
+# Reverse proxy for api.ilecto.net. Each Interlecto API gets its own path
+# prefix (docs/infrastructure.md): /proho/ now, /contarte/ later. Caddy gets
+# and renews the TLS certificate by itself.
+
+{
+	email {$ACME_EMAIL}
+}
+
+{$PROHO_API_HOST} {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		Referrer-Policy no-referrer
+		-Server
+	}
+
+	# Actuator stays internal, apart from the health status that uptime
+	# checks read. Health shows no details to anonymous callers.
+	@actuator {
+		path /proho/actuator /proho/actuator/*
+		not path /proho/actuator/health
+	}
+	respond @actuator 404
+
+	handle_path /proho/* {
+		reverse_proxy backend:8080 {
+			header_up X-Forwarded-Prefix /proho
+		}
+	}
+
+	handle {
+		respond 404
+	}
+
+	log {
+		output stdout
+		format json
+	}
+}

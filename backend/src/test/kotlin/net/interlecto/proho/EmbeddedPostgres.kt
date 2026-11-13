@@ -35,6 +35,8 @@ object EmbeddedPostgres {
         registry.add("spring.flyway.url") { url }
         registry.add("spring.flyway.user") { "proho" }
         registry.add("spring.flyway.password") { "proho" }
+        // Throwaway server with throwaway logins (DatabaseCredentialsGuard).
+        registry.add("proho.security.allow-development-credentials") { "true" }
     }
 
     // One shared connection: opening a new one per statement takes most of a

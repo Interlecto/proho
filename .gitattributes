@@ -1,0 +1,6 @@
+# Files that run on Linux keep LF line endings even when checked out on
+# Windows, where a CR breaks shell scripts and the image build.
+*.sh text eol=lf
+gradlew text eol=lf
+Dockerfile text eol=lf
+infrastructure/deployment/** text eol=lf

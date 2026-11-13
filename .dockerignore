@@ -1,0 +1,8 @@
+# Only backend/ and database/ go into the backend image (backend/Dockerfile).
+*
+!backend/
+!database/migrations/
+backend/build/
+backend/.gradle/
+backend/.kotlin/
+**/application-local.*

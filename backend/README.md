@@ -34,12 +34,23 @@ Provision `proho_app` before the first migration:
 CREATE ROLE proho_app LOGIN PASSWORD '<secret>' NOSUPERUSER NOBYPASSRLS;
 ```
 
+Outside the `dev` profile the application also refuses weak passwords: empty,
+shorter than 16 characters, the role's name, a placeholder, or the same for
+both roles. Generate them, and see
+[docs/security/secrets.md](../docs/security/secrets.md) for where they live and
+how to rotate them.
+
 `bootRun` activates the `dev` profile (`application-dev.yml`), which defaults
-these to the local setup below and logs password-reset tokens, since there's no
-email yet. Never activate `dev` on a real deployment.
+these to the local setup below, allows those short local passwords, and logs
+password-reset tokens, since there's no email yet. Never activate `dev` on a
+real deployment.
 
 Migrations are in `database/migrations/` at the repository root and are
 packaged into the jar.
+
+The production image is built by `Dockerfile`, from the repository root
+(`docker build -f backend/Dockerfile .`). How it's deployed is in
+[docs/operations/deployment.md](../docs/operations/deployment.md).
 
 ## Local PostgreSQL (Windows, no admin terminal)
 
