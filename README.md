@@ -50,7 +50,10 @@ landing page is live; the three clients and the backend are not usable yet:
   boundaries with no code.
 - **Web and Android** — app shells (`web/`, `android/`) with the project's
   visual identity ([`brand/`](brand/README.md)) applied, no features yet.
-- **iOS** — not started; only a placeholder README.
+- **iOS** — project skeleton (`ios/`): a platform-independent `ProHoKit`
+  package (API client, unit-tested) plus a SwiftUI app with the same demo
+  screens as Android. Written without Xcode and not yet built on a Mac; see
+  [ios/README.md](ios/README.md) for the setup and development plan.
 - **Landing page** — live at [proho.ilecto.app](https://proho.ilecto.app/)
   (`landing/`), independent of the rest of the platform.
 - **Database** — two migrations (tenant baseline, identity) and a

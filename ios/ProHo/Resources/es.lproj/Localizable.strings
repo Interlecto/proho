@@ -1,0 +1,29 @@
+/* Generated from android/app/src/main/res/values/strings.xml, plus iOS-only keys at the end. Keep keys in step with Android. */
+
+"tagline" = "Administración de propiedad horizontal";
+"no_community" = "Sin comunidad";
+"switch_community" = "Cambiar de comunidad";
+"welcome_title" = "Bienvenido a ProHo";
+"welcome_body" = "Aquí verá los estados de cuenta, anuncios y mensajes de sus comunidades.";
+"login_title" = "Iniciar sesión";
+"register_title" = "Crear cuenta";
+"name_label" = "Nombre";
+"email_label" = "Correo electrónico";
+"password_label" = "Contraseña";
+"no_account_prompt" = "¿No tiene cuenta? Cree una";
+"has_account_prompt" = "¿Ya tiene cuenta? Inicie sesión";
+"error_invalid_credentials" = "Correo o contraseña incorrectos.";
+"error_email_already_registered" = "Ese correo ya está registrado.";
+"error_invalid_request" = "Revise los datos ingresados.";
+"error_unknown" = "Ocurrió un error inesperado.";
+"your_communities_title" = "Sus comunidades";
+"logout_action" = "Cerrar sesión";
+"loading" = "Cargando…";
+"no_communities_yet" = "Todavía no pertenece a ninguna comunidad.";
+"create_community_action" = "Crear comunidad";
+"community_name_label" = "Nombre";
+"community_key_label" = "Clave (única, minúsculas y guiones)";
+"create_action" = "Crear";
+"cancel_action" = "Cancelar";
+"error_community_key_already_registered" = "Ya existe una comunidad con esa clave.";
+"error_network" = "No se pudo conectar con el servidor.";

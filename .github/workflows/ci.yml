@@ -71,6 +71,36 @@ jobs:
       - run: npm ci
       - run: npm run build
 
+  # ProHoKit is platform-independent; testing it on Linux keeps it buildable
+  # with the Windows/Linux toolchains used for day-to-day editing.
+  ios-kit-linux:
+    runs-on: ubuntu-latest
+    container: swift:6.1
+    defaults:
+      run:
+        working-directory: ios/ProHoKit
+    steps:
+      - uses: actions/checkout@v4
+      - run: swift test
+
+  ios:
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: ios
+    steps:
+      - uses: actions/checkout@v4
+      - run: swift test --package-path ProHoKit
+      - run: brew install xcodegen
+      - run: xcodegen generate
+      - run: >
+          xcodebuild build
+          -project ProHo.xcodeproj
+          -scheme ProHo
+          -configuration Debug
+          -destination 'generic/platform=iOS Simulator'
+          CODE_SIGNING_ALLOWED=NO
+
   # Builds the backend image without pushing it, so a broken Dockerfile fails
   # here rather than at deployment. deploy.yml builds and pushes from master.
   image:
