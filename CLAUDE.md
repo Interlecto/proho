@@ -14,7 +14,7 @@ Rules shared by all Interlecto projects (branches, debug keystore, deployment, G
   package under `net.interlecto.proho` is a module; its `package-info.java`
   declares allowed dependencies and `ModularityTest` enforces them.
 - `web/` — React + TypeScript (Vite). `android/` — Kotlin + Compose.
-  `ios/` — Swift + SwiftUI (placeholder only).
+  `ios/` — Swift + SwiftUI (built in CI, never run; see `ios/README.md`).
 - `landing/` — static bilingual page served by a Cloudflare Worker
   (`proho-site`, `proho.ilecto.app`). Separate from `web/`.
 - `api/openapi/openapi.yaml` — REST contract; update it with any endpoint change.
