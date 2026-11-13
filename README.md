@@ -34,37 +34,49 @@ functional spec.
 
 ## Status
 
-Early **Phase 0 — foundation** (see [ROADMAP.md §4](ROADMAP.md)). The public
-landing page is live; the three clients and the backend are not usable yet:
+**Phase 1 — identity and community administration — is complete; Phase 0 —
+foundation — is open only for the accountant's review and a host** (see
+[ROADMAP.md](ROADMAP.md#status-at-a-glance)). Nothing is deployed yet apart
+from the public landing page, so the platform can only be run locally.
 
+- **Backend** — a Spring Boot modular monolith (`backend/`) with
+  module-boundary enforcement (`ModularityTest`). Implemented modules:
+  **identity** (registration, login, logout, password reset), **communities**
+  (multi-community membership, invitations, roles, member profiles and
+  privacy controls), **properties** and **residents** (buildings, units,
+  people and their relationships, archived rather than deleted), **home**
+  (the member dashboard) and **audit** (append-only events, readable by
+  administrators). `billing`, `accounting`, `communications`,
+  `notifications`, `payments` and `plans` are still empty module boundaries.
+- **Tenant isolation** — enforced in three layers (authorization checks,
+  composite foreign keys, row-level security), see
+  [docs/security/tenant-isolation.md](docs/security/tenant-isolation.md).
+- **Web** — sign-in, community switching, the shared navigation and member
+  dashboard, and full community administration (`web/`).
+- **Android and iOS** — the same navigation, dashboard and member screens,
+  with trimmed administrative actions (`android/`, `ios/`). CI builds and
+  tests both; the iOS app has never been run on a simulator or device, see
+  [ios/README.md](ios/README.md).
 - **Domain model and accounting framework** — drafted and provisional:
   [docs/architecture/domain-model.md](docs/architecture/domain-model.md) and
-  [docs/accounting/](docs/accounting/README.md) (chart of accounts, posting
-  rules, ledger invariants). Still pending sign-off from a Colombian
-  accountant before Phase 2 (billing/ledger implementation) starts.
-- **Backend** — a Spring Boot modular monolith (`backend/`) with
-  module-boundary enforcement (`ModularityTest`). Two modules are
-  implemented: **identity** (account registration, `POST /accounts`) and
-  **audit** (records state-changing events for other modules to call). The
-  rest (communities, billing, accounting, …) are still just declared module
-  boundaries with no code.
-- **Web and Android** — app shells (`web/`, `android/`) with the project's
-  visual identity ([`brand/`](brand/README.md)) applied, no features yet.
-- **iOS** — project skeleton (`ios/`): a platform-independent `ProHoKit`
-  package (API client, unit-tested) plus a SwiftUI app with the same demo
-  screens as Android. Written without Xcode and not yet built on a Mac; see
-  [ios/README.md](ios/README.md) for the setup and development plan.
-- **Landing page** — live at [proho.ilecto.app](https://proho.ilecto.app/)
-  (`landing/`), independent of the rest of the platform.
-- **Database** — two migrations (tenant baseline, identity) and a
+  [docs/accounting/](docs/accounting/README.md). Policies P1–P8 await a
+  Colombian public accountant's review, which blocks Phase 2 (billing and the
+  ledger).
+- **Database** — Flyway migrations V1–V13 (`database/migrations/`) and a
   demo-community seed fixture.
 - **API contract** — [api/openapi/openapi.yaml](api/openapi/openapi.yaml),
-  started with the one endpoint the backend has (`POST /accounts`); grows
-  alongside the backend.
-- **Infrastructure** — empty scaffolding (`infrastructure/`), not yet defined.
+  covering every endpoint the backend serves.
+- **Security and operations** — secrets management
+  ([docs/security/secrets.md](docs/security/secrets.md), gitleaks in CI),
+  privacy rules ([docs/security/privacy.md](docs/security/privacy.md), pending
+  legal review), and a single-VPS deployment pipeline (Compose, Caddy,
+  PostgreSQL, encrypted backups to R2;
+  [docs/operations/deployment.md](docs/operations/deployment.md)) that has not
+  run yet because no host has been chosen.
+- **Landing page** — live at [proho.ilecto.app](https://proho.ilecto.app/)
+  (`landing/`), independent of the rest of the platform.
 - **Legacy salvage** — complete: [docs/legacy-salvage.md](docs/legacy-salvage.md)
-  records what the 2016 design (screens, workflows) carries over, screen by
-  screen and phase by phase. No legacy code or data is reused.
+  records what the 2016 design carries over. No legacy code or data is reused.
 
 ## Development
 
