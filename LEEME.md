@@ -34,42 +34,54 @@ la especificación funcional detallada del MVP.
 
 ## Estado de avance
 
-En etapa temprana de la **Fase 0 — fundación** (ver [ROADMAP.md §4](ROADMAP.md)).
-La página pública ya está en línea; los tres clientes y el backend todavía no
-son usables:
+**La Fase 1 — identidad y administración de comunidades — está completa; la
+Fase 0 — fundación — solo queda abierta por la revisión del contador y la
+elección de un hosting** (ver [ROADMAP.md](ROADMAP.md#status-at-a-glance)).
+Aparte de la página pública, nada está desplegado todavía, así que la
+plataforma solo puede ejecutarse localmente.
 
+- **Backend** — monolito modular en Spring Boot (`backend/`), con
+  verificación de límites entre módulos (`ModularityTest`). Módulos
+  implementados: **identity** (registro, inicio y cierre de sesión,
+  restablecimiento de contraseña), **communities** (pertenencia a varias
+  comunidades, invitaciones, roles, perfiles de miembros y controles de
+  privacidad), **properties** y **residents** (torres, unidades, personas y
+  sus relaciones, que se archivan en lugar de borrarse), **home** (el
+  tablero del miembro) y **audit** (eventos de solo adición, consultables
+  por los administradores). `billing`, `accounting`, `communications`,
+  `notifications`, `payments` y `plans` siguen siendo límites de módulo
+  vacíos.
+- **Aislamiento entre comunidades** — aplicado en tres capas (verificaciones
+  de autorización, llaves foráneas compuestas, seguridad a nivel de fila), ver
+  [docs/security/tenant-isolation.md](docs/security/tenant-isolation.md).
+- **Web** — inicio de sesión, cambio de comunidad, la navegación compartida y
+  el tablero del miembro, y la administración completa de la comunidad
+  (`web/`).
+- **Android e iOS** — la misma navegación, tablero y pantallas del miembro,
+  con acciones administrativas reducidas (`android/`, `ios/`). La CI compila y
+  prueba ambas; la app de iOS nunca se ha ejecutado en un simulador o
+  dispositivo, ver [ios/README.md](ios/README.md).
 - **Modelo de dominio y marco contable** — redactados, de carácter
   provisional: [docs/architecture/domain-model.md](docs/architecture/domain-model.md)
-  y [docs/accounting/](docs/accounting/README.md) (plan de cuentas, reglas de
-  contabilización, invariantes del libro mayor). Pendientes de validación por
-  un contador público colombiano antes de iniciar la Fase 2 (implementación
-  de facturación/contabilidad).
-- **Backend** — monolito modular en Spring Boot (`backend/`), con
-  verificación de límites entre módulos (`ModularityTest`). Dos módulos ya
-  implementados: **identity** (registro de cuentas, `POST /accounts`) y
-  **audit** (registra eventos de cambio de estado para que los demás
-  módulos los invoquen). El resto (comunidades, facturación, contabilidad,
-  …) son solo límites de módulo declarados, sin código todavía.
-- **Web y Android** — esqueletos de aplicación (`web/`, `android/`) con la
-  identidad visual del proyecto ([`brand/`](brand/README.md)) aplicada, sin
-  funcionalidades aún.
-- **iOS** — esqueleto del proyecto (`ios/`): un paquete `ProHoKit`
-  independiente de la plataforma (cliente de la API, con pruebas unitarias)
-  y una app SwiftUI con las mismas pantallas de demostración que Android.
-  Escrito sin Xcode y aún no compilado en un Mac; ver
-  [ios/README.md](ios/README.md) para la configuración y el plan de desarrollo.
+  y [docs/accounting/](docs/accounting/README.md). Las políticas P1–P8 esperan
+  la revisión de un contador público colombiano, lo que bloquea la Fase 2
+  (facturación y libro mayor).
+- **Base de datos** — migraciones de Flyway V1–V13 (`database/migrations/`) y
+  un conjunto de datos de ejemplo (comunidad demo).
+- **Contrato de API** — [api/openapi/openapi.yaml](api/openapi/openapi.yaml),
+  con todos los endpoints que expone el backend.
+- **Seguridad y operación** — manejo de secretos
+  ([docs/security/secrets.md](docs/security/secrets.md), gitleaks en la CI),
+  reglas de privacidad ([docs/security/privacy.md](docs/security/privacy.md),
+  pendientes de revisión legal) y un flujo de despliegue en un solo VPS
+  (Compose, Caddy, PostgreSQL, copias de seguridad cifradas en R2;
+  [docs/operations/deployment.md](docs/operations/deployment.md)) que aún no se
+  ha ejecutado porque no se ha elegido un hosting.
 - **Página pública** — en línea en [proho.ilecto.app](https://proho.ilecto.app/)
   (`landing/`), independiente del resto de la plataforma.
-- **Base de datos** — dos migraciones (base del tenant, identidad) y un
-  conjunto de datos de ejemplo (comunidad demo).
-- **Contrato de API** — [api/openapi/openapi.yaml](api/openapi/openapi.yaml),
-  iniciado con el único endpoint que tiene el backend (`POST /accounts`);
-  crece junto con el backend.
-- **Infraestructura** — estructura vacía (`infrastructure/`), aún sin definir.
 - **Aprovechamiento del legado** — completo:
   [docs/legacy-salvage.md](docs/legacy-salvage.md) registra qué se conserva
-  del diseño de 2016 (pantallas, flujos), pantalla por pantalla y fase por
-  fase. No se reutiliza código ni datos del legado.
+  del diseño de 2016. No se reutiliza código ni datos del legado.
 
 ## Desarrollo
 
