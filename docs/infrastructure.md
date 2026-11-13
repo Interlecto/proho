@@ -1,7 +1,9 @@
 # Domains and public endpoints
 
 Status: **partially live**. The landing page is deployed; the production API
-is not — see [ROADMAP.md](../ROADMAP.md) for when that's scheduled.
+is not — see [ROADMAP.md](../ROADMAP.md) for when that's scheduled, and
+[operations/hosting-options.md](operations/hosting-options.md) for where it
+could be hosted.
 
 | Domain                        | Purpose                                              | Source                      |
 | ------------------------------ | ----------------------------------------------------- | ---------------------------- |
